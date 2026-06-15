@@ -158,6 +158,11 @@ Register any tool in `nextmillionai.config.json`:
 (explicitly tagged `timestampFidelity: mtime`); `presence` = counted
 only. Lives under the `other_tools` consent group.
 
+The same file also carries your identity fields (name, title, …). It is
+read from `~/.nextmillionai/nextmillionai.config.json` first (the durable
+home, so identity + custom adapters persist across repo clones), falling
+back to `./nextmillionai.config.json` in the current directory.
+
 ## When a tool ships a new storage layout
 
 That's a coverage bug. Open an issue with the tool version and the new

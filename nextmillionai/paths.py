@@ -67,20 +67,23 @@ def collection_config_path() -> Path:
 
 
 def config_path() -> Path | None:
-    """Locate ``nextmillionai.config.json``.
+    """Locate ``nextmillionai.config.json`` (identity + custom adapters).
 
-    Lookup order:
-    1. ``./nextmillionai.config.json`` (cwd)
-    2. ``~/.nextmillionai/nextmillionai.config.json``
+    Lookup order — the data home wins, so identity and custom-adapter
+    config persist across repo clones, the same as consent / collection /
+    profile / history (all the durable state lives under the home dir):
+
+    1. ``~/.nextmillionai/nextmillionai.config.json`` (durable, authoritative)
+    2. ``./nextmillionai.config.json`` (cwd — project-local fallback)
 
     Returns the first that exists, or ``None``.
     """
-    cwd_cfg = Path.cwd() / "nextmillionai.config.json"
-    if cwd_cfg.is_file():
-        return cwd_cfg
     home_cfg = user_home() / "nextmillionai.config.json"
     if home_cfg.is_file():
         return home_cfg
+    cwd_cfg = Path.cwd() / "nextmillionai.config.json"
+    if cwd_cfg.is_file():
+        return cwd_cfg
     return None
 
 

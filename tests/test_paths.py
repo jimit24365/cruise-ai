@@ -10,6 +10,7 @@ import os
 from pathlib import PurePosixPath, PureWindowsPath
 
 from nextmillionai.paths import (
+    config_path,
     consent_path,
     data_dir,
     profile_path,
@@ -72,6 +73,44 @@ class TestDerivedPaths:
         p = consent_path()
         assert p.name == "consent.json"
         assert p.parent == data_dir()
+
+
+# ── config_path precedence (identity + custom adapters) ──────────────────────
+
+
+class TestConfigPath:
+    """The data home is authoritative so identity + custom-adapter config
+    persists across repo clones, the same as the rest of the durable state."""
+
+    def test_home_config_wins_over_cwd(self, tmp_path, monkeypatch):
+        home = tmp_path / "nma-home"
+        home.mkdir()
+        (home / "nextmillionai.config.json").write_text('{"name": "Home Identity"}')
+        cwd = tmp_path / "repo"
+        cwd.mkdir()
+        (cwd / "nextmillionai.config.json").write_text('{"name": "Cwd Identity"}')
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(home))
+        monkeypatch.chdir(cwd)
+        assert config_path() == home / "nextmillionai.config.json"
+
+    def test_cwd_is_fallback_when_no_home_config(self, tmp_path, monkeypatch):
+        home = tmp_path / "nma-home"
+        home.mkdir()  # no config file in the home dir
+        cwd = tmp_path / "repo"
+        cwd.mkdir()
+        (cwd / "nextmillionai.config.json").write_text('{"name": "Cwd Identity"}')
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(home))
+        monkeypatch.chdir(cwd)
+        assert config_path() == cwd / "nextmillionai.config.json"
+
+    def test_none_when_absent(self, tmp_path, monkeypatch):
+        home = tmp_path / "nma-home"
+        home.mkdir()
+        cwd = tmp_path / "repo"
+        cwd.mkdir()
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(home))
+        monkeypatch.chdir(cwd)
+        assert config_path() is None
 
 
 # ── Hyphenated project name resolution ───────────────────────────────────────
