@@ -31,6 +31,7 @@ registry. Mission: reverse hiring on proof-based work.
 | Contract | `docs/REFERENCES.md` | formal bibliography behind the scoring (with THESIS) |
 | **Always** | `docs/HARDLINES.md` | confirm-first registry: generated artifacts, versioned contracts, privacy boundary |
 | Contract | `docs/ADAPTERS.md` | tool coverage: every tool, versions/generations, exact reads, fidelity |
+| Roadmap | `docs/DEEP-FIDELITY.md` | plan to raise tools from counts→deep (per-tool path + reusable infra), never faking what a tool doesn't expose |
 | Contract | `docs/SYNC.md` | multi-device merge rule (dedupe by stable IDs, scores never merge) |
 | Feature | `ENRICHMENT-PROMPT.md`, `CODE-INTELLIGENCE.md` | enrichment + `--code` scan |
 | Feature | `commands/assess.md`, `commands/enrich.md`, `commands/profile.md` | Claude Code plugin slash commands (MCP) |
