@@ -1,0 +1,12 @@
+---
+description: Module ownership rules
+globs: ["**/*"]
+---
+
+# Ownership
+
+Each module has a designated owner (see CODEOWNERS).
+
+- PRs touching a single module need that module's owner review.
+- Cross-module PRs need reviews from **both** module owners.
+- Shared utilities require maintainer review.

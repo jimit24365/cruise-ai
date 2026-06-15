@@ -1,0 +1,4 @@
+{"type":"user","timestamp":1717300000,"cwd":"/Users/dev/my-project","message":{"content":"Refactor the database layer"}}
+{"type":"assistant","timestamp":1717300010,"message":{"model":"claude-sonnet-4-20250514","content":[{"type":"text","text":"I'll refactor the DB layer."},{"type":"tool_use","name":"Grep","input":{"pattern":"SELECT"}},{"type":"tool_use","name":"Glob","input":{"pattern":"**/*.py"}}]}}
+{"type":"user","timestamp":1717300030,"message":{"content":"Also check the migration files"}}
+{"type":"assistant","timestamp":1717300040,"message":{"model":"claude-sonnet-4-20250514","content":[{"type":"text","text":"Checking migrations."},{"type":"tool_use","name":"Read","input":{"path":"migrations/001.sql"}},{"type":"tool_use","name":"NotebookEdit","input":{"path":"analysis.ipynb"}}]}}

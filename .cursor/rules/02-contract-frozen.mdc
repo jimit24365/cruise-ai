@@ -1,0 +1,12 @@
+---
+description: Data contract freeze rule
+globs: ["**/profile*.json", "**/scan_results*.json", "**/schema*"]
+---
+
+# Data contract is frozen
+
+`profile.json` and `scan_results.json` shapes are frozen unless the core owner approves.
+
+- Never rename or remove fields — only add new ones.
+- Any schema change requires a core-owner review and a CHANGELOG entry.
+- Other modules consume the contract but must not alter it.

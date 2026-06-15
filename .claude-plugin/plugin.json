@@ -1,0 +1,17 @@
+{
+  "name": "nextmillionai",
+  "description": "Private, local-first AI coding profile builder. Scan your own sessions + git, measure how you build with AI, and decide exactly what to share. Two promises: nothing reaches nextmillionai by default, and the assessment is computed entirely from local files.",
+  "version": "1.0.0",
+  "author": {
+    "name": "nextmillionai contributors"
+  },
+  "homepage": "https://github.com/nextmillionai/nextmillionai",
+  "license": "Apache-2.0",
+  "keywords": ["ai-coding", "profile", "local-first", "privacy", "mcp"],
+  "mcpServers": {
+    "nextmillionai": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/nextmillionai-mcp/index.js"]
+    }
+  }
+}

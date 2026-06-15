@@ -1,0 +1,23 @@
+# Core — scoring engine & data contract
+nextmillionai/scoring.py        @anshulixyz
+nextmillionai/schema.py         @anshulixyz
+nextmillionai/docs/**           @anshulixyz
+
+# Scan — session scanner
+nextmillionai/scanner.py        @anshulixyz
+
+# Serve — HTTP server & CLI
+nextmillionai/hub.py            @anshulixyz
+nextmillionai/build_profile.py  @anshulixyz
+
+# Face — frontend
+nextmillionai/static/**         @anshulixyz
+
+# Bridge — MCP server
+nextmillionai-mcp/**            @anshulixyz
+
+# Shared / infra
+nextmillionai/paths.py          @anshulixyz
+nextmillionai/profile_data.py   @anshulixyz
+pyproject.toml                  @anshulixyz
+.github/**                      @anshulixyz

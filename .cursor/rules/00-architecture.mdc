@@ -1,0 +1,14 @@
+---
+description: Module map and dependency direction
+globs: ["**/*"]
+---
+
+# Architecture
+
+Five modules: **core** (scoring.py, schema.py, docs/), **scan** (scanner.py),
+**serve** (hub.py, build_profile.py), **face** (static/**), **bridge** (nextmillionai-mcp/**).
+
+Dependency direction: `scan -> core -> serve -> face`, with `bridge` alongside `core`.
+
+Shared utilities (paths.py, profile_data.py, __init__.py, __main__.py) are
+owned by maintainers, not any single module.

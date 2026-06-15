@@ -1,0 +1,16 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.8
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: no-sensitive-data
+        name: Block sensitive data from commits
+        entry: bash -c 'for f in "$@"; do case "$f" in data/*|*.config.json|profile.md) echo "BLOCKED: $f must not be committed"; exit 1;; esac; done' --
+        language: system
+        pass_filenames: true
+        always_run: true

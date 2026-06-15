@@ -1,0 +1,10 @@
+---
+description: Commit message and merge conventions
+globs: ["**/*"]
+---
+
+# Commit style
+
+- Follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`.
+- Use squash merge for PRs — no merge commits.
+- Branch naming: `<type>/<slug>` (e.g. `feat/mcp-tool-support`).

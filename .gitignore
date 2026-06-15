@@ -1,0 +1,42 @@
+# Generated data (contains PII from scans)
+data/
+/profile.md
+
+# Identity config (contains personal info)
+nextmillionai.config.json
+
+# Repomix
+repomix-output.*
+*.repomix.*
+
+# Node
+node_modules/
+
+# Ruff
+.ruff_cache/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.eggs/
+*.egg-info/
+*.egg
+dist/
+build/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Claude Code
+.claude/*
+!.claude/settings.json

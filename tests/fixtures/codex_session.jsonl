@@ -1,0 +1,6 @@
+{"type":"message","role":"user","content":"Refactor the auth module to use JWT tokens","created_at":1717200000,"cwd":"/Users/dev/my-app"}
+{"type":"message","role":"assistant","model":"o3","content":[{"type":"text","text":"I'll refactor the auth module."},{"type":"tool_use","name":"read_file","input":{"path":"auth.py"}}],"created_at":1717200010}
+{"type":"message","role":"user","content":"Also add refresh token support","created_at":1717200030}
+{"type":"message","role":"assistant","model":"o3","content":[{"type":"text","text":"Adding refresh tokens."},{"type":"tool_use","name":"write_file","input":{"path":"auth.py"}},{"type":"tool_use","name":"run_command","input":{"command":"pytest"}}],"created_at":1717200040}
+{"type":"message","role":"user","content":"Ship it","created_at":1717200060}
+{"type":"message","role":"assistant","model":"o4-mini","content":"Done! All tests pass.","created_at":1717200070}

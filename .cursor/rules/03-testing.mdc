@@ -1,0 +1,11 @@
+---
+description: Testing standards
+globs: ["**/test_*", "**/*_test.py", "**/tests/**"]
+---
+
+# Testing
+
+- Every new function gets a test.
+- Use `pytest` only — no unittest.
+- No mocking scanner I/O in unit tests; use fixtures instead.
+- Run `pytest -v` before opening a PR.

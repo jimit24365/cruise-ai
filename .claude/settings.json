@@ -1,0 +1,22 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/scripts/hardline_guard.py\"",
+            "timeout": 10,
+            "statusMessage": "Checking hardlines"
+          }
+        ]
+      }
+    ]
+  },
+  "worktree": {
+    "baseRef": "fresh",
+    "symlinkDirectories": ["nextmillionai-mcp/node_modules"],
+    "bgIsolation": "worktree"
+  }
+}

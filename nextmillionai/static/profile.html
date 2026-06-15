@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Builder Profile</title>
+<meta name="description" content="Your AI coding profile — behavioral signals from your local AI coding sessions + git.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/profile.css?v=0.4.7">
+<link rel="stylesheet" href="/static/css/tabs-shared.css?v=0.3.22">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="id">
+      <div class="id-main"><label class="avatar" id="pfAv" for="pfAvUpload" title="Click to upload a picture (stays on this machine)">?</label><input type="file" id="pfAvUpload" accept="image/*" style="display:none" onchange="avatarUpload(this)"><div><h1 id="pfName">&mdash;</h1><div class="who" id="pfWho"></div><div class="meta" id="pfMeta"></div></div></div>
+      <div class="head-actions">
+        <!-- live badge hidden (post-launch) -->
+      </div>
+    </div>
+    <div class="tags" id="pfTags"></div>
+    <div class="tabs">
+      <div class="seg" role="group" aria-label="Surface">
+        <button class="seg-b" id="segProfile" onclick="nmaFlipTo('profile')">Profile</button>
+        <button class="seg-b" id="segReport" onclick="nmaFlipTo('report')">Report</button>
+      </div>
+      <button class="tab" id="tabWork" onclick="nmaShowView('work')"><span class="tab-ic" data-g="repo"></span>Work</button>
+      <button class="tab" id="tabLab" onclick="nmaShowView('lab')"><span class="tab-ic" data-g="signal"></span>Lab<span class="labdot"></span></button>
+      <button class="tab" id="tabProv" onclick="nmaShowView('prov')"><span class="tab-ic" data-g="commit"></span>Provenance</button>
+      <button class="tab" id="tabShare" onclick="nmaShowView('share')"><span class="tab-ic" data-g="ship"></span>Share</button>
+    </div>
+  </header>
+
+  <!-- OVERVIEW -->
+  <div id="viewOverview">
+    <section>
+      <div class="bcard" id="pfBcard"></div>
+    </section>
+    
+    <hr class="div">
+    <section>
+      <h2>Your builder signal</h2>
+      <div class="scope" id="pfScope"></div>
+      <div class="cards" id="pfCards"></div>
+    </section>
+    <hr class="div">
+    <section>
+      <h2>How well you build with AI</h2>
+      <div class="h2sub">Click a dimension for what it measures, your evidence, and how it is scored. No percentiles &mdash; your measurements against research-anchored bands.</div>
+      <div class="dimgrid" id="pfDims"></div>
+      <div class="dim-panel" id="pfDimPanel"></div>
+      <div id="pfPrintDims" class="print-dims"></div>
+    </section>
+    <hr class="div">
+    <section class="snap-hide">
+      <h2>Languages &amp; domains you work in</h2>
+      <div class="h2sub">Where your AI coding time goes. A signal of focus, not a ranking of stacks.</div>
+      <div class="donut-row" id="pfTechDonut"></div>
+      <div class="stack-groups" id="pfStackGroups"></div>
+    </section>
+    <hr class="div">
+    <section class="snap-hide">
+      <h2>AI collaboration</h2>
+      <div class="collab" id="pfCollab"></div>
+      <div class="h2sub" style="margin-top:18px">Where your AI work happens &mdash; share of active days each surface appears, and the models behind it.</div>
+      <div class="donut-row" id="pfSurfaceDonuts"></div>
+      <div class="act-head">
+        <span class="pill" id="pfActPill"></span>
+        <span class="act-legend">
+          <i style="background:var(--hm-ai)"></i> AI-heavy
+          <i style="background:var(--hm-mix)"></i> Mixed
+          <i style="background:var(--hm-hum)"></i> Human-heavy
+          <i style="background:var(--hm-act)"></i> Activity
+          <i style="background:var(--hm-pre)"></i> Pre-AI
+          <i style="background:var(--g0)"></i> None
+        </span>
+      </div>
+      <div class="hm-wrap">
+        <div class="grid" id="pfGrid"></div>
+        <div class="hm-months" id="pfMonths"></div>
+      </div>
+      <div class="hm-scrub" id="pfScrub" style="display:none">
+        <span class="hm-scrub-l" id="pfScrubL">older</span>
+        <input type="range" id="pfScrubRange" min="0" max="0" value="0" oninput="actScrub(this.value)">
+        <span class="hm-scrub-l">today</span>
+      </div>
+      <div class="hm-tip" id="pfTip" style="display:none"></div>
+      <div class="act-stats" id="pfActStats"></div>
+    </section>
+    <hr class="div">
+    <section id="pfTimeSection" class="snap-hide" style="display:none;">
+      <h2>Tools &amp; activity over time</h2>
+      <div id="pfTimeline"></div>
+    </section>
+    <hr class="div">
+    <section id="secKinds" class="snap-hide">
+      <h2>Where you sit</h2>
+      <div class="h2sub">A map, not a ladder. Columns are what you build; rows are how much structure carries your agents. Cell shading is your real footprint across repos.</div>
+      <div id="pfPosMap"></div>
+      <div class="lev-cap" id="pfLevCap"></div>
+    </section>
+    <hr class="div">
+    <section class="snap-hide">
+      <h2>Kinds you hold</h2>
+      <div class="h2sub" id="pfKindsHeldSub"></div>
+      <div class="kheld" id="pfKindsHeld"></div>
+      <div class="kheld-panel" id="pfKindDetail"></div>
+    </section>
+    <div id="pfStrength"></div>
+  </div>
+
+  <!-- WORK -->
+  <div id="viewWork" style="display:none"><div id="workBody"></div></div>
+
+  <!-- LAB -->
+  <div id="viewLab" style="display:none"><div id="labBody"></div></div>
+
+  <!-- PROVENANCE -->
+  <div id="viewProv" style="display:none"><div id="provBody"></div></div>
+
+  <!-- SHARE -->
+  <div id="viewShare" style="display:none">
+    <div id="shareBody"></div>
+  </div>
+
+  <div class="pub-banner" id="pfPubBanner" style="display:none"><span data-g="eye"></span> Viewing as public &mdash; exactly what a stranger (or hiring agent) sees. Hidden projects, growth areas, Lab, coverage: absent. <span class="pub-x" onclick="togglePublic()">exit</span></div>
+
+  <footer>
+    <div class="brand">next<span>million</span><span class="ai">ai</span></div>
+    <div class="foot-line">Built locally from your AI coding sessions + git &middot; nothing left your machine &middot; <a href="/methodology" class="foot-link">how this profile is made &rarr;</a> &middot; <a href="/how-it-works" class="foot-link">how the commands work &rarr;</a></div>
+  </footer>
+</div>
+
+<script src="/static/js/icons.js?v=0.3.21"></script>
+<script src="/static/js/tabs-shared.js?v=0.3.22"></script>
+<script src="/static/js/profile.js?v=0.4.7" defer></script>
+</body>
+</html>

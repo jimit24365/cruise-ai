@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Docs — how it works
+    url: https://nextmillionai.org/docs
+    about: The command reference, methodology, and tool-coverage contract. Also served locally on /how-it-works when you run `report`.
+  - name: New tool adapter
+    url: https://github.com/nextmillionai/nextmillionai/blob/main/docs/ADAPTERS.md
+    about: The most-wanted contribution. Read the adapter contract and fidelity rules before opening an issue or PR.
+  - name: Security report
+    url: https://github.com/nextmillionai/nextmillionai/blob/main/SECURITY.md
+    about: Please report vulnerabilities privately, not as a public issue.
+  - name: The story behind the project
+    url: https://nextmillionai.org/story
+    about: Why nextmillionai exists and where it's going.

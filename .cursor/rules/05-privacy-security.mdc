@@ -1,0 +1,12 @@
+---
+description: Privacy and security constraints
+globs: ["**/*"]
+---
+
+# Privacy and security
+
+- Never send data off-machine. All processing is localhost-only.
+- The shareable profile is derived-only: no raw prompt text, no code blocks,
+  no file paths beyond project names.
+- No secrets in committed files.
+- The `data/` directory, `*.config.json`, and `profile.md` must never be committed.
