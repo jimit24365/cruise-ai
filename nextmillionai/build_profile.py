@@ -1997,9 +1997,20 @@ def cmd_sources(args) -> None:
     print("  " + "=" * 42)
     print()
 
+    # Map adapter names to consent groups — every wider-field tool shares
+    # the "other_tools" group (mirrors _registry.run_adapters), so looking
+    # up consent by adapter.name would wrongly report consented tools as
+    # disabled.
+    _consent_keys = {
+        "claude_code": "claude_code",
+        "cursor": "cursor",
+        "codex": "codex",
+        "claude_desktop": "claude_desktop",
+    }
+
     # Session adapters
     for adapter in get_session_adapters():
-        consent_key = adapter.name
+        consent_key = _consent_keys.get(adapter.name, "other_tools")
         if not enabled.get(consent_key, False):
             print(f"  {adapter.name.replace('_', ' ').title()}")
             print("    Status:     DISABLED (consent)")
@@ -2058,7 +2069,8 @@ def cmd_sources(args) -> None:
         # Collect session paths (quick re-scan of session adapters for paths)
         project_paths: list[str] = []
         for adapter in get_session_adapters():
-            if not enabled.get(adapter.name, False) or not adapter.detect():
+            consent_key = _consent_keys.get(adapter.name, "other_tools")
+            if not enabled.get(consent_key, False) or not adapter.detect():
                 continue
             for s in adapter.scan():
                 if s.project_path and s.project_path not in project_paths:
