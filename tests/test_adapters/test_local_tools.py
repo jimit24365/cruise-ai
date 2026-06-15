@@ -270,6 +270,92 @@ def test_antigravity_detects_vscode_state_dir(tmp_path):
     assert a.raw_data()["conversations"] == 0
 
 
+# ── OpenCode (deep — SQLite + legacy JSON) ──────────────────────────────────
+
+
+def test_opencode_filebased_sessions(tmp_path):
+    from nextmillionai.adapters.local_tools import OpenCodeAdapter
+
+    base = tmp_path / ".local" / "share" / "opencode" / "storage"
+    sdir = base / "session" / "projhash"
+    sdir.mkdir(parents=True)
+    (sdir / "ses_1.json").write_text(
+        json.dumps(
+            {
+                "id": "ses_1",
+                "directory": "/proj/app",
+                "time": {"created": 1750000000000, "updated": 1750000600000},
+                "title": "build the thing",
+            }
+        )
+    )
+    mdir = base / "message" / "ses_1"
+    mdir.mkdir(parents=True)
+    (mdir / "m1.json").write_text(json.dumps({"role": "user", "modelID": "claude-sonnet-4-6"}))
+    (mdir / "m2.json").write_text(json.dumps({"role": "assistant"}))
+    (mdir / "m3.json").write_text(json.dumps({"role": "user"}))
+
+    a = OpenCodeAdapter(home=tmp_path)
+    assert a.detect() is True
+    sessions = a.scan()
+    assert len(sessions) == 1
+    s = sessions[0]
+    assert s.user_msgs == 2
+    assert s.assistant_msgs == 1
+    assert s.project_path == "/proj/app"
+    assert s.models == ["claude-sonnet-4-6"]
+    assert a.raw_data()["fidelity"] == "deep"
+
+
+def test_opencode_sqlite_sessions(tmp_path):
+    import sqlite3
+
+    from nextmillionai.adapters.local_tools import OpenCodeAdapter
+
+    root = tmp_path / ".local" / "share" / "opencode"
+    root.mkdir(parents=True)
+    db = root / "opencode.db"
+    con = sqlite3.connect(str(db))
+    con.executescript(
+        """
+        CREATE TABLE session (
+          id TEXT PRIMARY KEY, title TEXT, directory TEXT,
+          created_at INTEGER, updated_at INTEGER
+        );
+        CREATE TABLE message (
+          id TEXT PRIMARY KEY, session_id TEXT, role TEXT, created_at INTEGER
+        );
+        INSERT INTO session VALUES ('s1','t','/proj/x',1750000000000,1750000600000);
+        INSERT INTO message VALUES ('m1','s1','user',1750000000000);
+        INSERT INTO message VALUES ('m2','s1','assistant',1750000100000);
+        INSERT INTO message VALUES ('m3','s1','user',1750000200000);
+        """
+    )
+    con.commit()
+    con.close()
+
+    a = OpenCodeAdapter(home=tmp_path)
+    assert a.detect() is True
+    sessions = a.scan()
+    assert len(sessions) == 1
+    s = sessions[0]
+    assert s.user_msgs == 2
+    assert s.assistant_msgs == 1
+    assert s.project_path == "/proj/x"
+    assert s.started_at is not None
+    assert a.raw_data()["fidelity"] == "deep"
+
+
+def test_opencode_present_but_empty(tmp_path):
+    from nextmillionai.adapters.local_tools import OpenCodeAdapter
+
+    (tmp_path / ".local" / "share" / "opencode" / "storage" / "session").mkdir(parents=True)
+    a = OpenCodeAdapter(home=tmp_path)
+    assert a.detect() is True
+    assert a.scan() == []
+    assert a.raw_data()["sessions"] == 0
+
+
 # ── Custom adapters (nextmillionai.config.json) ──────────────────────────────
 
 

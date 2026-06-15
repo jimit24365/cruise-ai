@@ -54,6 +54,24 @@ def _safe_json(path: Path):
         return None
 
 
+def _epoch_to_dt(value) -> datetime | None:
+    """Convert a seconds- or milliseconds-epoch number to a UTC datetime."""
+    if value is None:
+        return None
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return None
+    if v <= 0:
+        return None
+    if v > 1e12:  # milliseconds
+        v /= 1000.0
+    try:
+        return datetime.fromtimestamp(v, tz=timezone.utc)
+    except (OverflowError, OSError, ValueError):
+        return None
+
+
 def _vscode_storage_roots(home: Path) -> list:
     """VS Code-family user dirs across variants + platforms.
 
@@ -411,6 +429,197 @@ class CopilotChatAdapter(_LocalToolAdapter):
         raw = {"chats": len(sessions), "note": "Chat sessions from VS Code workspaceStorage."}
         _log(f"Copilot Chat: {len(sessions)} chats")
         return sessions, raw
+
+
+# ── OpenCode (deep: real sessions in SQLite or legacy JSON store) ───────────
+
+
+class OpenCodeAdapter(_LocalToolAdapter):
+    """OpenCode (sst/opencode) — terminal AI coding agent. Stores real
+    sessions with timestamps + message counts, either in a SQLite database
+    (``opencode.db``) or the legacy file store
+    (``storage/session/<projectHash>/<id>.json`` + ``storage/message/<id>/``).
+    Both are read locally with the stdlib (zero deps), read-only. Deep: real
+    session boundaries, timestamps, per-role message counts, project paths.
+    """
+
+    tool_id = "opencode"
+    label = "OpenCode"
+    fidelity = "deep"
+
+    def _roots(self) -> list:
+        roots = []
+        for c in (
+            self.home / ".local" / "share" / "opencode",  # XDG default (macOS + Linux)
+            self.home / ".opencode",  # configured/legacy location
+            self.home / "Library" / "Application Support" / "opencode",  # macOS variant
+        ):
+            if c.is_dir() and c not in roots:
+                roots.append(c)
+        return roots
+
+    def detect(self) -> bool:
+        for r in self._roots():
+            if (r / "opencode.db").is_file() or (r / "storage" / "session").is_dir():
+                return True
+        return False
+
+    def _scan_impl(self) -> tuple:
+        by_id: dict = {}
+        for root in self._roots():
+            got: list = []
+            if (root / "opencode.db").is_file():
+                got = self._scan_sqlite(root / "opencode.db")
+            if not got and (root / "storage" / "session").is_dir():
+                got = self._scan_filebased(root)
+            for s in got:
+                by_id[s.session_id] = s
+        sessions = list(by_id.values())
+        raw = {
+            "sessions": len(sessions),
+            "note": (
+                "Sessions from OpenCode's local store (opencode.db, or the legacy "
+                "storage/session JSON) — timestamps + per-role message counts parsed."
+            ),
+        }
+        _log(f"OpenCode: {len(sessions)} sessions")
+        return sessions, raw
+
+    def _scan_filebased(self, root: Path) -> list:
+        sessions: list = []
+        sdir = root / "storage" / "session"
+        mroot = root / "storage" / "message"
+        try:
+            session_files = sorted(sdir.rglob("*.json"))
+        except OSError:
+            return sessions
+        for sf in session_files:
+            data = _safe_json(sf)
+            if not isinstance(data, dict):
+                continue
+            sid = str(data.get("id") or sf.stem)
+            time_val = data.get("time")
+            t: dict = time_val if isinstance(time_val, dict) else {}
+            created = t.get("created") or data.get("created")
+            updated = t.get("updated") or data.get("updated")
+            project = data.get("directory") or data.get("cwd") or None
+
+            user_msgs = assistant_msgs = 0
+            models: set = set()
+            mdir = mroot / sid
+            if mdir.is_dir():
+                for mf in mdir.glob("*.json"):
+                    m = _safe_json(mf)
+                    if not isinstance(m, dict):
+                        continue
+                    role = (m.get("role") or "").lower()
+                    if role == "user":
+                        user_msgs += 1
+                    elif role == "assistant":
+                        assistant_msgs += 1
+                    model = m.get("modelID") or m.get("model")
+                    if model:
+                        models.add(str(model))
+
+            started = _epoch_to_dt(created) or _mtime_dt(sf)
+            ended = _epoch_to_dt(updated) or started
+            sessions.append(
+                Session(
+                    tool="opencode",
+                    session_id=f"opencode:{sid}",
+                    project_path=project,
+                    started_at=started,
+                    ended_at=ended if (started and ended and ended > started) else started,
+                    user_msgs=user_msgs,
+                    assistant_msgs=assistant_msgs,
+                    models=sorted(models),
+                )
+            )
+        return sessions
+
+    def _scan_sqlite(self, db: Path) -> list:
+        """Read sessions + message counts from opencode.db, tolerant to the
+        singular/plural table names and column-name drift across versions."""
+        import sqlite3
+
+        sessions: list = []
+        try:
+            con = sqlite3.connect(f"file:{db}?mode=ro&immutable=1", uri=True, timeout=5)
+        except Exception:
+            return sessions
+        try:
+            con.row_factory = sqlite3.Row
+            tables = {
+                r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            }
+            sess_tbl = next((t for t in ("session", "sessions") if t in tables), None)
+            if not sess_tbl:
+                return sessions
+            msg_tbl = next((t for t in ("message", "messages") if t in tables), None)
+
+            scols = {r[1] for r in con.execute(f"PRAGMA table_info('{sess_tbl}')")}
+            if "id" not in scols:
+                return sessions
+            created_col = next(
+                (c for c in ("created_at", "created", "time_created", "createdAt") if c in scols),
+                None,
+            )
+            updated_col = next(
+                (c for c in ("updated_at", "updated", "time_updated", "updatedAt") if c in scols),
+                None,
+            )
+            dir_col = next(
+                (c for c in ("directory", "cwd", "working_directory", "path") if c in scols),
+                None,
+            )
+
+            # Per-session, per-role message counts (best-effort).
+            counts: dict = {}
+            if msg_tbl:
+                mcols = {r[1] for r in con.execute(f"PRAGMA table_info('{msg_tbl}')")}
+                sid_col = next(
+                    (c for c in ("session_id", "sessionID", "sessionId") if c in mcols), None
+                )
+                if sid_col and "role" in mcols:
+                    q = (
+                        f"SELECT {sid_col} AS sid, role, COUNT(*) AS n "
+                        f"FROM '{msg_tbl}' GROUP BY {sid_col}, role"
+                    )
+                    for r in con.execute(q):
+                        u, a = counts.get(r["sid"], (0, 0))
+                        role = (r["role"] or "").lower()
+                        if role == "user":
+                            u += r["n"]
+                        elif role == "assistant":
+                            a += r["n"]
+                        counts[r["sid"]] = (u, a)
+
+            select_cols = ["id"]
+            for c in (created_col, updated_col, dir_col):
+                if c:
+                    select_cols.append(c)
+            rows = con.execute(f"SELECT {', '.join(select_cols)} FROM '{sess_tbl}'")
+            for row in rows:
+                sid = str(row["id"])
+                started = _epoch_to_dt(row[created_col]) if created_col else None
+                ended = _epoch_to_dt(row[updated_col]) if updated_col else None
+                u, a = counts.get(sid, (0, 0))
+                sessions.append(
+                    Session(
+                        tool="opencode",
+                        session_id=f"opencode:{sid}",
+                        project_path=(row[dir_col] if dir_col else None) or None,
+                        started_at=started,
+                        ended_at=ended if (started and ended and ended > started) else started,
+                        user_msgs=u,
+                        assistant_msgs=a,
+                    )
+                )
+        except Exception:
+            return sessions
+        finally:
+            con.close()
+        return sessions
 
 
 # ── Windsurf (counts: cascade store is binary — never invented) ─────────────
@@ -826,6 +1035,7 @@ def get_local_tool_adapters(home: Path | None = None) -> list:
         ClineAdapter(home=home),
         ContinueAdapter(home=home),
         CopilotChatAdapter(home=home),
+        OpenCodeAdapter(home=home),
         WindsurfAdapter(home=home),
         ZedAdapter(home=home),
         JetBrainsAIAdapter(home=home),

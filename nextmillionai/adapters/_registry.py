@@ -41,7 +41,7 @@ def get_session_adapters() -> list[Adapter]:
         # Experimental, low-fidelity, opt-in — default consent is OFF
         ClaudeDesktopAdapter(),
     ]
-    # Wider tool field (Aider/Cline/Continue/Copilot/Windsurf/Zed/
+    # Wider tool field (Aider/Cline/Continue/Copilot/OpenCode/Windsurf/Zed/
     # JetBrains/Cody/Antigravity) + user-registered custom adapters — one
     # consent group ("other_tools"), per-adapter fidelity declared in raw data.
     adapters.extend(get_local_tool_adapters())

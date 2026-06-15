@@ -107,6 +107,13 @@ TOOL_COVERAGE: dict[str, list[dict]] = {
             "reads": "conversations (parsed) + thread counts",
         },
         {
+            "id": "opencode",
+            "label": "OpenCode",
+            "tier": "deep",
+            "reads": "opencode.db (or legacy JSON store): sessions, per-role "
+            "message counts, timestamps, project paths",
+        },
+        {
             "id": "windsurf",
             "label": "Windsurf",
             "tier": "counts",

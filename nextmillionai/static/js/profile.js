@@ -501,7 +501,7 @@ function render(P){
         toolDays[tool]=(toolDays[tool]||0)+1;
       });
     });
-    var toolLabels={claude_code:'Claude Code',cursor:'Cursor',codex:'Codex CLI',claude_desktop:'Claude Desktop',aider:'Aider',cline:'Cline','continue':'Continue.dev',copilot_chat:'Copilot Chat',windsurf:'Windsurf',zed_ai:'Zed AI',jetbrains_ai:'JetBrains AI',cody:'Cody',antigravity:'Antigravity'};
+    var toolLabels={claude_code:'Claude Code',cursor:'Cursor',codex:'Codex CLI',claude_desktop:'Claude Desktop',aider:'Aider',cline:'Cline','continue':'Continue.dev',copilot_chat:'Copilot Chat',windsurf:'Windsurf',zed_ai:'Zed AI',jetbrains_ai:'JetBrains AI',cody:'Cody',antigravity:'Antigravity',opencode:'OpenCode'};
     var surfSegs=Object.keys(toolDays).sort(function(a,b){return toolDays[b]-toolDays[a];})
       .map(function(k){return {label:toolLabels[k]||k,value:toolDays[k]};});
     var byModel=(P.modelsSummary||{}).byModel||{};

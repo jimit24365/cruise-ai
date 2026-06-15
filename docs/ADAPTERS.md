@@ -101,6 +101,14 @@ macOS `~/Library/Application Support/Zed/`, Linux `~/.local/share/zed/`.
 `conversations/*.json` parsed (roles); `threads/threads.db` **counted
 only** (schema is internal).
 
+### OpenCode — `deep`
+`~/.local/share/opencode/` (also `~/.opencode/`, macOS
+`~/Library/Application Support/opencode/`). Reads `opencode.db` (SQLite,
+read-only) — session + message tables, tolerant to singular/plural names
+and timestamp-column drift — or the legacy file store
+(`storage/session/<projectHash>/<id>.json` + `storage/message/<id>/`).
+Derived: sessions, per-role message counts, timestamps, project paths.
+
 ### Windsurf — `counts`
 `~/.codeium/windsurf/` + app dirs. Cascade store is a binary internal
 format — files counted, last-activity noted, sessions marked

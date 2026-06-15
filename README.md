@@ -42,8 +42,8 @@ deep **report** from one assessment JSON. No account, no upload, no black box.
 <summary><b>Table of contents</b></summary>
 
 - [See it in 10 seconds](#see-it-in-10-seconds)
-- [nextmillionai vs Paxel](#nextmillionai-vs-paxel)
 - [Your own profile in one command](#your-own-profile-in-one-command)
+- [nextmillionai vs Paxel](#nextmillionai-vs-paxel)
 - [What it measures](#what-it-measures)
 - [Connecting your work](#connecting-your-work)
 - [Running the server](#running-the-server)
@@ -71,22 +71,6 @@ from the clone — no install step, no build.
 > [!NOTE]
 > A one-line `pipx install nextmillionai` / `uvx nextmillionai` is coming in a
 > later release. For now, git clone is the whole install.
-
-## nextmillionai vs Paxel
-
-Same goal — a credible profile of how you build with AI. Opposite architecture.
-
-| | **nextmillionai** | Paxel |
-|---|---|---|
-| Where it runs | Your machine | Their servers |
-| Your code & prompts | Never leave your disk | Uploaded |
-| Scoring methodology | Open + versioned + citable | Closed |
-| What you get | The assessment JSON + both views, yours to host | A hosted profile |
-| Ranking / percentiles | None — a map, never a ladder | — |
-| License & price | Apache-2.0, free | — |
-
-Why we built it this way: **[nextmillionai.org/why](https://nextmillionai.org/why)**
-· the longer story: **[nextmillionai.org/story](https://nextmillionai.org/story)**.
 
 ## Your own profile in one command
 
@@ -119,6 +103,22 @@ revocable (`enrich --revoke`), and it **can never change a score** — models wr
 words here, never numbers. A profile without enrich is a dashboard; with it, it
 reads like a reference letter backed by measurements.
 
+## nextmillionai vs Paxel
+
+Same goal — a credible profile of how you build with AI. Opposite architecture.
+
+| | **nextmillionai** | Paxel |
+|---|---|---|
+| Where it runs | Your machine | Their servers |
+| Your code & prompts | Never leave your disk | Uploaded |
+| Scoring methodology | Open + versioned + citable | Closed |
+| What you get | The assessment JSON + both views, yours to host | A hosted profile |
+| Ranking / percentiles | None — a map, never a ladder | — |
+| License & price | Apache-2.0, free | — |
+
+Why we built it this way: **[nextmillionai.org/why](https://nextmillionai.org/why)**
+· the longer story: **[nextmillionai.org/story](https://nextmillionai.org/story)**.
+
 ## What it measures
 
 Six dimensions, each scored as plain arithmetic over counted local signals against
@@ -149,7 +149,7 @@ rather than a fabricated number.
 | Tier | Tools |
 |---|---|
 | First-class | Claude Code, Cursor (full composer history, all storage generations), Codex CLI, git |
-| Wider field | VS Code (Copilot Chat / Cline / Cody), Continue.dev, Aider, Windsurf, Zed AI, Antigravity, JetBrains AI |
+| Wider field | VS Code (Copilot Chat / Cline / Cody), Continue.dev, Aider, OpenCode, Windsurf, Zed AI, Antigravity, JetBrains AI |
 | Local models | Ollama, LM Studio, llama.cpp (GGUF caches) |
 
 Every adapter declares its **fidelity** (deep / counts / presence) in Provenance —

@@ -42,7 +42,7 @@ never invent sessions and never move a score. Full per-layout detail is in
 
 | Tool | Tier | What is read | Never touched |
 |---|---|---|---|
-| Aider, Cline, Continue.dev, Copilot Chat, Zed AI | deep | each tool's own local session files: session boundaries, message counts, timestamps, models | message bodies beyond word/role counts, credentials |
+| Aider, Cline, Continue.dev, Copilot Chat, Zed AI, OpenCode | deep | each tool's own local session files (OpenCode: opencode.db or legacy JSON store): session boundaries, message counts, timestamps, models | message bodies beyond word/role counts, credentials |
 | Windsurf, Cody, Antigravity | counts | store/trajectory file counts + last-activity timestamp | session contents (format not parsed) |
 | JetBrains AI | presence | IDE config markers (installed only) | chat history (not exposed locally) |
 
