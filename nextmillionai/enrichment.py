@@ -567,22 +567,30 @@ def ingest_enrichment(result: dict, profile_path: Path, source: str = "agent") -
 
 
 def revoke_enrichment(profile_path: Path) -> tuple[bool, str]:
-    """Remove any ingested enrichment; the next assess rebuilds heuristic text."""
+    """Remove agent-written narrative; restore heuristic text.
+
+    Durable: the restored block is stamped ``source: heuristic`` so a later
+    rescan keeps it heuristic (the build only preserves ``source: agent``).
+    Honest messaging: distinguishes actually removing agent narrative from
+    the no-op case where the text was already heuristic.
+    """
     if not profile_path.exists():
         return False, f"Profile not found at {profile_path}"
 
     with open(profile_path) as f:
         profile = json.load(f)
 
-    if "enrichment" not in profile:
-        return True, "No enrichment present — nothing to revoke."
+    current = profile.get("enrichment")
+    was_agent = isinstance(current, dict) and current.get("source", "agent") == "agent"
 
     profile["enrichment"] = build_heuristic_enrichment(profile)
 
     with open(profile_path, "w") as f:
         json.dump(profile, f, indent=2, default=str)
 
-    return True, "Enrichment revoked; heuristic text restored."
+    if was_agent:
+        return True, "Enrichment revoked — agent narrative removed, heuristic text restored."
+    return True, "No agent enrichment was present; heuristic text is already in place."
 
 
 def _utc_now_iso() -> str:

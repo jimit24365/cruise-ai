@@ -275,7 +275,7 @@ function renderTimeline(data){
   });
   var months=Object.keys(byMonth).sort().slice(-12);
   var maxU=Math.max.apply(null,months.map(function(m){return byMonth[m].sessions+byMonth[m].commits;}).concat([1]));
-  var toolLabels={claude_code:'Claude Code',cursor:'Cursor',codex:'Codex',aider:'Aider',cline:'Cline','continue':'Continue',copilot_chat:'Copilot',zed_ai:'Zed',git:'git'};
+  var toolLabels={claude_code:'Claude Code',cursor:'Cursor',codex:'Codex',aider:'Aider',cline:'Cline','continue':'Continue',copilot_chat:'Copilot',zed_ai:'Zed',antigravity:'Antigravity',git:'git'};
 
   var h='<div class="tl-strip">';
   months.forEach(function(m){
@@ -474,7 +474,7 @@ function renderShare(){
 
     // 8. Publish / network
     +'<div class="share-card sc-full" id="shareNetwork">'
-      +'<div class="sc-t"><span data-g="signal"></span> Publish to the network</div>'
+      +'<div class="sc-t"><span data-g="signal"></span> Publish to the network <span class="fid">coming soon</span></div>'
       +'<div class="sc-d">Reverse hiring — coming soon. Nothing is shared unless you explicitly publish.</div>'
       +'<div class="net-snip">'
         +'<div class="ns-step"><div class="ns-label">your signal</div><div class="ns-card"><div class="ns-row"><div class="ns-av"></div><div class="ns-nm">builder · anon</div></div><div class="ns-bar"><i style="width:82%"></i></div><div class="ns-bar"><i style="width:64%"></i></div><div class="ns-chips"><span>Agent Builder</span><span>signals only</span></div></div></div>'

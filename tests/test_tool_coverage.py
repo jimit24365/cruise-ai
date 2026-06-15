@@ -1,6 +1,6 @@
 """The documented tool coverage must match what the engine actually reads.
 
-The engine reads 16 sources (4 first-class + 8 wider-field + 3 local runtimes +
+The engine reads 17 sources (4 first-class + 9 wider-field + 3 local runtimes +
 Claude Desktop + custom adapters), but the methodology copy used to say only
 "Claude Code, Cursor, Codex". These tests pin the canonical TOOL_COVERAGE in
 methodology_spec.py to the adapter registry: every session adapter the registry

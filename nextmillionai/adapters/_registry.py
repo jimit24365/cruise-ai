@@ -42,8 +42,8 @@ def get_session_adapters() -> list[Adapter]:
         ClaudeDesktopAdapter(),
     ]
     # Wider tool field (Aider/Cline/Continue/Copilot/Windsurf/Zed/
-    # JetBrains/Cody) + user-registered custom adapters — one consent
-    # group ("other_tools"), per-adapter fidelity declared in raw data.
+    # JetBrains/Cody/Antigravity) + user-registered custom adapters — one
+    # consent group ("other_tools"), per-adapter fidelity declared in raw data.
     adapters.extend(get_local_tool_adapters())
     adapters.extend(load_custom_adapters())
     return adapters

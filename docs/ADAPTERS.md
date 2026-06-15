@@ -110,6 +110,18 @@ format — files counted, last-activity noted, sessions marked
 `globalStorage/sourcegraph.cody-ai/` in any host. Storage files counted;
 chat format is account-coupled, not parsed.
 
+### Antigravity — `counts`
+Google's agentic IDE (a VS Code fork from the former Windsurf team).
+Trajectories live as per-session Protobuf files at
+`~/.gemini/antigravity/conversations/*.pb` with plan/walkthrough "brain"
+artifacts under `~/.gemini/antigravity/brain/`; the sidebar index is a VS
+Code `state.vscdb` under an `Antigravity` / `Antigravity IDE`
+`User/globalStorage/` dir (macOS `~/Library/Application Support/`, Linux
+`~/.config/`, Windows `%APPDATA%/`). The `.pb` store is not a parseable
+session log — trajectories + brain tasks are counted, last-activity noted,
+sessions marked **insufficient** (never reverse-engineered into fake
+sessions), same as the sibling Cascade store.
+
 ### JetBrains AI Assistant — `presence`
 IDE config markers (`options/AIAssistant.xml`, `plugins/ml-llm`) under
 macOS `~/Library/Application Support/JetBrains/<IDE>/`, Linux

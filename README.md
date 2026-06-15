@@ -149,7 +149,7 @@ rather than a fabricated number.
 | Tier | Tools |
 |---|---|
 | First-class | Claude Code, Cursor (full composer history, all storage generations), Codex CLI, git |
-| Wider field | VS Code (Copilot Chat / Cline / Cody), Continue.dev, Aider, Windsurf, Zed AI, JetBrains AI |
+| Wider field | VS Code (Copilot Chat / Cline / Cody), Continue.dev, Aider, Windsurf, Zed AI, Antigravity, JetBrains AI |
 | Local models | Ollama, LM Studio, llama.cpp (GGUF caches) |
 
 Every adapter declares its **fidelity** (deep / counts / presence) in Provenance —

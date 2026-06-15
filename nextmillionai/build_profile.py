@@ -1305,6 +1305,49 @@ def cmd_assess(args, *, _show_intro: bool = True) -> None:
     print()
 
 
+def _existing_profile_notice() -> str | None:
+    """A one-paragraph notice when a profile already exists on this machine.
+
+    State lives in ``~/.nextmillionai/`` — independent of the repo clone —
+    so a fresh clone still shows the previous profile. Surfacing the build
+    date makes that explicit instead of looking like stale data, and points
+    at the two ways to change it (rescan / reset)."""
+    from nextmillionai.paths import profile_path
+
+    p = profile_path()
+    if not p.is_file():
+        return None
+    try:
+        with open(p) as f:
+            prof = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return None
+
+    meta = prof.get("assessment") or {}
+    when = meta.get("generated_at")
+    sessions = meta.get("sessions")
+
+    when_label = "earlier"
+    if isinstance(when, str):
+        try:
+            from datetime import datetime
+
+            dt = datetime.fromisoformat(when.replace("Z", "+00:00"))
+            when_label = dt.astimezone().strftime("%b %d, %Y at %H:%M")
+        except Exception:
+            when_label = when
+
+    lines = [
+        f"  You already have a profile on this machine (built {when_label}"
+        + (f", {sessions} sessions).".rstrip() if isinstance(sessions, int) else ")."),
+        "  It lives in ~/.nextmillionai/ — shared across every clone, so this",
+        "  is your existing profile, not a fresh scan of this folder.",
+        f"  Rebuild from your latest data: {cli_invocation()} assess --rescan",
+        f"  Wipe everything and start over: {cli_invocation()} reset",
+    ]
+    return "\n".join(lines)
+
+
 def cmd_start(args) -> None:
     """The whole pipeline, one command: consent gate on first run,
     assess (cache-aware unless --rescan), then serve both views.
@@ -1319,6 +1362,15 @@ def cmd_start(args) -> None:
             "stops at the privacy line — nothing leaves this machine",
         )
     )
+
+    # If a profile already exists, say so plainly — state persists in
+    # ~/.nextmillionai/ across clones, which otherwise looks like stale data.
+    if not getattr(args, "rescan", False):
+        notice = _existing_profile_notice()
+        if notice:
+            print()
+            print(notice)
+
     cmd_assess(args, _show_intro=False)
     cmd_report(args)
 
@@ -1441,6 +1493,8 @@ def cmd_enrich(args) -> None:
             return
         success, msg = revoke_enrichment(profile_path())
         print(f"  {msg}")
+        if success:
+            print("  If a report tab is open, reload it (Cmd/Ctrl+R) to see the change.")
         return
 
     # ── Submit path: validate + ingest a result ──
@@ -1783,6 +1837,102 @@ def cmd_sync(args) -> None:
     print()
 
 
+def cmd_reset(args) -> None:
+    """Delete local nextmillionai data and start fresh.
+
+    A clean clone still shows the previous profile because every bit of
+    state lives in ``~/.nextmillionai/`` (independent of where the repo is
+    cloned). ``reset`` is the explicit, user-initiated way to forget it.
+
+    By default it wipes ``~/.nextmillionai/data/`` — profile, scan cache,
+    consent, collection scope, visibility, enrichment, AND the durable
+    history ledger (included on purpose: the user asked to forget
+    everything). ``--all`` also removes the rest of ``~/.nextmillionai/``
+    (a self-hosted registry store + the local sync-repo clone + user
+    config). All local — nothing leaves the machine.
+    """
+    import shutil
+
+    from nextmillionai import cliui as _ui
+    from nextmillionai.paths import data_dir, user_home
+
+    wipe_all = getattr(args, "all", False)
+    non_interactive = getattr(args, "yes", False)
+
+    home = user_home()
+    data = data_dir()
+
+    print()
+    print(
+        _ui.intro(
+            "reset",
+            "delete local data and start fresh",
+            "removes files under ~/.nextmillionai/ — nothing is sent anywhere",
+        )
+    )
+    print()
+
+    target = home if wipe_all else data
+    if not target.exists() or not any(target.iterdir()):
+        print("  Nothing to reset — no local data found.")
+        print()
+        return
+
+    if wipe_all:
+        print(f"  This permanently deletes EVERYTHING under:\n    {home}")
+        print("  (profile, scan cache, consent, history ledger, sync clone,")
+        print("   self-hosted registry store, and user config)")
+    else:
+        print(f"  This permanently deletes your local data under:\n    {data}")
+        print("  (profile, scan cache, consent, collection scope, visibility,")
+        print("   enrichment, and the durable history ledger)")
+    print()
+
+    # A still-live publish lives on the registry, not locally — a local
+    # wipe can't reach it. Flag it so the user revokes it explicitly.
+    # (Path computed locally; importing network.py here would trip the
+    # assessment-path privacy guard.)
+    if (data / "publish_state.json").is_file():
+        print("  Note: you have a published profile. A reset only clears local")
+        print(f"  state — revoke the registry copy first: {cli_invocation()} unpublish")
+        print()
+
+    if not non_interactive:
+        answer = input("  Type 'reset' to confirm (anything else cancels): ").strip()
+        if answer.lower() != "reset":
+            print("  Cancelled. Nothing was deleted.")
+            print()
+            return
+
+    removed = 0
+    if wipe_all:
+        # Remove the whole home tree, then recreate the empty root so the
+        # next command has a place to write.
+        for entry in sorted(home.iterdir()):
+            try:
+                if entry.is_dir() and not entry.is_symlink():
+                    shutil.rmtree(entry, ignore_errors=True)
+                else:
+                    entry.unlink(missing_ok=True)
+                removed += 1
+            except OSError:
+                pass
+    else:
+        for entry in sorted(data.iterdir()):
+            try:
+                if entry.is_dir() and not entry.is_symlink():
+                    shutil.rmtree(entry, ignore_errors=True)
+                else:
+                    entry.unlink(missing_ok=True)
+                removed += 1
+            except OSError:
+                pass
+
+    print(f"  Done — removed {removed} item{'s' if removed != 1 else ''}.")
+    print(f"  Start fresh with: {cli_invocation()} start")
+    print()
+
+
 def cmd_unpublish(args) -> None:
     """Revoke a network publish — removes the record from the registry."""
     from nextmillionai.network import unpublish
@@ -2106,6 +2256,17 @@ def main():
         help="Revoke a publish: remove your profile from the registry",
     )
 
+    reset = subparsers.add_parser(
+        "reset",
+        help="Delete local data and start fresh (profile, cache, consent, history)",
+    )
+    reset.add_argument(
+        "--all",
+        action="store_true",
+        help="Also remove the rest of ~/.nextmillionai/ (registry store, sync clone, config)",
+    )
+    reset.add_argument("--yes", "-y", action="store_true", help="Skip the confirmation prompt")
+
     sync = subparsers.add_parser(
         "sync",
         help="Multi-device sync via YOUR OWN private git repo (derived-only, revocable)",
@@ -2182,6 +2343,7 @@ def main():
         "export",
         "publish",
         "unpublish",
+        "reset",
         "network",
         "sync",
     ]
@@ -2216,6 +2378,8 @@ def main():
         cmd_publish(args)
     elif args.command == "unpublish":
         cmd_unpublish(args)
+    elif args.command == "reset":
+        cmd_reset(args)
     elif args.command == "network":
         cmd_network(args)
     elif args.command == "sync":
@@ -2265,4 +2429,11 @@ def _handle_legacy(args) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print(
+            "\n  Stopped. Nothing was sent anywhere — your data stayed local.",
+            file=sys.stderr,
+        )
+        sys.exit(130)

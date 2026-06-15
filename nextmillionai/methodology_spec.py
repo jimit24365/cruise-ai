@@ -119,6 +119,13 @@ TOOL_COVERAGE: dict[str, list[dict]] = {
             "reads": "storage file counts + last activity (sessions insufficient)",
         },
         {
+            "id": "antigravity",
+            "label": "Antigravity",
+            "tier": "counts",
+            "reads": "trajectory (.pb) + brain-task counts + last activity "
+            "(Protobuf store; sessions insufficient)",
+        },
+        {
             "id": "jetbrains_ai",
             "label": "JetBrains AI",
             "tier": "presence",

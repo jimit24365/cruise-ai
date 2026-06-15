@@ -25,7 +25,7 @@ ALL_SOURCES = {
     "git": "Git (commit history + dependency names)",
     "other_tools": (
         "Other AI tools' local logs (VS Code: Copilot Chat / Cline / Cody, "
-        "plus Continue, Aider, Windsurf, Zed, JetBrains AI + custom adapters)"
+        "plus Continue, Aider, Windsurf, Zed, Antigravity, JetBrains AI + custom adapters)"
     ),
     "local_models": "Local model runtimes (Ollama, LM Studio, llama.cpp GGUF caches)",
     "claude_desktop": "Claude Desktop (experimental, low-fidelity: install + MCP config only)",
@@ -115,7 +115,7 @@ def print_disclosure() -> None:
     print("    Never:   Diffs, file contents, source code, credentials")
     print()
     print("  Other AI tools — VS Code (Copilot Chat / Cline / Cody),")
-    print("  Continue, Aider, Windsurf, Zed, JetBrains AI, custom adapters")
+    print("  Continue, Aider, Windsurf, Zed, Antigravity, JetBrains AI, custom adapters")
     print("    Read:    Each tool's own local logs/storage (VS Code")
     print("             globalStorage/workspaceStorage, ~/.continue, repo")
     print("             .aider history, Zed conversations, ...)")

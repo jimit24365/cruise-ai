@@ -452,6 +452,22 @@
     </div>
   </div>
 
+  <div class="cmd" id="c-reset">
+    <div class="syn"><span class="cliP">python3 -m nextmillionai</span> <b>reset</b> <span class="opt">[--all] [--yes]</span></div>
+    <div class="bd">
+      <p class="desc">Deletes your local data and starts fresh. All state
+      lives in <code>~/.nextmillionai/</code> (independent of where the repo
+      is cloned), so a clean clone still shows your previous profile — this
+      is the explicit way to forget it. Wipes profile, scan cache, consent,
+      collection scope, visibility, enrichment, and the durable history
+      ledger; <code>--all</code> also removes the self-hosted registry store,
+      sync clone, and config. Confirmation required unless <code>--yes</code>.</p>
+      <div class="cav"><b>caveats</b>Local only — nothing is sent anywhere. If
+      you published, run <code>unpublish</code> first; a local wipe can't
+      reach the registry copy.</div>
+    </div>
+  </div>
+
   <div class="cmd" id="c-network">
     <div class="syn"><span class="cliP">python3 -m nextmillionai</span> <b>network</b> <span class="opt">[serve|status] [--port N] [--host H] [--store DIR]</span></div>
     <div class="bd">

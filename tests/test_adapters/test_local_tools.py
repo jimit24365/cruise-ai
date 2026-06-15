@@ -12,6 +12,7 @@ from pathlib import Path
 from nextmillionai.adapters.local_models import detect_local_models
 from nextmillionai.adapters.local_tools import (
     AiderAdapter,
+    AntigravityAdapter,
     ClineAdapter,
     CodyAdapter,
     ContinueAdapter,
@@ -233,6 +234,40 @@ def test_cody_counts(tmp_path):
     assert a.scan() == []
     assert a.raw_data()["storageFiles"] == 1
     assert a.raw_data()["fidelity"] == "counts"
+
+
+# ── Antigravity (counts — Protobuf trajectories, never invented) ────────────
+
+
+def test_antigravity_counts_conversations(tmp_path):
+    conv = tmp_path / ".gemini" / "antigravity" / "conversations"
+    conv.mkdir(parents=True)
+    (conv / "t1.pb").write_bytes(b"\x0a\x05hello")
+    (conv / "t2.pb").write_bytes(b"\x0a\x05world")
+    brain = tmp_path / ".gemini" / "antigravity" / "brain" / "task-1"
+    brain.mkdir(parents=True)
+    (brain / "task.md").write_text("# build the thing")
+
+    a = AntigravityAdapter(home=tmp_path)
+    assert a.detect() is True
+    assert a.scan() == []  # trajectories are protobuf — never invented as sessions
+    raw = a.raw_data()
+    assert raw["fidelity"] == "counts"
+    assert raw["conversations"] == 2
+    assert raw["brainTasks"] == 1
+    assert "insufficient" in raw["note"]
+
+
+def test_antigravity_detects_vscode_state_dir(tmp_path):
+    # No ~/.gemini data, but the IDE's globalStorage marks the install.
+    gs = tmp_path / "Library" / "Application Support" / "Antigravity IDE" / "User" / "globalStorage"
+    gs.mkdir(parents=True)
+    (gs / "state.vscdb").write_bytes(b"SQLite format 3\x00")
+
+    a = AntigravityAdapter(home=tmp_path)
+    assert a.detect() is True
+    assert a.scan() == []
+    assert a.raw_data()["conversations"] == 0
 
 
 # ── Custom adapters (nextmillionai.config.json) ──────────────────────────────

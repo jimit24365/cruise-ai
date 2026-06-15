@@ -181,7 +181,7 @@ sessions and never move a score. The canonical, per-layout contract is
 | Codex (`~/.codex/sessions/`) | deep | session files | messages, models, tool calls, timestamps |
 | Git (discovered repos) | deep | log + config files | commits, branches, languages/frameworks |
 | Wider field — Aider, Cline, Continue.dev, Copilot Chat, Zed AI | deep | each tool's own local session files | sessions, message counts, timestamps, models |
-| Wider field — Windsurf, Cody | counts | store file counts + last activity | presence + activity (sessions *insufficient*) |
+| Wider field — Windsurf, Cody, Antigravity | counts | store/trajectory file counts + last activity | presence + activity (sessions *insufficient*) |
 | JetBrains AI | presence | IDE config markers | install only (chat not locally parseable) |
 | Local runtimes — Ollama, LM Studio | counts | model tags, history/conversation file counts | installed models, usage counts |
 | llama.cpp | presence | GGUF model cache | model presence (no usage log) |

@@ -175,14 +175,30 @@ def safe_read_json(path: Path) -> dict | None:
 
 
 def git_run(args: list[str], cwd: str | Path | None = None, timeout: int = 15) -> str | None:
-    """Run a git command, return stdout or None on error."""
+    """Run a git command, return stdout or None on error.
+
+    Hardened so an automated scan can never block on interactive git:
+    the pager is disabled, credential/terminal prompts are turned off,
+    optional index locks are skipped, and stdin is closed. Any failure
+    (including a timeout) returns None — never raises, never hangs.
+    """
+    env = {
+        **os.environ,
+        "GIT_TERMINAL_PROMPT": "0",  # never prompt for credentials
+        "GIT_OPTIONAL_LOCKS": "0",  # don't wait on index.lock
+        "GCM_INTERACTIVE": "never",  # git-credential-manager: no popup
+        "GIT_PAGER": "cat",
+        "PAGER": "cat",
+    }
     try:
         result = subprocess.run(
-            ["git"] + args,
+            ["git", "--no-pager"] + args,
             capture_output=True,
             text=True,
             cwd=str(cwd) if cwd else None,
             timeout=timeout,
+            stdin=subprocess.DEVNULL,
+            env=env,
         )
         if result.returncode != 0:
             return None

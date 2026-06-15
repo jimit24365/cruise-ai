@@ -633,6 +633,93 @@ class CodyAdapter(_LocalToolAdapter):
         return [], raw
 
 
+# ── Antigravity (counts: trajectories are Protobuf, never invented) ─────────
+
+
+class AntigravityAdapter(_LocalToolAdapter):
+    """Google Antigravity — agentic IDE, a VS Code fork from the former
+    Windsurf team. The real work product is one Protobuf trajectory per
+    agent session at ``~/.gemini/antigravity/conversations/*.pb`` (with
+    plan/walkthrough "brain" artifacts under ``~/.gemini/antigravity/brain/``);
+    the sidebar index lives in a VS Code ``state.vscdb`` under an
+    ``Antigravity`` / ``Antigravity IDE`` globalStorage dir.
+
+    Those ``.pb`` files are not a parseable session log, so — exactly like
+    the sibling Cascade store (Windsurf) — we count the trajectories and the
+    brain tasks honestly and never invent sessions: usage is marked
+    insufficient, never estimated. All reads are local files owned by the
+    user.
+    """
+
+    tool_id = "antigravity"
+    label = "Antigravity"
+    fidelity = "counts"
+
+    def _gemini_dir(self) -> Path:
+        return self.home / ".gemini" / "antigravity"
+
+    def _state_dirs(self) -> list:
+        dirs = []
+        for base in (
+            self.home / "Library" / "Application Support",  # macOS
+            self.home / ".config",  # Linux
+            self.home / "AppData" / "Roaming",  # Windows
+        ):
+            # Folder name shifted from "Antigravity" to "Antigravity IDE"
+            # across releases; case also varies by platform.
+            for variant in ("Antigravity", "Antigravity IDE", "antigravity"):
+                d = base / variant / "User" / "globalStorage"
+                if d.is_dir():
+                    dirs.append(d)
+        return dirs
+
+    def detect(self) -> bool:
+        return self._gemini_dir().is_dir() or bool(self._state_dirs())
+
+    def _scan_impl(self) -> tuple:
+        conversations = 0
+        brain_tasks = 0
+        latest = None
+        gem = self._gemini_dir()
+
+        conv_dir = gem / "conversations"
+        if conv_dir.is_dir():
+            try:
+                for f in conv_dir.glob("*.pb"):
+                    if f.is_file():
+                        conversations += 1
+                        dt = _mtime_dt(f)
+                        if dt and (latest is None or dt > latest):
+                            latest = dt
+            except OSError:
+                pass
+
+        brain_dir = gem / "brain"
+        if brain_dir.is_dir():
+            try:
+                for d in brain_dir.iterdir():
+                    if d.is_dir():
+                        brain_tasks += 1
+                        dt = _mtime_dt(d)
+                        if dt and (latest is None or dt > latest):
+                            latest = dt
+            except OSError:
+                pass
+
+        raw = {
+            "conversations": conversations,
+            "brainTasks": brain_tasks,
+            "lastActivity": latest.isoformat() if latest else None,
+            "note": (
+                "Antigravity stores each trajectory as a Protobuf (.pb) file under "
+                "~/.gemini/antigravity/; that format is not a parseable session log, so "
+                "trajectories are counted and sessions are marked insufficient, never invented."
+            ),
+        }
+        _log(f"Antigravity: present ({conversations} trajectories, {brain_tasks} brain tasks)")
+        return [], raw
+
+
 # ── Custom adapters (nextmillionai.config.json) ──────────────────────────────
 
 
@@ -743,4 +830,5 @@ def get_local_tool_adapters(home: Path | None = None) -> list:
         ZedAdapter(home=home),
         JetBrainsAIAdapter(home=home),
         CodyAdapter(home=home),
+        AntigravityAdapter(home=home),
     ]
