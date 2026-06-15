@@ -25,11 +25,9 @@ deep **report** from one assessment JSON. No account, no upload, no black box.
 [Methodology](https://nextmillionai.org/methodology) ·
 [Contributing](CONTRIBUTING.md)
 
-<img src="docs/assets/profile.png" alt="nextmillionai profile — masthead, builder kind, and your numbers" width="46%">
-&nbsp;
-<img src="docs/assets/report.png" alt="nextmillionai report — narrative, scores, and positioning" width="46%">
+<img src="docs/assets/demo.gif" alt="nextmillionai demo — one command turns your local AI coding sessions into a profile and a deep report" width="820">
 
-<sub>The <b>profile</b> (left) and the <b>report</b> (right) — one assessment JSON, two depths. Shown with bundled demo data via <code>report --demo</code>.</sub>
+<sub>One command → your <b>profile</b> and a deep <b>report</b>, rendered locally from bundled demo data (<code>report --demo</code>).</sub>
 
 </div>
 
