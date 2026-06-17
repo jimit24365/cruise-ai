@@ -115,7 +115,10 @@ class ProfileHandler(http.server.BaseHTTPRequestHandler):
         if safe and os.path.isfile(safe):
             self.send_response(200)
             self.send_header("Content-Type", content_type)
-            self.send_header("Cache-Control", "no-cache")
+            # no-store: the local server always reflects the file on disk, so
+            # editing CSS/JS/HTML and reloading just works — no cache-bust
+            # version bumping needed for local iteration.
+            self.send_header("Cache-Control", "no-store")
             self.end_headers()
             with open(safe, "rb") as f:
                 self.wfile.write(f.read())
@@ -204,7 +207,9 @@ class ProfileHandler(http.server.BaseHTTPRequestHandler):
                 }.get(ext, "text/plain")
                 self.send_response(200)
                 self.send_header("Content-Type", mime)
-                self.send_header("Cache-Control", "no-cache")
+                # no-store so a freshly-edited CSS/JS asset is always served
+                # (browsers ignored the old no-cache without validators).
+                self.send_header("Cache-Control", "no-store")
                 self.end_headers()
                 with open(safe, "rb") as f:
                     self.wfile.write(f.read())

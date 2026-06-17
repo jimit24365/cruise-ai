@@ -9,6 +9,7 @@
   --accent:#E2542C; --good:#1F9254; --mid:#CF8A1A; --low:#CB5A45;
   --blue:#3F6CC7; --blue-bg:#EAF0FB; --green-bg:#E6F4EC; --orange-bg:#FBEDE4; --purple:#7C5BD6; --purple-bg:#F1ECFA;
   --g0:#EDE7DB; --g1:#CDE6CF; --g2:#92CFA0; --g3:#4FAE72; --g4:#1F9254;
+  --purple-line:#DFD3F2;
   --disp:"Space Grotesk",sans-serif; --body:"Inter",sans-serif; --mono:"JetBrains Mono",monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -20,11 +21,11 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15p
 header{padding:46px 0 18px}
 .id{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}
 .id-main{display:flex;gap:18px;align-items:center}
-.avatar{width:62px;height:62px;border-radius:15px;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:25px;flex:0 0 auto}
-h1{font-family:var(--disp);font-weight:600;font-size:clamp(28px,4vw,40px);letter-spacing:-.02em;line-height:1.05}
+.avatar{width:62px;height:62px;border-radius:15px;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:25px;flex:0 0 auto;cursor:pointer;overflow:hidden;position:relative}
+h1{font-family:var(--disp);font-weight:600;font-size:clamp(28px,4vw,40px);letter-spacing:-.02em;line-height:1.05;margin:0}
 .id .who{color:var(--ink-soft);font-size:15px;margin-top:3px}
 .id .meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:7px}
-.head-actions{display:flex;gap:10px}
+.head-actions{display:flex;gap:10px;flex-wrap:wrap;row-gap:8px;align-items:center}
 .btn{font-family:var(--body);font-weight:500;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:8px 14px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
 .btn:hover{border-color:var(--muted)}.btn.dark{background:var(--ink);color:#fff;border-color:var(--ink)}
 .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
@@ -57,8 +58,8 @@ h2{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:-.01em;
 .scope b{color:var(--ink)}.scope .cfg{color:var(--accent);cursor:pointer}.scope .sep{opacity:.4}
 
 /* === WRAPPED CARDS (expandable details) === */
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start}
-.card{border:1px solid var(--line);border-top:3px solid var(--line);border-radius:14px;background:var(--surface);padding:0;overflow:hidden}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:stretch}
+.card{border:1px solid var(--line);border-top:3px solid var(--line);border-radius:14px;background:var(--surface);padding:0;overflow:hidden;display:flex;flex-direction:column}
 .card.b{background:var(--blue-bg);border-top-color:var(--blue)}.card.g{background:var(--green-bg);border-top-color:var(--good)}.card.o{background:var(--orange-bg);border-top-color:var(--mid)}.card.p{background:var(--purple-bg);border-top-color:var(--purple)}
 /* legend: colour = what each number measures (Cadence/Output/Orchestration/Direction) */
 .cards-legend{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);padding:0 2px 4px}
@@ -67,10 +68,13 @@ h2{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:-.01em;
 .cards-legend .cl i{width:9px;height:9px;border-radius:3px;display:inline-block}
 .cards-legend .cl i.g{background:var(--good)}.cards-legend .cl i.o{background:var(--mid)}.cards-legend .cl i.p{background:var(--purple)}.cards-legend .cl i.b{background:var(--blue)}
 .cards-legend .cl i.n{background:var(--surface);border:1px solid var(--line)}
-.card summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;flex-direction:column;min-height:130px}
+.card summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;flex-direction:column;min-height:158px;flex:1}
 .card summary::-webkit-details-marker{display:none}
 .card .q{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
-.card .n{font-family:var(--disp);font-weight:700;font-size:26px;letter-spacing:-.01em;overflow-wrap:anywhere;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* Value stays full-size; long values (e.g. "claude-opus-4-7") wrap to a
+   second line and are never truncated. The card grows to fit and every
+   card stretches to the same height (align-items:stretch + min-height). */
+.card .n{font-family:var(--disp);font-weight:700;font-size:26px;letter-spacing:-.01em;line-height:1.12;overflow-wrap:anywhere}
 .card .d{font-size:12px;color:var(--muted);margin-top:4px}
 /* expand affordance: a single chevron, pinned to the card's bottom-left so
    every card is the same height; rotates up when open (no "what this means" text) */
@@ -272,8 +276,8 @@ section{position:relative}
 /* === SHARE TAB === */
 
 /* === KINDS GALLERY === */
-.kinds-all{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:14px}
-.ka{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 18px;opacity:.62}
+.kinds-all{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-top:36px}
+.ka{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:16px 18px;opacity:.62;display:flex;flex-direction:column}
 .ka.on{opacity:1;border-color:var(--accent)}
 .ka-head{display:flex;align-items:center;gap:8px}
 .ka-e{font-size:16px}
@@ -284,7 +288,7 @@ section{position:relative}
 .kb.base{background:var(--green-bg);color:var(--good)}
 .ka-t{font-size:12.5px;color:var(--ink-soft);margin-top:5px}
 .ka-i{font-family:var(--mono);font-size:9.5px;color:var(--muted);margin-top:5px}
-.ka-foot{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:9px;padding-top:9px;border-top:1px solid var(--line-2)}
+.ka-foot{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:auto;padding-top:9px;border-top:1px solid var(--line-2)}
 .ka-foot.on{color:var(--good)}
 .ka-foot b{color:var(--accent)}
 
@@ -375,8 +379,7 @@ section{position:relative}
 
 /* ════ ROUND 2 ════ */
 
-/* avatar upload */
-.avatar{cursor:pointer;overflow:hidden;position:relative}
+/* avatar hover + image (base rule is above in HEADER section) */
 .avatar:hover::after{content:'edit';position:absolute;inset:auto 0 0 0;background:rgba(35,33,28,.75);color:#fff;font-family:var(--mono);font-size:8px;text-align:center;padding:2px 0;letter-spacing:.1em;text-transform:uppercase}
 .avatar.has-img img{width:100%;height:100%;object-fit:cover;display:block}
 
@@ -424,7 +427,6 @@ section{position:relative}
 /* Share tab: aligned cards, actions pinned to the bottom */
 
 /* general polish */
-.head-actions{flex-wrap:wrap;row-gap:8px}
 .bc-chips .bc-chip{white-space:nowrap}
 .act-legend{flex-wrap:wrap;row-gap:4px}
 section>h2:first-child{margin-top:0}

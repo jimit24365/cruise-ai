@@ -31,17 +31,17 @@
 .link-row .lv2.add{color:var(--muted)}
 .link-act{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:100px;padding:5px 12px;cursor:pointer;white-space:nowrap}
 .link-act.off{color:var(--good);background:var(--green-bg);border-color:var(--g2)}
-.exp-banner{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;color:var(--ink-soft);background:var(--purple-bg);border:1px solid #DFD3F2;padding:13px 15px;border-radius:12px;margin-bottom:18px}
-.exp-banner .tg{font-family:var(--mono);font-size:10px;color:var(--purple);font-weight:700;letter-spacing:.06em;border:1px solid #DFD3F2;border-radius:100px;padding:3px 9px;flex:0 0 auto}
+.exp-banner{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;color:var(--ink-soft);background:var(--purple-bg);border:1px solid var(--purple-line);padding:13px 15px;border-radius:12px;margin-bottom:18px}
+.exp-banner .tg{font-family:var(--mono);font-size:10px;color:var(--purple);font-weight:700;letter-spacing:.06em;border:1px solid var(--purple-line);border-radius:100px;padding:3px 9px;flex:0 0 auto}
 .exp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .exp{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;position:relative}
-.exp .bd{position:absolute;top:13px;right:13px;font-family:var(--mono);font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--purple);background:var(--purple-bg);border:1px solid #DFD3F2;padding:2px 7px;border-radius:100px}
+.exp .bd{position:absolute;top:13px;right:13px;font-family:var(--mono);font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--purple);background:var(--purple-bg);border:1px solid var(--purple-line);padding:2px 7px;border-radius:100px}
 .exp .l{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .exp .h{font-family:var(--disp);font-weight:700;font-size:19px;margin:5px 0 4px;padding-right:70px}
 .exp .d{font-size:12.5px;color:var(--ink-soft)}
 .exp .cf{margin-top:9px;font-family:var(--mono);font-size:10px;color:var(--muted)}
 .exp .cf i{display:inline-block;width:32px;height:4px;border-radius:2px;background:var(--g0);position:relative;overflow:hidden;vertical-align:middle;margin-right:6px}.exp .cf i b{position:absolute;left:0;top:0;bottom:0;background:var(--mid);border-radius:2px}
-  .exp-grid{grid-template-columns:1fr}
+@media(max-width:680px){.exp-grid{grid-template-columns:1fr}}
 .work-band{display:flex;gap:36px;flex-wrap:wrap;background:var(--surface-2);border:1px solid var(--line-2);border-radius:14px;padding:18px 24px;margin:16px 0 22px}
 .work-band .n{font-family:var(--disp);font-weight:700;font-size:22px}
 .work-band .l{font-family:var(--mono);font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
@@ -60,12 +60,12 @@
 .ci-group summary::-webkit-details-marker{display:none}
 .ci-group summary::before{content:'▸ ';color:var(--muted)}
 .ci-group[open] summary::before{content:'▾ '}
-.ci{border-top:1px solid var(--line-2);padding:12px 0}
-.ci .l{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--purple)}
-.ci .t{font-family:var(--disp);font-weight:600;font-size:14px;margin:2px 0}
-.ci .find{font-size:13px;color:var(--ink-soft)}
-.ci .sugg{font-size:13px;color:var(--ink)}
-.ci .basis{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px}
+.ci-group .ci{border-top:1px solid var(--line-2);padding:12px 0}
+.ci-group .ci .l{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--purple)}
+.ci-group .ci .t{font-family:var(--disp);font-weight:600;font-size:14px;margin:2px 0}
+.ci-group .ci .find{font-size:13px;color:var(--ink-soft)}
+.ci-group .ci .sugg{font-size:13px;color:var(--ink)}
+.ci-group .ci .basis{font-family:var(--mono);font-size:10px;color:var(--muted);margin-top:4px}
 .cov-row{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-bottom:10px}
 .cov-row.ok{color:var(--good);font-weight:500}
 .cov-gap{font-size:14px}
@@ -173,23 +173,9 @@
 body.early-profile .rings svg, body.early-profile .scoreband .dl i{opacity:.72}
 body.early-profile .ovr svg{opacity:.85}
 
-/* ═══ Shared masthead — IDENTICAL on profile + report (the flip keeps
-   the header still; only the content below changes) ═══ */
-header{padding:46px 0 18px}
-.id{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}
-.id-main{display:flex;gap:18px;align-items:center}
-.avatar{width:62px;height:62px;border-radius:15px;background:var(--ink);color:#fff;display:grid;place-items:center;font-family:var(--disp);font-weight:700;font-size:25px;flex:0 0 auto;cursor:pointer;overflow:hidden;position:relative}
-.avatar:hover::after{content:'edit';position:absolute;inset:auto 0 0 0;background:rgba(35,33,28,.75);color:#fff;font-family:var(--mono);font-size:8px;text-align:center;padding:2px 0;letter-spacing:.1em;text-transform:uppercase}
-.avatar.has-img img{width:100%;height:100%;object-fit:cover;display:block}
-.id h1{font-family:var(--disp);font-weight:600;font-size:clamp(28px,4vw,40px);letter-spacing:-.02em;line-height:1.05;margin:0}
-.id .who{color:var(--ink-soft);font-size:15px;margin-top:3px}
-.id .meta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:7px}
-.head-actions{display:flex;gap:10px;flex-wrap:wrap;row-gap:8px;align-items:center}
-.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
-.tag{font-family:var(--mono);font-size:11px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:100px;padding:6px 12px}
-.tag b{color:var(--ink)}.tag.dom{background:var(--tint)}
-.live-slot{display:inline-flex;align-items:center}
-@media print{.live-slot,.head-actions{display:none}}
+/* Masthead rules live in profile.css / report.css (each page styles its
+   own header — report uses different padding).  Only the seg toggle and
+   tab-icon rules above are truly shared. */
 
 /* Share: "send to an agent" Markdown rows */
 .sc-md{display:flex;align-items:center;gap:8px;margin-top:8px}
