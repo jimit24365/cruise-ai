@@ -65,3 +65,37 @@ def test_shared_tab_classes_live_in_tabs_shared_css():
         "per-page sheet — so the view that doesn't load that sheet renders them "
         "unstyled. Move them to static/css/tabs-shared.css:\n  " + "\n  ".join(offenders)
     )
+
+
+def _root_vars(css: str) -> set[str]:
+    m = re.search(r":root\s*\{([^}]*)\}", css)
+    return set(re.findall(r"(--[\w-]+)\s*:", m.group(1))) if m else set()
+
+
+def _used_vars(css: str) -> set[str]:
+    return set(re.findall(r"var\(\s*(--[\w-]+)", css))
+
+
+def test_shared_css_vars_defined_in_both_page_roots():
+    """tabs-shared.css carries no :root of its own — it resolves CSS variables
+    from whichever page loaded it. So every var it uses must be defined in BOTH
+    profile.css and report.css :root, or the view whose root lacks it renders
+    that element unstyled (the --green-bg / --blue-bg class of bug)."""
+    css = _STATIC / "css"
+    profile_root = _root_vars((css / "profile.css").read_text())
+    report_root = _root_vars((css / "report.css").read_text())
+
+    missing = []
+    for v in sorted(_used_vars((css / "tabs-shared.css").read_text())):
+        absent = [
+            name
+            for name, root in (("profile.css", profile_root), ("report.css", report_root))
+            if v not in root
+        ]
+        if absent:
+            missing.append(f"{v}  (not in {', '.join(absent)} :root)")
+
+    assert not missing, (
+        "tabs-shared.css is loaded by both views, so every CSS variable it uses "
+        "must be defined in BOTH page :root blocks:\n  " + "\n  ".join(missing)
+    )

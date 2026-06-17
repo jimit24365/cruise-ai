@@ -71,9 +71,9 @@
 .spark polyline{stroke:var(--accent)}
 .btn.quiet{border-color:transparent;background:transparent;color:var(--muted)}
 .btn.quiet:hover{color:var(--ink);border-color:var(--line)}
-.private{background:var(--surface-2);border:1px dashed #D9C9A8;border-radius:14px;padding:22px}
-.private .plock{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);background:#FBF3E2;border:1px solid #ECD9B0;padding:5px 10px;border-radius:100px;margin-bottom:14px}
-.private .note{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:6px}
+/* Lab "Growth areas" private badge — rendered standalone as <div class="plock">
+   by tabs-shared.js (was styled as the never-matching ".private .plock"). */
+.plock{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);background:#FBF3E2;border:1px solid #ECD9B0;padding:5px 10px;border-radius:100px;margin-bottom:14px}
 .h2-sm{font-size:17px;margin-top:26px}
 .work-tools{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:12px 0 14px}
 .wsearch{font-family:var(--body);font-size:13px;border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--surface);color:var(--ink);width:240px;outline:none}
