@@ -164,14 +164,10 @@ h2{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:-.01em;
 .lev-cap{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:10px}
 
 /* === PRIVATE GROWTH SECTION === */
-.private{background:var(--surface-2);border:1px dashed #D9C9A8;border-radius:14px;padding:22px}
-.private .plock{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);background:#FBF3E2;border:1px solid #ECD9B0;padding:5px 10px;border-radius:100px;margin-bottom:14px}
-/* .growth-item → tabs-shared.css (shared Work/Lab item styles) */
-.private .note{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:6px}
+/* .private/.plock/.note + .growth-item → tabs-shared.css (shared, both views) */
 
 /* === DETAILS TAB === */
-/* .proj / .vis → tabs-shared.css (shared Work tab item styles) */
-.links{display:flex;flex-direction:column;gap:0}
+/* .proj / .vis / .links → tabs-shared.css (shared Work tab item styles) */
 .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}.chip{font-family:var(--mono);font-size:11px;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:5px 10px}
 
 /* === EXPERIMENTAL SIGNALS (details tab) === */
@@ -202,8 +198,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 70px}
 .bc-title{font-family:var(--disp);font-weight:700;font-size:clamp(24px,3.4vw,34px);letter-spacing:-.02em;line-height:1.1;color:var(--accent)}
 .bc-tag{color:var(--ink-soft);font-size:14px;margin-top:6px;max-width:46ch}
 .bc-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
-.bc-chip{font-family:var(--mono);font-size:11px;background:var(--tint);color:var(--ink-soft);border-radius:999px;padding:4px 11px}
-.bc-chip.on{background:var(--ink);color:#fff}
+/* .bc-chip / .bc-chip.on → tabs-shared.css (also used in shared work cards) */
 .bcard .jump{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--accent);margin-top:16px}
 .bc-side{display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto}
 .bc-cf{font-family:var(--mono);font-size:10px;color:var(--muted)}
@@ -216,9 +211,7 @@ footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 70px}
 @media(max-width:640px){.bcard{flex-direction:column}.bc-side{flex-direction:row;flex-wrap:wrap;align-items:center}}
 
 /* === WORK TAB === */
-/* .wc-top / .wc-name / .wc-meta / .wc-langs → tabs-shared.css (shared) */
-.spark{display:block}
-.spark polyline{stroke:var(--accent)}
+/* .wc-top / .wc-name / .wc-meta / .wc-langs / .spark → tabs-shared.css (shared) */
 
 /* === LAB TAB === */
 .labdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--purple);margin-left:6px;vertical-align:2px}
@@ -289,8 +282,7 @@ section{position:relative}
 
 /* button hierarchy: primary dark, ghost-dark, quiet */
 .btn.dark.ghost{background:var(--surface);color:var(--ink);border-color:var(--ink)}
-.btn.quiet{border-color:transparent;background:transparent;color:var(--muted)}
-.btn.quiet:hover{color:var(--ink);border-color:var(--line)}
+/* .btn.quiet → tabs-shared.css (used by shared tabs, e.g. "show more") */
 
 /* glyphs */
 .gl{vertical-align:-3px;flex:0 0 auto}
