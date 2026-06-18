@@ -211,7 +211,7 @@ def test_every_doc_is_in_the_current_md_index():
         p
         for p in tracked
         if p not in exempt
-        and not p.startswith(("docs/archive/", ".github/"))
+        and not p.startswith(("docs/archive/", ".github/", "docs/proposals/"))
         and f"`{p}`" not in index
         and f"`{p.rsplit('/', 1)[-1]}`" not in index
     ]

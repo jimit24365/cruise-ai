@@ -32,6 +32,7 @@ one without opening five. Paths are relative to the repo root.
 | [`nextmillionai/docs/SCORING-METHODOLOGY.md`](../nextmillionai/docs/SCORING-METHODOLOGY.md) | Every scoring formula and band. Served at `/methodology`. |
 | [`nextmillionai/docs/SCHEMA.md`](../nextmillionai/docs/SCHEMA.md) | The one assessment JSON + shareable/private map. |
 | [`HARDLINES.md`](HARDLINES.md) | What must not change without owner sign-off, and how that's enforced. |
+| [`proposals/`](proposals/) | Methodology change proposals — draft, review, compare, publish — before a contract moves (`scripts/proposals.py`). |
 | [`BUSINESS-FIT-MAP.md`](BUSINESS-FIT-MAP.md) | Fit-map formulas + naming policy. |
 
 ## How it reads your data (privacy & coverage)

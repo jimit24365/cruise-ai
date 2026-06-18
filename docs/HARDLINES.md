@@ -98,3 +98,20 @@ bumps touched); get explicit confirmation; then do it as its own
 commit with the bump and doc updates together. If a prompt batch
 contains a hardline change among normal tasks, do the normal tasks and
 surface the hardline item separately — don't let it ride along.
+
+For changes worth discussing before they land — a new band, weight,
+threshold, or any tunable param — open a **proposal** under
+[`docs/proposals/`](proposals/) so the intended change is explicit and
+comparable *before* the engine moves:
+
+```
+python3 scripts/proposals.py new "<title>"   # scaffold (seeds the live version base)
+python3 scripts/proposals.py compare <id>    # current → proposed, vs the live engine
+python3 scripts/proposals.py check           # CI: schema + staleness + index fresh
+```
+
+A proposal records param `current → proposed`, evidence, and blast
+radius, and moves `draft → under-review → accepted | rejected |
+superseded`. It changes nothing by itself — landing an accepted
+proposal is still the deliberate, signed-off commit described above.
+The proposal is the reviewable record; this section is still the gate.
