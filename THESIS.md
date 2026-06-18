@@ -32,6 +32,17 @@ sped them up afterward (METR, July 2025). METR has since revised the experiment
 for later-2025 tools, so treat this as a snapshot, not a verdict — but the core
 lesson is durable: **outcomes depend on the operator, not the tool.**
 
+Larger studies sharpen rather than soften this. A peer-reviewed analysis of
+three randomized field experiments with 4,867 developers found AI raised
+completed tasks by ~26%, with the biggest gains among less-experienced
+developers (Cui et al., 2025) — real value, but uneven and
+operator-dependent. Ongoing Stanford research across 100,000+ developers
+finds the other tail: raw output gains shrink once rework is counted, and
+can turn negative in complex, mature codebases (Denisov-Blanch et al.,
+2025, talk-based). Across the slowdown, the uplift, and the rework paradox,
+the constant holds: outcomes track the operator and the context, not the
+tool.
+
 → This is why nextmillionai scores **Signal Clarity** (how precisely you direct),
 **Recovery Velocity** (how you handle wrong output), and **work mode** (how you
 build) — not "do you use AI." Adoption is table stakes; the craft is the signal.
@@ -46,7 +57,10 @@ temporary one (Veracode, 2025). Veracode sells security tooling, so read it with
 that interest in mind — but the scale and methodology are hard to wave away, and
 independent reporting echoes the pattern (more AI-assisted commits → more to
 review). The shift to "vibe coding," where security constraints go unspecified,
-hands those decisions to the model.
+hands those decisions to the model. Google's 2024 DORA report echoes the
+cost at the team level: as AI adoption rose, respondents reported an
+estimated 7.2% drop in delivery stability and 1.5% drop in throughput, and
+39% said they had little or no trust in AI-generated code (DORA, 2024).
 
 → This is why nextmillionai scores **Build Stability** (does your AI-assisted code
 survive — churn, reverts), and why **Production Guardian** is a first-class
@@ -120,9 +134,27 @@ evidence does.
 - **PwC (2025).** *Global AI Jobs Barometer.* ~1B job ads; 56% AI-skills wage
   premium (up from 25%); AI-skill roles +7.5% as total postings −11.3%; skills
   changing 66% faster in AI-exposed jobs. pwc.com/gx/en/services/ai/ai-jobs-barometer
+- **Cui, Demirer, Jaffe, Musolff, Peng, Salz (2025).** *The Effects of
+  Generative AI on High-Skilled Work: Evidence from Three Field Experiments
+  with Software Developers.* Management Science; three RCTs, 4,867
+  developers; +26% completed tasks, largest gains for less-experienced
+  developers. papers.ssrn.com/sol3/papers.cfm?abstract_id=4945566
+- **Google / DORA (2024).** *Accelerate State of DevOps Report.* AI
+  adoption rose alongside an estimated 7.2% drop in delivery stability and
+  1.5% drop in throughput; 39% reported little or no trust in AI-generated
+  code. dora.dev/research/2024/dora-report
+- **Denisov-Blanch et al. (2025).** Ongoing Stanford productivity research
+  (100k+ developers) — the rework paradox; commit/PR counts mismeasure
+  outcomes. softwareengineeringproductivity.stanford.edu *(talk-based; not
+  yet peer-reviewed).*
 - **Supporting / directional:** 2025 Stack Overflow Developer Survey (AI output
   "almost right, but not quite"; time spent debugging AI code); Apiiro (AI-assisted
   developers produce several times more commits → more to review). Used as context,
   not load-bearing claims.
 
-*Document version 0.1 · 2026-06 · update as evidence evolves.*
+Measurement-methodology citations (construct validity, holistic evaluation,
+agentic-benchmark rigor — Raji 2021, HELM 2022, the Agentic Benchmark
+Checklist 2025, SWE-bench, METR long-tasks) live in
+[`docs/REFERENCES.md`](docs/REFERENCES.md).
+
+*Document version 0.2 · 2026-06 · update as evidence evolves.*

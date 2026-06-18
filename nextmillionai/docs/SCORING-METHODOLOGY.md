@@ -42,6 +42,14 @@ public line is promise #1 plus *"computed entirely from local files."*
 
 ## Principles
 
+Measurement here is treated as a discipline, held to the same
+evaluation-science standards we would apply to any benchmark — construct
+validity (every score ties to an explicit construct), holistic
+multi-dimensional scoring over a single number, and resistance to gaming
+(unmeasured signals are marked *insufficient*, never estimated). The
+research behind these standards is cited in
+[`docs/REFERENCES.md`](../../docs/REFERENCES.md).
+
 These commitments constrain every formula below:
 
 1. **No builder type is ranked above another.** A rapid prototyper who one-shots

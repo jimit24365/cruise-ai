@@ -41,6 +41,24 @@ the best available, not the last word.
   pwc.com/gx/en/services/ai/ai-jobs-barometer
   **Grounds:** the skill has real, rising value that hiring can't see →
   the whole premise of a proof-based profile.
+- **Cui, Demirer, Jaffe, Musolff, Peng, Salz (2025).** *The Effects of
+  Generative AI on High-Skilled Work: Evidence from Three Field
+  Experiments with Software Developers.* Management Science. Three RCTs,
+  4,867 developers (Microsoft, Accenture, a Fortune 100 firm); **+26.08%
+  completed tasks** (SE 10.3%), with the largest gains among
+  less-experienced developers. Peer-reviewed, large-N.
+  papers.ssrn.com/sol3/papers.cfm?abstract_id=4945566
+  **Grounds:** the value is real but *uneven and operator-dependent* — not
+  an automatic uplift → why *how* you build is the signal, not whether you
+  use AI (Signal Clarity, work mode).
+- **Google / DORA (2024).** *Accelerate State of DevOps Report 2024.* As
+  AI adoption rose, respondents reported productivity gains but an
+  estimated **−1.5% delivery throughput and −7.2% delivery stability**,
+  and **39% had little or no trust in AI-generated code.** Large annual
+  survey (Google Cloud), not a controlled trial.
+  dora.dev/research/2024/dora-report
+  **Grounds:** AI can raise output while *lowering* delivery stability →
+  Build Stability, Recovery Velocity, and the human-judgment thesis.
 
 ## Design anchors — software-engineering & productivity research
 
@@ -66,6 +84,46 @@ These shaped *how* we measure, not the specific band cutoffs.
   as the meaningful measure of working time → active-time (≤30-min-gap)
   estimator rather than raw wall-clock.
 
+## Evaluation & measurement methodology
+
+nextmillionai is itself a measurement instrument, so its design is
+disciplined by the science of evaluation — not as band validation, but as
+the standard we hold our own methodology to (construct validity,
+multi-dimensional scoring over a single number, resistance to gaming).
+These also frame the open benchmark direction: long-horizon, agentic
+coding evaluation.
+
+- **Raji, Bender, Paullada, Denton, Hanna (2021).** *AI and the Everything
+  in the Whole Wide World Benchmark.* NeurIPS Datasets & Benchmarks.
+  **Grounds:** benchmarks routinely fail to measure what they claim
+  (construct validity) → why every score ties to an explicit construct and
+  unmeasured signals are marked *insufficient*, never estimated.
+- **Liang, Bommasani, Lee, et al. (2022).** *Holistic Evaluation of
+  Language Models (HELM).* Stanford CRFM; arXiv:2211.09110.
+  **Grounds:** evaluate across many metrics and scenarios, never collapse
+  to one number → the six-dimension model and "no single score predicts
+  performance."
+- **Zhu, Jin, Pruksachatkun, Kapoor, et al. (2025).** *Establishing Best
+  Practices for Building Rigorous Agentic Benchmarks.* NeurIPS 2025
+  Datasets & Benchmarks; arXiv:2507.02825. Introduces the Agentic
+  Benchmark Checklist; task/reward-design flaws can misestimate agent
+  performance by up to 100% relative (e.g. SWE-bench-Verified, tau-bench).
+  **Grounds:** anti-gaming and outcome validity → arithmetic, auditable
+  scoring and the agentic-eval direction.
+- **Measuring What Matters: Construct Validity in LLM Benchmarks (2025).**
+  arXiv:2511.04703. **Grounds:** supporting construct-validity argument
+  for measurement design.
+- **Jimenez, Yang, Wettig, Yao, Pei, Press, Narasimhan (2024).**
+  *SWE-bench: Can Language Models Resolve Real-World GitHub Issues?* ICLR
+  2024; arXiv:2310.06770. **Grounds:** the canonical *single-shot* code
+  benchmark — the baseline a long-horizon, multi-turn behavioral benchmark
+  is meant to go beyond.
+- **METR (2025).** *Measuring AI Ability to Complete Long Tasks.*
+  arXiv:2503.14499. Task-completion *time horizon* doubling ~every 7
+  months. **Grounds:** long-horizon capability is where measurement is
+  breaking → the long-session / Orchestration framing and the benchmark
+  direction. (Distinct from the METR productivity RCT above.)
+
 ## Directional / contextual
 
 Used as context, not load-bearing claims:
@@ -74,6 +132,18 @@ Used as context, not load-bearing claims:
   but not quite"; time spent debugging AI code. → Recovery Velocity.
 - **Apiiro (2025).** AI-assisted developers produce several times more
   commits → more to review. → Build Stability review burden.
+- **Denisov-Blanch et al. (2025).** Ongoing Stanford software-engineering
+  productivity research (100k+ developers, 600+ companies; presented in
+  2025 talks, not yet a peer-reviewed paper). AI's raw output gains shrink
+  after rework and can turn *negative* in complex, mature codebases and
+  less-common languages; commit/PR counts mismeasure real productivity.
+  softwareengineeringproductivity.stanford.edu → the rework paradox behind
+  Build Stability and "counts aren't outcomes." *(Talk-based; cite as
+  such.)*
+- **Peng, Kalliamvakou, Cihon, Demirer (2023).** *The Impact of AI on
+  Developer Productivity: Evidence from GitHub Copilot.* arXiv:2302.06590.
+  55.8% faster on a constrained greenfield task — an upper bound on a
+  narrow task, not whole-job productivity. → Signal Clarity context.
 
 ---
 
