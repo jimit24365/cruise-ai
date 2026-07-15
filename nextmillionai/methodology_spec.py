@@ -68,6 +68,15 @@ TOOL_COVERAGE: dict[str, list[dict]] = {
             "reads": "JSONL sessions: timestamps, models, tool calls, prompt word counts",
         },
         {
+            "id": "kiro",
+            "label": "Kiro",
+            "tier": "deep",
+            "reads": "CLI JSON metadata + JSONL transcripts + history files: "
+            "sessions, timestamps, tool calls by type, prompt word counts, "
+            "subagent orchestration (parent_session_id), agent names; "
+            "IDE session JSON: sessions, timestamps, autonomy mode",
+        },
+        {
             "id": "git",
             "label": "git",
             "tier": "deep",
