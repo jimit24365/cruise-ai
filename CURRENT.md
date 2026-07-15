@@ -9,7 +9,7 @@ sessions. What must never change without sign-off lives in
 
 nextmillionai is a local-first AI coding profile builder — the open
 alternative to Paxel. It scans the user's own AI sessions (Claude Code,
-Cursor, Codex) + git, scores how they build with AI, and renders a
+Cursor, Codex, Kiro) + git, scores how they build with AI, and renders a
 shareable **profile** and a deep **report** from ONE assessment JSON.
 Opt-in only: publish a curated, derived-only, revocable profile to a
 registry. Mission: reverse hiring on proof-based work.
