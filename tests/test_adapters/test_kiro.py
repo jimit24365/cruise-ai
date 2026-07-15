@@ -191,27 +191,27 @@ def kiro_sessions_dir(tmp_path: Path) -> Path:
 
 class TestKiroAdapterDetect:
     def test_detect_true(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         assert adapter.detect() is True
 
     def test_detect_false(self, tmp_path: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=tmp_path / "nonexistent")
+        adapter = KiroAdapter(sessions_dir=tmp_path / "nonexistent", ide_dirs=[])
         assert adapter.detect() is False
 
     def test_name(self) -> None:
-        adapter = KiroAdapter()
+        adapter = KiroAdapter(ide_dirs=[])
         assert adapter.name == "kiro"
 
 
 class TestKiroAdapterScan:
     def test_scan_produces_sessions(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         sessions = adapter.scan()
         # Session 3 is empty → excluded. Sessions 1 and 2 have messages.
         assert len(sessions) == 2
 
     def test_session_metadata(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         sessions = adapter.scan()
         s1 = next(s for s in sessions if "000000000001" in s.session_id)
 
@@ -221,7 +221,7 @@ class TestKiroAdapterScan:
         assert s1.ended_at == datetime(2026, 7, 1, 10, 45, 0, tzinfo=timezone.utc)
 
     def test_message_counts(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         sessions = adapter.scan()
         s1 = next(s for s in sessions if "000000000001" in s.session_id)
 
@@ -229,14 +229,14 @@ class TestKiroAdapterScan:
         assert s1.assistant_msgs == 4
 
     def test_tool_calls_extracted(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         sessions = adapter.scan()
         s1 = next(s for s in sessions if "000000000001" in s.session_id)
 
         assert s1.tool_calls_by_type == {"read": 1, "shell": 2, "write": 1}
 
     def test_prompt_word_counts(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         sessions = adapter.scan()
         s1 = next(s for s in sessions if "000000000001" in s.session_id)
 
@@ -246,7 +246,7 @@ class TestKiroAdapterScan:
         assert s1.prompt_word_counts[1] == 9   # "Now run the tests..."
 
     def test_subagent_detected(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         sessions = adapter.scan()
         s2 = next(s for s in sessions if "000000000002" in s.session_id)
 
@@ -254,20 +254,20 @@ class TestKiroAdapterScan:
         assert s2.extras["parent_session_id"] == "aaaa1111-0000-0000-0000-000000000001"
 
     def test_agent_name_extracted(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         sessions = adapter.scan()
         s1 = next(s for s in sessions if "000000000001" in s.session_id)
 
         assert s1.extras["agent_name"] == "java-agent"
 
     def test_empty_session_excluded(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         sessions = adapter.scan()
         ids = [s.session_id for s in sessions]
         assert "aaaa1111-0000-0000-0000-000000000003" not in ids
 
     def test_project_filter(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         sessions = adapter.scan(project_filter="myapp")
         # Only sessions with "myapp" in cwd
         assert all("myapp" in (s.project_path or "") for s in sessions)
@@ -275,7 +275,7 @@ class TestKiroAdapterScan:
 
 class TestKiroAdapterRawData:
     def test_raw_data_after_scan(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         adapter.scan()
         raw = adapter.raw_data()
 
@@ -288,11 +288,11 @@ class TestKiroAdapterRawData:
         assert raw["total_tool_calls"] == 5  # read+2*shell+write from s1, get_merge_request from s2
 
     def test_raw_data_none_before_scan(self) -> None:
-        adapter = KiroAdapter(sessions_dir=Path("/nonexistent"))
+        adapter = KiroAdapter(sessions_dir=Path("/nonexistent"), ide_dirs=[])
         assert adapter.raw_data() is None
 
     def test_raw_data_has_timestamps(self, kiro_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir)
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
         adapter.scan()
         raw = adapter.raw_data()
 
@@ -303,7 +303,7 @@ class TestKiroAdapterRawData:
 
 class TestKiroAdapterNoDir:
     def test_scan_missing_dir(self, tmp_path: Path) -> None:
-        adapter = KiroAdapter(sessions_dir=tmp_path / "does_not_exist")
+        adapter = KiroAdapter(sessions_dir=tmp_path / "does_not_exist", ide_dirs=[])
         sessions = adapter.scan()
         assert sessions == []
         assert adapter.raw_data() is None

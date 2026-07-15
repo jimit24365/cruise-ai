@@ -31,8 +31,26 @@ from nextmillionai.adapters._base import Session
 from nextmillionai.scanner import safe_read_text
 
 
-# Default path — overridable via constructor for testing
+# Default paths — overridable via constructor for testing
 KIRO_SESSIONS_DIR = Path.home() / ".kiro" / "sessions" / "cli"
+
+# Kiro IDE stores sessions in Application Support (VS Code-family pattern)
+_KIRO_IDE_DIRS: list[Path] = []
+if sys.platform == "darwin":
+    _KIRO_IDE_DIRS.append(
+        Path.home() / "Library" / "Application Support" / "Kiro" / "User"
+        / "globalStorage" / "kiro.kiroagent"
+    )
+elif sys.platform == "win32":
+    _appdata = os.environ.get("APPDATA", "")
+    if _appdata:
+        _KIRO_IDE_DIRS.append(
+            Path(_appdata) / "Kiro" / "User" / "globalStorage" / "kiro.kiroagent"
+        )
+else:  # Linux
+    _KIRO_IDE_DIRS.append(
+        Path.home() / ".config" / "Kiro" / "User" / "globalStorage" / "kiro.kiroagent"
+    )
 
 
 def _log(msg: str) -> None:
@@ -41,20 +59,33 @@ def _log(msg: str) -> None:
 
 
 class KiroAdapter:
-    """Adapter that scans Kiro CLI/IDE sessions with deep JSONL parsing.
+    """Adapter that scans Kiro CLI and IDE sessions.
 
-    Kiro stores three files per session:
-      - <uuid>.json   — metadata (session_id, cwd, timestamps, agent, parent)
-      - <uuid>.jsonl  — transcript (Prompt, AssistantMessage, ToolResults)
-      - <uuid>.history — raw user prompts (one per line, for word counts only)
+    **Generation 1 — Kiro CLI** (deep fidelity):
+      Path: ``~/.kiro/sessions/cli/``
+      Files: ``<uuid>.json`` + ``<uuid>.jsonl`` + ``<uuid>.history``
+      Reads: metadata, message counts, tool names from toolUse blocks, timestamps.
 
-    The adapter reads metadata + counts from transcripts. It NEVER reads
-    prompt text content or assistant response text — only message kinds,
-    tool names from toolUse blocks, and timestamps.
+    **Generation 2 — Kiro IDE** (deep fidelity, no tool-call names):
+      Path: ``~/Library/Application Support/Kiro/User/globalStorage/kiro.kiroagent/``
+      Files: ``sessions/sessions.json`` (index) + ``sessions/<uuid>.json`` (session data)
+             ``workspace-sessions/<b64-path>/sessions.json`` + ``<uuid>.json``
+      Reads: session metadata, history[] message counts, prompt word counts,
+             model names from promptLogs, autonomyMode, sessionType.
+
+    Both generations are scanned and deduped by session_id. The adapter
+    NEVER reads prompt text content or assistant response text — only
+    counts, tool names (CLI only), and timestamps.
     """
 
-    def __init__(self, *, sessions_dir: Path | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        sessions_dir: Path | None = None,
+        ide_dirs: list[Path] | None = None,
+    ) -> None:
         self._sessions_dir = sessions_dir or KIRO_SESSIONS_DIR
+        self._ide_dirs = ide_dirs if ide_dirs is not None else _KIRO_IDE_DIRS
         self._sessions: list[Session] = []
         self._raw: dict | None = None
 
@@ -63,28 +94,25 @@ class KiroAdapter:
         return "kiro"
 
     def detect(self) -> bool:
-        return self._sessions_dir.exists()
+        if self._sessions_dir.exists():
+            return True
+        return any(d.exists() for d in self._ide_dirs)
 
     def scan(self, project_filter: str | None = None) -> list[Session]:
         if not self.detect():
-            _log("Kiro: ~/.kiro/sessions/cli/ not found, skipping")
+            _log("Kiro: no CLI or IDE sessions found, skipping")
             self._sessions = []
             self._raw = None
             return []
 
         _log("Kiro: scanning sessions...")
 
-        try:
-            json_files = sorted(self._sessions_dir.glob("*.json"))
-        except Exception:
-            self._sessions = []
-            self._raw = None
-            return []
-
-        if not json_files:
-            self._sessions = []
-            self._raw = None
-            return []
+        json_files: list[Path] = []
+        if self._sessions_dir.exists():
+            try:
+                json_files = sorted(self._sessions_dir.glob("*.json"))
+            except Exception:
+                pass
 
         sessions: list[Session] = []
         total_user_msgs = 0
@@ -171,6 +199,163 @@ class KiroAdapter:
                     )
                 )
 
+        # ── Generation 2: Kiro IDE sessions ─────────────────────────────────
+        # IDE stores sessions in Application Support under kiro.kiroagent/
+        # with a sessions.json index + per-session JSON files containing
+        # history[] arrays with messages.
+
+        seen_ids = {s.session_id for s in sessions}
+        ide_session_count = 0
+
+        for ide_dir in self._ide_dirs:
+            if not ide_dir.exists():
+                continue
+
+            # Scan global sessions + all workspace-sessions directories
+            session_dirs = [ide_dir / "sessions"]
+            ws_root = ide_dir / "workspace-sessions"
+            if ws_root.is_dir():
+                try:
+                    for ws_dir in ws_root.iterdir():
+                        if ws_dir.is_dir():
+                            session_dirs.append(ws_dir)
+                except OSError:
+                    pass
+
+            for sess_dir in session_dirs:
+                if not sess_dir.is_dir():
+                    continue
+
+                # Read the sessions.json index for timestamps
+                index_path = sess_dir / "sessions.json"
+                index_data: list[dict] = []
+                idx_text = safe_read_text(index_path)
+                if idx_text:
+                    try:
+                        parsed = json.loads(idx_text)
+                        if isinstance(parsed, list):
+                            index_data = parsed
+                    except (json.JSONDecodeError, ValueError):
+                        pass
+
+                # Build a lookup from sessionId → dateCreated (ms timestamp)
+                date_lookup: dict[str, int] = {}
+                workspace_lookup: dict[str, str | None] = {}
+                for entry in index_data:
+                    sid = entry.get("sessionId", "")
+                    dc = entry.get("dateCreated")
+                    if sid and dc:
+                        try:
+                            date_lookup[sid] = int(dc)
+                        except (ValueError, TypeError):
+                            pass
+                    workspace_lookup[sid] = entry.get("workspaceDirectory")
+
+                # Scan individual session JSON files
+                try:
+                    session_files = [
+                        f for f in sess_dir.glob("*.json")
+                        if f.name != "sessions.json"
+                    ]
+                except OSError:
+                    continue
+
+                for sf in session_files:
+                    text = safe_read_text(sf)
+                    if not text:
+                        continue
+                    try:
+                        sdata = json.loads(text)
+                    except (json.JSONDecodeError, ValueError):
+                        continue
+
+                    session_id = sdata.get("sessionId")
+                    if not session_id or session_id in seen_ids:
+                        continue  # dedupe with CLI sessions
+
+                    history = sdata.get("history", [])
+                    if not history:
+                        continue
+
+                    # Apply project filter
+                    workspace = (
+                        sdata.get("workspaceDirectory")
+                        or workspace_lookup.get(session_id)
+                    )
+                    if project_filter and workspace:
+                        if project_filter not in workspace:
+                            continue
+
+                    # Count messages and extract word counts
+                    user_msgs = 0
+                    assistant_msgs = 0
+                    prompt_wcs: list[int] = []
+                    models: set[str] = set()
+
+                    for item in history:
+                        msg = item.get("message", {})
+                        role = msg.get("role")
+                        if role == "user":
+                            user_msgs += 1
+                            content = msg.get("content", [])
+                            wc = self._count_content_words(content)
+                            if wc > 0:
+                                prompt_wcs.append(wc)
+                        elif role == "assistant":
+                            assistant_msgs += 1
+
+                        # Extract model from promptLogs
+                        for log in item.get("promptLogs", []):
+                            model = log.get("modelTitle")
+                            if model:
+                                models.add(model)
+
+                    if user_msgs == 0 and assistant_msgs == 0:
+                        continue
+
+                    # Timestamp from index
+                    started_at: datetime | None = None
+                    ts_ms = date_lookup.get(session_id)
+                    if ts_ms:
+                        try:
+                            started_at = datetime.fromtimestamp(
+                                ts_ms / 1000.0, tz=timezone.utc
+                            )
+                        except (OSError, ValueError):
+                            pass
+
+                    seen_ids.add(session_id)
+                    ide_session_count += 1
+                    total_user_msgs += user_msgs
+                    total_assistant_msgs += assistant_msgs
+                    for model in models:
+                        all_models[model] = all_models.get(model, 0) + 1
+
+                    sessions.append(
+                        Session(
+                            tool="kiro",
+                            session_id=session_id,
+                            project_path=workspace,
+                            started_at=started_at,
+                            ended_at=None,  # IDE doesn't store end time
+                            user_msgs=user_msgs,
+                            assistant_msgs=assistant_msgs,
+                            tool_calls_by_type={},  # IDE doesn't expose tool names
+                            models=sorted(models),
+                            prompt_word_counts=prompt_wcs,
+                            extras={
+                                "source": "ide",
+                                "autonomyMode": sdata.get("autonomyMode"),
+                                "sessionType": sdata.get("sessionType"),
+                            },
+                        )
+                    )
+
+        if ide_session_count > 0:
+            _log(f"Kiro IDE: {ide_session_count} sessions from Application Support")
+
+        # ── Compute overall stats ────────────────────────────────────────────
+
         # Compute overall stats
         all_earliest: str | None = None
         all_latest: str | None = None
@@ -185,9 +370,9 @@ class KiroAdapter:
                     all_latest = iso
 
         parsed_count = len(sessions)
-        total_files = len(json_files)
+        total_files = len(json_files) + ide_session_count
         if parsed_count > 0:
-            _log(f"Kiro: {parsed_count} parsed sessions ({total_files} files)")
+            _log(f"Kiro: {parsed_count} total sessions (CLI + IDE)")
         else:
             _log(f"Kiro: {total_files} session files, 0 parseable")
 
@@ -195,6 +380,8 @@ class KiroAdapter:
         self._raw = {
             "total_sessions": total_files,
             "parsed_sessions": parsed_count,
+            "cli_sessions": len(json_files),
+            "ide_sessions": ide_session_count,
             "total_user_msgs": total_user_msgs,
             "total_assistant_msgs": total_assistant_msgs,
             "total_tool_calls": total_tool_calls,
