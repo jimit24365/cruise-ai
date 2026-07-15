@@ -60,6 +60,16 @@ Standing rules, enforced in code and tests:
 | Read | JSONL: roles, timestamps, models, tool/function calls, prompt word counts |
 | Derived | sessions, hours, span, models, per-day activity |
 
+### Kiro — `deep`
+
+| | |
+|---|---|
+| Paths | `~/.kiro/sessions/cli/` (all OSes) |
+| Generations | **current**: `<uuid>.json` (metadata) + `<uuid>.jsonl` (transcript) + `<uuid>.history` (raw prompts). Subagent sessions linked via `parent_session_id` field in metadata. |
+| Read | JSON metadata: session_id, cwd, created_at, updated_at, parent_session_id, session_created_reason, agent_name. JSONL transcript: message counts by kind (Prompt, AssistantMessage, ToolResults), tool names from `toolUse` blocks. History: prompt word counts only (text reduced to counts — never stored). |
+| Derived | sessions, hours, span, prompts, tool calls by type, agent name, subagent dispatches (parent_session_id chains), MCP tool diversity (tool names include jira, confluence, gitlab, dynacon, etc.), per-day activity |
+| Notes | Kiro stores subagent sessions as separate files with `session_created_reason: "subagent"` and a `parent_session_id` linking to the orchestrating session — this is direct evidence of multi-agent orchestration. Agent names (e.g. `java-agent`, `jira-agent`) are extracted from `session_state.agent_name`. |
+
 ### git — `deep`
 
 | | |

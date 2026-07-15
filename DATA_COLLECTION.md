@@ -26,6 +26,14 @@ Everything nextmillionai reads, derives, and never touches.
 |---|---|---|
 | `~/.codex/sessions/` -- file count only | Session count | Session content, prompts, responses |
 
+## Kiro
+
+| What is read | Derived signals | Never touched |
+|---|---|---|
+| `~/.kiro/sessions/cli/*.json` -- session_id, cwd (project path), created_at, updated_at, parent_session_id, session_created_reason, agent_name from session_state | Session count, hours (timestamp span capped at 8h), project paths, subagent dispatch count, agent name diversity | Title text (summarizes task — not read), permissions, full session_state beyond agent_name |
+| `~/.kiro/sessions/cli/*.jsonl` -- message kind counts (Prompt, AssistantMessage, ToolResults), tool names from `toolUse` blocks within AssistantMessage content | User/assistant message counts, tool call counts by name (shell, read, write, grep, jira, confluence, etc.), MCP tool diversity | Prompt text content, assistant response text, code blocks, tool input/output payloads |
+| `~/.kiro/sessions/cli/*.history` -- line count + word count per line | Prompt word counts (distribution of prompt lengths) | Actual prompt text (split into words only for counting — text never stored or transmitted) |
+
 ## Git
 
 | What is read | Derived signals | Never touched |
