@@ -14,6 +14,7 @@ from nextmillionai.adapters.claude_desktop import ClaudeDesktopAdapter
 from nextmillionai.adapters.codex import CodexAdapter
 from nextmillionai.adapters.cursor import CursorAdapter
 from nextmillionai.adapters.git import GitAdapter
+from nextmillionai.adapters.kiro import KiroAdapter
 
 
 def get_session_adapters() -> list[Adapter]:
@@ -38,6 +39,7 @@ def get_session_adapters() -> list[Adapter]:
             app_user_dir=scanner_mod.CURSOR_APP_USER_DIR,
         ),
         CodexAdapter(sessions_dir=scanner_mod.CODEX_SESSIONS_DIR),
+        KiroAdapter(),
         # Experimental, low-fidelity, opt-in — default consent is OFF
         ClaudeDesktopAdapter(),
     ]
@@ -84,6 +86,7 @@ def run_adapters(
             "claude_code": True,
             "cursor": True,
             "codex": True,
+            "kiro": True,
             "git": True,
             "other_tools": True,
             "local_models": True,
@@ -104,6 +107,7 @@ def run_adapters(
         "claude_code": "claude_code",
         "cursor": "cursor",
         "codex": "codex",
+        "kiro": "kiro",
         "claude_desktop": "claude_desktop",
     }
 
