@@ -39,90 +39,133 @@ def kiro_sessions_dir(tmp_path: Path) -> Path:
 
     # JSONL transcript for session 1
     jsonl_lines = [
-        json.dumps({
-            "version": "v1",
-            "kind": "Prompt",
-            "data": {
-                "message_id": "msg-001",
-                "content": [{"kind": "text", "data": "Fix the login bug in the authentication service that causes timeout errors"}],
-            },
-        }),
-        json.dumps({
-            "version": "v1",
-            "kind": "AssistantMessage",
-            "data": {
-                "message_id": "msg-002",
-                "content": [
-                    {"kind": "text", "data": ""},
-                    {"kind": "toolUse", "data": {"toolUseId": "tu-001", "name": "read", "input": {}}},
-                ],
-            },
-        }),
-        json.dumps({
-            "version": "v1",
-            "kind": "ToolResults",
-            "data": {
-                "message_id": "msg-003",
-                "content": [{"kind": "toolResult", "data": {"toolUseId": "tu-001", "content": []}}],
-            },
-        }),
-        json.dumps({
-            "version": "v1",
-            "kind": "AssistantMessage",
-            "data": {
-                "message_id": "msg-004",
-                "content": [
-                    {"kind": "text", "data": ""},
-                    {"kind": "toolUse", "data": {"toolUseId": "tu-002", "name": "shell", "input": {}}},
-                ],
-            },
-        }),
-        json.dumps({
-            "version": "v1",
-            "kind": "ToolResults",
-            "data": {
-                "message_id": "msg-005",
-                "content": [{"kind": "toolResult", "data": {"toolUseId": "tu-002", "content": []}}],
-            },
-        }),
-        json.dumps({
-            "version": "v1",
-            "kind": "AssistantMessage",
-            "data": {
-                "message_id": "msg-006",
-                "content": [
-                    {"kind": "text", "data": ""},
-                    {"kind": "toolUse", "data": {"toolUseId": "tu-003", "name": "write", "input": {}}},
-                ],
-            },
-        }),
-        json.dumps({
-            "version": "v1",
-            "kind": "ToolResults",
-            "data": {
-                "message_id": "msg-007",
-                "content": [{"kind": "toolResult", "data": {"toolUseId": "tu-003", "content": []}}],
-            },
-        }),
-        json.dumps({
-            "version": "v1",
-            "kind": "Prompt",
-            "data": {
-                "message_id": "msg-008",
-                "content": [{"kind": "text", "data": "Now run the tests to verify the fix works"}],
-            },
-        }),
-        json.dumps({
-            "version": "v1",
-            "kind": "AssistantMessage",
-            "data": {
-                "message_id": "msg-009",
-                "content": [
-                    {"kind": "text", "data": ""},
-                    {"kind": "toolUse", "data": {"toolUseId": "tu-004", "name": "shell", "input": {}}},
-                ],
-            },
-        }),
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "Prompt",
+                "data": {
+                    "message_id": "msg-001",
+                    "content": [
+                        {
+                            "kind": "text",
+                            "data": "Fix the login bug in auth service",
+                        }
+                    ],
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "AssistantMessage",
+                "data": {
+                    "message_id": "msg-002",
+                    "content": [
+                        {"kind": "text", "data": ""},
+                        {
+                            "kind": "toolUse",
+                            "data": {"toolUseId": "tu-001", "name": "read", "input": {}},
+                        },
+                    ],
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "ToolResults",
+                "data": {
+                    "message_id": "msg-003",
+                    "content": [
+                        {"kind": "toolResult", "data": {"toolUseId": "tu-001", "content": []}}
+                    ],
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "AssistantMessage",
+                "data": {
+                    "message_id": "msg-004",
+                    "content": [
+                        {"kind": "text", "data": ""},
+                        {
+                            "kind": "toolUse",
+                            "data": {"toolUseId": "tu-002", "name": "shell", "input": {}},
+                        },
+                    ],
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "ToolResults",
+                "data": {
+                    "message_id": "msg-005",
+                    "content": [
+                        {"kind": "toolResult", "data": {"toolUseId": "tu-002", "content": []}}
+                    ],
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "AssistantMessage",
+                "data": {
+                    "message_id": "msg-006",
+                    "content": [
+                        {"kind": "text", "data": ""},
+                        {
+                            "kind": "toolUse",
+                            "data": {"toolUseId": "tu-003", "name": "write", "input": {}},
+                        },
+                    ],
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "ToolResults",
+                "data": {
+                    "message_id": "msg-007",
+                    "content": [
+                        {"kind": "toolResult", "data": {"toolUseId": "tu-003", "content": []}}
+                    ],
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "Prompt",
+                "data": {
+                    "message_id": "msg-008",
+                    "content": [
+                        {"kind": "text", "data": "Now run the tests to verify the fix works"}
+                    ],
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "AssistantMessage",
+                "data": {
+                    "message_id": "msg-009",
+                    "content": [
+                        {"kind": "text", "data": ""},
+                        {
+                            "kind": "toolUse",
+                            "data": {"toolUseId": "tu-004", "name": "shell", "input": {}},
+                        },
+                    ],
+                },
+            }
+        ),
     ]
     (sessions_dir / f"{session1_id}.jsonl").write_text("\n".join(jsonl_lines))
 
@@ -153,21 +196,35 @@ def kiro_sessions_dir(tmp_path: Path) -> Path:
     (sessions_dir / f"{session2_id}.json").write_text(json.dumps(meta2))
 
     jsonl2 = [
-        json.dumps({
-            "version": "v1",
-            "kind": "Prompt",
-            "data": {"message_id": "msg-s01", "content": [{"kind": "text", "data": "Search for MRs"}]},
-        }),
-        json.dumps({
-            "version": "v1",
-            "kind": "AssistantMessage",
-            "data": {
-                "message_id": "msg-s02",
-                "content": [
-                    {"kind": "toolUse", "data": {"toolUseId": "tu-s01", "name": "get_merge_request", "input": {}}},
-                ],
-            },
-        }),
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "Prompt",
+                "data": {
+                    "message_id": "msg-s01",
+                    "content": [{"kind": "text", "data": "Search for MRs"}],
+                },
+            }
+        ),
+        json.dumps(
+            {
+                "version": "v1",
+                "kind": "AssistantMessage",
+                "data": {
+                    "message_id": "msg-s02",
+                    "content": [
+                        {
+                            "kind": "toolUse",
+                            "data": {
+                                "toolUseId": "tu-s01",
+                                "name": "get_merge_request",
+                                "input": {},
+                            },
+                        },
+                    ],
+                },
+            }
+        ),
     ]
     (sessions_dir / f"{session2_id}.jsonl").write_text("\n".join(jsonl2))
 
@@ -242,8 +299,8 @@ class TestKiroAdapterScan:
 
         # Two prompts with known word counts
         assert len(s1.prompt_word_counts) == 2
-        assert s1.prompt_word_counts[0] == 12  # "Fix the login bug..."
-        assert s1.prompt_word_counts[1] == 9   # "Now run the tests..."
+        assert s1.prompt_word_counts[0] == 7  # "Fix the login bug in auth service"
+        assert s1.prompt_word_counts[1] == 9  # "Now run the tests..."
 
     def test_subagent_detected(self, kiro_sessions_dir: Path) -> None:
         adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
@@ -351,15 +408,24 @@ def ide_sessions_dir(tmp_path: Path) -> Path:
         "sessionType": "chat",
         "history": [
             {
-                "message": {"role": "user", "content": [{"kind": "text", "data": "Implement the login page"}]},
+                "message": {
+                    "role": "user",
+                    "content": [{"kind": "text", "data": "Implement the login page"}],
+                },
                 "promptLogs": [],
             },
             {
-                "message": {"role": "assistant", "content": [{"kind": "text", "data": "I will implement the login page now."}]},
+                "message": {
+                    "role": "assistant",
+                    "content": [{"kind": "text", "data": "I will implement the login page now."}],
+                },
                 "promptLogs": [{"modelTitle": "Claude Sonnet 4"}],
             },
             {
-                "message": {"role": "user", "content": [{"kind": "text", "data": "Now add form validation"}]},
+                "message": {
+                    "role": "user",
+                    "content": [{"kind": "text", "data": "Now add form validation"}],
+                },
                 "promptLogs": [],
             },
             {
@@ -376,7 +442,10 @@ def ide_sessions_dir(tmp_path: Path) -> Path:
         "workspaceDirectory": "/Users/test/projects/api",
         "history": [
             {
-                "message": {"role": "user", "content": [{"kind": "text", "data": "Add pagination to the API"}]},
+                "message": {
+                    "role": "user",
+                    "content": [{"kind": "text", "data": "Add pagination to the API"}],
+                },
                 "promptLogs": [],
             },
             {
@@ -414,7 +483,10 @@ def ide_sessions_dir(tmp_path: Path) -> Path:
         "workspaceDirectory": "/Users/test/projects/webapp",
         "history": [
             {
-                "message": {"role": "user", "content": [{"kind": "text", "data": "Fix the CSS layout issue"}]},
+                "message": {
+                    "role": "user",
+                    "content": [{"kind": "text", "data": "Fix the CSS layout issue"}],
+                },
                 "promptLogs": [],
             },
             {
@@ -432,18 +504,14 @@ class TestKiroAdapterIDE:
     """Tests for IDE session scanning."""
 
     def test_ide_sessions_parsed(self, ide_sessions_dir: Path) -> None:
-        adapter = KiroAdapter(
-            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
-        )
+        adapter = KiroAdapter(sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir])
         sessions = adapter.scan()
         # session3 has empty history → excluded. 2 global + 1 workspace = 3
         assert len(sessions) == 3
 
     def test_ide_date_created_timestamp(self, ide_sessions_dir: Path) -> None:
         """sessions.json dateCreated ms timestamp is parsed to started_at."""
-        adapter = KiroAdapter(
-            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
-        )
+        adapter = KiroAdapter(sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir])
         sessions = adapter.scan()
         s1 = next(s for s in sessions if s.session_id == "ide-sess-0001")
         assert s1.started_at is not None
@@ -452,9 +520,7 @@ class TestKiroAdapterIDE:
 
     def test_ide_message_counts(self, ide_sessions_dir: Path) -> None:
         """history[] messages are counted correctly (user/assistant)."""
-        adapter = KiroAdapter(
-            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
-        )
+        adapter = KiroAdapter(sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir])
         sessions = adapter.scan()
         s1 = next(s for s in sessions if s.session_id == "ide-sess-0001")
         assert s1.user_msgs == 2
@@ -462,9 +528,7 @@ class TestKiroAdapterIDE:
 
     def test_ide_model_extraction(self, ide_sessions_dir: Path) -> None:
         """promptLogs modelTitle is extracted."""
-        adapter = KiroAdapter(
-            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
-        )
+        adapter = KiroAdapter(sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir])
         sessions = adapter.scan()
         s1 = next(s for s in sessions if s.session_id == "ide-sess-0001")
         assert "Claude Sonnet 4" in s1.models
@@ -474,9 +538,7 @@ class TestKiroAdapterIDE:
 
     def test_ide_workspace_sessions_traversal(self, ide_sessions_dir: Path) -> None:
         """workspace-sessions/ directories are scanned."""
-        adapter = KiroAdapter(
-            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
-        )
+        adapter = KiroAdapter(sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir])
         sessions = adapter.scan()
         ws = next(s for s in sessions if s.session_id == "ws-sess-0001")
         assert ws.project_path == "/Users/test/projects/webapp"
@@ -484,9 +546,7 @@ class TestKiroAdapterIDE:
 
     def test_ide_empty_history_excluded(self, ide_sessions_dir: Path) -> None:
         """Sessions with empty history[] are excluded."""
-        adapter = KiroAdapter(
-            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
-        )
+        adapter = KiroAdapter(sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir])
         sessions = adapter.scan()
         ids = [s.session_id for s in sessions]
         assert "ide-sess-0003" not in ids
@@ -524,9 +584,7 @@ class TestKiroAdapterIDE:
 
     def test_ide_prompt_word_counts(self, ide_sessions_dir: Path) -> None:
         """Word counts from IDE user messages are extracted."""
-        adapter = KiroAdapter(
-            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
-        )
+        adapter = KiroAdapter(sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir])
         sessions = adapter.scan()
         s1 = next(s for s in sessions if s.session_id == "ide-sess-0001")
         # "Implement the login page" = 4 words, "Now add form validation" = 4 words

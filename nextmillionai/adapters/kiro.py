@@ -30,7 +30,6 @@ from pathlib import Path
 from nextmillionai.adapters._base import Session
 from nextmillionai.scanner import safe_read_text
 
-
 # Default paths — overridable via constructor for testing
 KIRO_SESSIONS_DIR = Path.home() / ".kiro" / "sessions" / "cli"
 
@@ -38,15 +37,18 @@ KIRO_SESSIONS_DIR = Path.home() / ".kiro" / "sessions" / "cli"
 _KIRO_IDE_DIRS: list[Path] = []
 if sys.platform == "darwin":
     _KIRO_IDE_DIRS.append(
-        Path.home() / "Library" / "Application Support" / "Kiro" / "User"
-        / "globalStorage" / "kiro.kiroagent"
+        Path.home()
+        / "Library"
+        / "Application Support"
+        / "Kiro"
+        / "User"
+        / "globalStorage"
+        / "kiro.kiroagent"
     )
 elif sys.platform == "win32":
     _appdata = os.environ.get("APPDATA", "")
     if _appdata:
-        _KIRO_IDE_DIRS.append(
-            Path(_appdata) / "Kiro" / "User" / "globalStorage" / "kiro.kiroagent"
-        )
+        _KIRO_IDE_DIRS.append(Path(_appdata) / "Kiro" / "User" / "globalStorage" / "kiro.kiroagent")
 else:  # Linux
     _KIRO_IDE_DIRS.append(
         Path.home() / ".config" / "Kiro" / "User" / "globalStorage" / "kiro.kiroagent"
@@ -116,12 +118,8 @@ class KiroAdapter:
         # ── Compute overall stats ────────────────────────────────────────────
         total_user_msgs = sum(s.user_msgs for s in sessions)
         total_assistant_msgs = sum(s.assistant_msgs for s in sessions)
-        total_tool_calls = sum(
-            sum(s.tool_calls_by_type.values()) for s in sessions
-        )
-        subagent_count = sum(
-            1 for s in sessions if s.extras.get("is_subagent")
-        )
+        total_tool_calls = sum(sum(s.tool_calls_by_type.values()) for s in sessions)
+        subagent_count = sum(1 for s in sessions if s.extras.get("is_subagent"))
         all_models: dict[str, int] = {}
         for s in sessions:
             for model in s.models:
@@ -213,9 +211,7 @@ class KiroAdapter:
 
             # Parse the JSONL transcript for counts
             jsonl_file = json_file.with_suffix(".jsonl")
-            user_msgs, assistant_msgs, tool_calls, prompt_wcs = (
-                self._parse_transcript(jsonl_file)
-            )
+            user_msgs, assistant_msgs, tool_calls, prompt_wcs = self._parse_transcript(jsonl_file)
 
             # If no JSONL, try word counts from .history file
             if not prompt_wcs:
@@ -304,8 +300,7 @@ class KiroAdapter:
                 # Scan individual session JSON files
                 try:
                     session_files = [
-                        f for f in sess_dir.glob("*.json")
-                        if f.name != "sessions.json"
+                        f for f in sess_dir.glob("*.json") if f.name != "sessions.json"
                     ]
                 except OSError:
                     continue
@@ -333,10 +328,7 @@ class KiroAdapter:
                         continue
 
                     # Apply project filter
-                    workspace = (
-                        sdata.get("workspaceDirectory")
-                        or workspace_lookup.get(session_id)
-                    )
+                    workspace = sdata.get("workspaceDirectory") or workspace_lookup.get(session_id)
                     if project_filter and workspace:
                         if project_filter not in workspace:
                             continue
@@ -373,9 +365,7 @@ class KiroAdapter:
                     ts_ms = date_lookup.get(session_id)
                     if ts_ms:
                         try:
-                            started_at = datetime.fromtimestamp(
-                                ts_ms / 1000.0, tz=timezone.utc
-                            )
+                            started_at = datetime.fromtimestamp(ts_ms / 1000.0, tz=timezone.utc)
                         except (OSError, ValueError):
                             pass
 
@@ -409,9 +399,7 @@ class KiroAdapter:
 
     # ── Private helpers ──────────────────────────────────────────────────
 
-    def _parse_transcript(
-        self, jsonl_path: Path
-    ) -> tuple[int, int, dict[str, int], list[int]]:
+    def _parse_transcript(self, jsonl_path: Path) -> tuple[int, int, dict[str, int], list[int]]:
         """Parse a Kiro JSONL transcript for counts — never content.
 
         Kiro JSONL format (one JSON object per line):
@@ -515,7 +503,8 @@ class KiroAdapter:
                         if isinstance(text, str):
                             total += len(text.split())
                     elif kind is not None and kind not in (
-                        "toolUse", "toolResult",
+                        "toolUse",
+                        "toolResult",
                     ):
                         _log(f"unknown content block kind: {kind!r}")
         return total
