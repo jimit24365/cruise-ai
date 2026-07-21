@@ -14,9 +14,9 @@ Paths:
     ~/.kiro/sessions/cli/*.history  Raw prompt text (word counts only)
 
 Derived:
-    sessions, hours, span, prompts, tool calls by type, models,
+    sessions, hours, span, prompts, tool calls by type,
     agent dispatches (subagent sessions), MCP tool diversity,
-    per-day activity, active minutes (gap-based)
+    per-day activity
 """
 
 from __future__ import annotations
@@ -107,6 +107,65 @@ class KiroAdapter:
 
         _log("Kiro: scanning sessions...")
 
+        cli_sessions = self._scan_cli(project_filter)
+        seen_ids = {s.session_id for s in cli_sessions}
+        ide_sessions = self._scan_ide(project_filter, seen_ids)
+
+        sessions = cli_sessions + ide_sessions
+
+        # ── Compute overall stats ────────────────────────────────────────────
+        total_user_msgs = sum(s.user_msgs for s in sessions)
+        total_assistant_msgs = sum(s.assistant_msgs for s in sessions)
+        total_tool_calls = sum(
+            sum(s.tool_calls_by_type.values()) for s in sessions
+        )
+        subagent_count = sum(
+            1 for s in sessions if s.extras.get("is_subagent")
+        )
+        all_models: dict[str, int] = {}
+        for s in sessions:
+            for model in s.models:
+                all_models[model] = all_models.get(model, 0) + 1
+
+        all_earliest: str | None = None
+        all_latest: str | None = None
+        for s in sessions:
+            if s.started_at:
+                iso = s.started_at.isoformat()
+                if all_earliest is None or iso < all_earliest:
+                    all_earliest = iso
+            if s.ended_at:
+                iso = s.ended_at.isoformat()
+                if all_latest is None or iso > all_latest:
+                    all_latest = iso
+
+        parsed_count = len(sessions)
+        ide_count = len(ide_sessions)
+        if parsed_count > 0:
+            _log(f"Kiro: {parsed_count} total sessions (CLI + IDE)")
+        else:
+            _log("Kiro: 0 parseable sessions")
+
+        self._sessions = sessions
+        self._raw = {
+            "total_sessions": parsed_count,
+            "parsed_sessions": parsed_count,
+            "cli_sessions": len(cli_sessions),
+            "ide_sessions": ide_count,
+            "total_user_msgs": total_user_msgs,
+            "total_assistant_msgs": total_assistant_msgs,
+            "total_tool_calls": total_tool_calls,
+            "subagent_sessions": subagent_count,
+            "models_used": all_models,
+            "path": str(self._sessions_dir),
+            "earliest": all_earliest,
+            "latest": all_latest,
+        }
+
+        return sessions
+
+    def _scan_cli(self, project_filter: str | None = None) -> list[Session]:
+        """Scan Kiro CLI sessions from ~/.kiro/sessions/cli/."""
         json_files: list[Path] = []
         if self._sessions_dir.exists():
             try:
@@ -115,11 +174,6 @@ class KiroAdapter:
                 pass
 
         sessions: list[Session] = []
-        total_user_msgs = 0
-        total_assistant_msgs = 0
-        total_tool_calls = 0
-        all_models: dict[str, int] = {}
-        subagent_count = 0
 
         for json_file in json_files:
             # Skip .lock files and non-session JSON
@@ -148,8 +202,6 @@ class KiroAdapter:
 
             # Check if this is a subagent session
             is_subagent = meta.get("session_created_reason") == "subagent"
-            if is_subagent:
-                subagent_count += 1
 
             # Parse timestamps from metadata
             started_at = _parse_iso_dt(meta.get("created_at"))
@@ -161,7 +213,7 @@ class KiroAdapter:
 
             # Parse the JSONL transcript for counts
             jsonl_file = json_file.with_suffix(".jsonl")
-            user_msgs, assistant_msgs, tool_calls, models, active_sec, prompt_wcs = (
+            user_msgs, assistant_msgs, tool_calls, prompt_wcs = (
                 self._parse_transcript(jsonl_file)
             )
 
@@ -169,12 +221,6 @@ class KiroAdapter:
             if not prompt_wcs:
                 history_file = json_file.with_suffix(".history")
                 prompt_wcs = self._parse_history_word_counts(history_file)
-
-            total_user_msgs += user_msgs
-            total_assistant_msgs += assistant_msgs
-            total_tool_calls += sum(tool_calls.values())
-            for model in models:
-                all_models[model] = all_models.get(model, 0) + 1
 
             # Only include sessions with actual activity
             if user_msgs > 0 or assistant_msgs > 0:
@@ -188,10 +234,9 @@ class KiroAdapter:
                         user_msgs=user_msgs,
                         assistant_msgs=assistant_msgs,
                         tool_calls_by_type=tool_calls,
-                        models=sorted(models),
+                        models=[],
                         prompt_word_counts=prompt_wcs,
                         extras={
-                            "activeMinutes": round(active_sec / 60.0, 1),
                             "agent_name": agent_name,
                             "is_subagent": is_subagent,
                             "parent_session_id": meta.get("parent_session_id"),
@@ -199,13 +244,18 @@ class KiroAdapter:
                     )
                 )
 
-        # ── Generation 2: Kiro IDE sessions ─────────────────────────────────
-        # IDE stores sessions in Application Support under kiro.kiroagent/
-        # with a sessions.json index + per-session JSON files containing
-        # history[] arrays with messages.
+        return sessions
 
-        seen_ids = {s.session_id for s in sessions}
-        ide_session_count = 0
+    def _scan_ide(
+        self,
+        project_filter: str | None = None,
+        seen_ids: set[str] | None = None,
+    ) -> list[Session]:
+        """Scan Kiro IDE sessions from Application Support directories."""
+        if seen_ids is None:
+            seen_ids = set()
+
+        sessions: list[Session] = []
 
         for ide_dir in self._ide_dirs:
             if not ide_dir.exists():
@@ -273,6 +323,11 @@ class KiroAdapter:
                     if not session_id or session_id in seen_ids:
                         continue  # dedupe with CLI sessions
 
+                    # Mark as seen BEFORE project filter to prevent
+                    # duplicates when same session_id appears in both
+                    # sessions/ and workspace-sessions/
+                    seen_ids.add(session_id)
+
                     history = sdata.get("history", [])
                     if not history:
                         continue
@@ -324,13 +379,6 @@ class KiroAdapter:
                         except (OSError, ValueError):
                             pass
 
-                    seen_ids.add(session_id)
-                    ide_session_count += 1
-                    total_user_msgs += user_msgs
-                    total_assistant_msgs += assistant_msgs
-                    for model in models:
-                        all_models[model] = all_models.get(model, 0) + 1
-
                     sessions.append(
                         Session(
                             tool="kiro",
@@ -351,46 +399,8 @@ class KiroAdapter:
                         )
                     )
 
-        if ide_session_count > 0:
-            _log(f"Kiro IDE: {ide_session_count} sessions from Application Support")
-
-        # ── Compute overall stats ────────────────────────────────────────────
-
-        # Compute overall stats
-        all_earliest: str | None = None
-        all_latest: str | None = None
-        for s in sessions:
-            if s.started_at:
-                iso = s.started_at.isoformat()
-                if all_earliest is None or iso < all_earliest:
-                    all_earliest = iso
-            if s.ended_at:
-                iso = s.ended_at.isoformat()
-                if all_latest is None or iso > all_latest:
-                    all_latest = iso
-
-        parsed_count = len(sessions)
-        total_files = len(json_files) + ide_session_count
-        if parsed_count > 0:
-            _log(f"Kiro: {parsed_count} total sessions (CLI + IDE)")
-        else:
-            _log(f"Kiro: {total_files} session files, 0 parseable")
-
-        self._sessions = sessions
-        self._raw = {
-            "total_sessions": total_files,
-            "parsed_sessions": parsed_count,
-            "cli_sessions": len(json_files),
-            "ide_sessions": ide_session_count,
-            "total_user_msgs": total_user_msgs,
-            "total_assistant_msgs": total_assistant_msgs,
-            "total_tool_calls": total_tool_calls,
-            "subagent_sessions": subagent_count,
-            "models_used": all_models,
-            "path": str(self._sessions_dir),
-            "earliest": all_earliest,
-            "latest": all_latest,
-        }
+        if sessions:
+            _log(f"Kiro IDE: {len(sessions)} sessions from Application Support")
 
         return sessions
 
@@ -401,7 +411,7 @@ class KiroAdapter:
 
     def _parse_transcript(
         self, jsonl_path: Path
-    ) -> tuple[int, int, dict[str, int], set[str], float, list[int]]:
+    ) -> tuple[int, int, dict[str, int], list[int]]:
         """Parse a Kiro JSONL transcript for counts — never content.
 
         Kiro JSONL format (one JSON object per line):
@@ -412,19 +422,19 @@ class KiroAdapter:
         From AssistantMessage content, we extract tool names from toolUse blocks.
         We count prompt word counts from Prompt entries (text length only).
 
-        Returns (user_msgs, assistant_msgs, tool_calls_by_type, models, active_sec, prompt_word_counts)
+        Note: CLI JSONL does not contain model info or per-event timestamps,
+        so models and activeMinutes are not derived here.
+
+        Returns (user_msgs, assistant_msgs, tool_calls_by_type, prompt_word_counts)
         """
         user_msgs = 0
         assistant_msgs = 0
         tool_calls: dict[str, int] = {}
-        models: set[str] = set()
-        active_sec = 0.0
-        prev_dt: datetime | None = None
         prompt_word_counts: list[int] = []
 
         text = safe_read_text(jsonl_path)
         if not text:
-            return user_msgs, assistant_msgs, tool_calls, models, active_sec, prompt_word_counts
+            return user_msgs, assistant_msgs, tool_calls, prompt_word_counts
 
         for line in text.splitlines():
             line = line.strip()
@@ -437,10 +447,6 @@ class KiroAdapter:
 
             kind = obj.get("kind", "")
             data = obj.get("data", {})
-
-            # Track timestamps for active-time estimation
-            # Kiro doesn't always have per-message timestamps in JSONL,
-            # so we rely on the .json metadata for session duration.
 
             if kind == "Prompt":
                 user_msgs += 1
@@ -465,10 +471,7 @@ class KiroAdapter:
             # ToolResults are counted but don't add to user/assistant
             # (they're responses to tool calls, not human prompts)
 
-        # Estimate active time from metadata timestamps if no per-line ts
-        # (handled at session level using started_at/ended_at from .json)
-
-        return user_msgs, assistant_msgs, tool_calls, models, active_sec, prompt_word_counts
+        return user_msgs, assistant_msgs, tool_calls, prompt_word_counts
 
     def _parse_history_word_counts(self, history_path: Path) -> list[int]:
         """Parse .history file for prompt word counts only.
@@ -506,10 +509,15 @@ class KiroAdapter:
         if isinstance(content, list):
             for block in content:
                 if isinstance(block, dict):
-                    if block.get("kind") == "text":
+                    kind = block.get("kind")
+                    if kind == "text":
                         text = block.get("data", "")
                         if isinstance(text, str):
                             total += len(text.split())
+                    elif kind is not None and kind not in (
+                        "toolUse", "toolResult",
+                    ):
+                        _log(f"unknown content block kind: {kind!r}")
         return total
 
 

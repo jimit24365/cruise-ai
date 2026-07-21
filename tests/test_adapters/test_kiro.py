@@ -280,7 +280,7 @@ class TestKiroAdapterRawData:
         raw = adapter.raw_data()
 
         assert raw is not None
-        assert raw["total_sessions"] == 3  # 3 json files exist
+        assert raw["total_sessions"] == 2  # only sessions with activity
         assert raw["parsed_sessions"] == 2  # only 2 had messages
         assert raw["subagent_sessions"] == 1
         assert raw["total_user_msgs"] == 3  # 2 from s1, 1 from s2
@@ -307,3 +307,229 @@ class TestKiroAdapterNoDir:
         sessions = adapter.scan()
         assert sessions == []
         assert adapter.raw_data() is None
+
+
+# ── IDE test fixtures and tests ──────────────────────────────────────────────
+
+
+@pytest.fixture
+def ide_sessions_dir(tmp_path: Path) -> Path:
+    """Create a synthetic Kiro IDE sessions directory with test data."""
+    ide_dir = tmp_path / "kiro-ide" / "kiro.kiroagent"
+    sessions_dir = ide_dir / "sessions"
+    sessions_dir.mkdir(parents=True)
+
+    # Session index with dateCreated timestamps (ms since epoch)
+    session1_id = "ide-sess-0001"
+    session2_id = "ide-sess-0002"
+    session3_id = "ide-sess-0003"  # empty history — should be excluded
+
+    index = [
+        {
+            "sessionId": session1_id,
+            "dateCreated": 1751356800000,  # 2025-07-01T00:00:00Z
+            "workspaceDirectory": "/Users/test/projects/webapp",
+        },
+        {
+            "sessionId": session2_id,
+            "dateCreated": 1751443200000,  # 2025-07-02T00:00:00Z
+            "workspaceDirectory": "/Users/test/projects/api",
+        },
+        {
+            "sessionId": session3_id,
+            "dateCreated": 1751529600000,  # 2025-07-03T00:00:00Z
+            "workspaceDirectory": "/Users/test/projects/webapp",
+        },
+    ]
+    (sessions_dir / "sessions.json").write_text(json.dumps(index))
+
+    # Session 1: normal with history and promptLogs
+    session1_data = {
+        "sessionId": session1_id,
+        "workspaceDirectory": "/Users/test/projects/webapp",
+        "autonomyMode": "supervised",
+        "sessionType": "chat",
+        "history": [
+            {
+                "message": {"role": "user", "content": [{"kind": "text", "data": "Implement the login page"}]},
+                "promptLogs": [],
+            },
+            {
+                "message": {"role": "assistant", "content": [{"kind": "text", "data": "I will implement the login page now."}]},
+                "promptLogs": [{"modelTitle": "Claude Sonnet 4"}],
+            },
+            {
+                "message": {"role": "user", "content": [{"kind": "text", "data": "Now add form validation"}]},
+                "promptLogs": [],
+            },
+            {
+                "message": {"role": "assistant", "content": [{"kind": "text", "data": "Done."}]},
+                "promptLogs": [{"modelTitle": "Claude Sonnet 4"}],
+            },
+        ],
+    }
+    (sessions_dir / f"{session1_id}.json").write_text(json.dumps(session1_data))
+
+    # Session 2: uses a different model
+    session2_data = {
+        "sessionId": session2_id,
+        "workspaceDirectory": "/Users/test/projects/api",
+        "history": [
+            {
+                "message": {"role": "user", "content": [{"kind": "text", "data": "Add pagination to the API"}]},
+                "promptLogs": [],
+            },
+            {
+                "message": {"role": "assistant", "content": [{"kind": "text", "data": "Added."}]},
+                "promptLogs": [{"modelTitle": "Claude Haiku 3.5"}],
+            },
+        ],
+    }
+    (sessions_dir / f"{session2_id}.json").write_text(json.dumps(session2_data))
+
+    # Session 3: empty history — should be excluded
+    session3_data = {
+        "sessionId": session3_id,
+        "workspaceDirectory": "/Users/test/projects/webapp",
+        "history": [],
+    }
+    (sessions_dir / f"{session3_id}.json").write_text(json.dumps(session3_data))
+
+    # workspace-sessions directory with one extra session
+    ws_dir = ide_dir / "workspace-sessions" / "L1VzZXJzL3Rlc3QvcHJvamVjdHMvd2ViYXBw"
+    ws_dir.mkdir(parents=True)
+
+    ws_session_id = "ws-sess-0001"
+    ws_index = [
+        {
+            "sessionId": ws_session_id,
+            "dateCreated": 1751616000000,  # 2025-07-04T00:00:00Z
+            "workspaceDirectory": "/Users/test/projects/webapp",
+        },
+    ]
+    (ws_dir / "sessions.json").write_text(json.dumps(ws_index))
+
+    ws_session_data = {
+        "sessionId": ws_session_id,
+        "workspaceDirectory": "/Users/test/projects/webapp",
+        "history": [
+            {
+                "message": {"role": "user", "content": [{"kind": "text", "data": "Fix the CSS layout issue"}]},
+                "promptLogs": [],
+            },
+            {
+                "message": {"role": "assistant", "content": [{"kind": "text", "data": "Fixed."}]},
+                "promptLogs": [{"modelTitle": "Claude Sonnet 4"}],
+            },
+        ],
+    }
+    (ws_dir / f"{ws_session_id}.json").write_text(json.dumps(ws_session_data))
+
+    return ide_dir
+
+
+class TestKiroAdapterIDE:
+    """Tests for IDE session scanning."""
+
+    def test_ide_sessions_parsed(self, ide_sessions_dir: Path) -> None:
+        adapter = KiroAdapter(
+            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
+        )
+        sessions = adapter.scan()
+        # session3 has empty history → excluded. 2 global + 1 workspace = 3
+        assert len(sessions) == 3
+
+    def test_ide_date_created_timestamp(self, ide_sessions_dir: Path) -> None:
+        """sessions.json dateCreated ms timestamp is parsed to started_at."""
+        adapter = KiroAdapter(
+            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
+        )
+        sessions = adapter.scan()
+        s1 = next(s for s in sessions if s.session_id == "ide-sess-0001")
+        assert s1.started_at is not None
+        assert s1.started_at.year == 2025
+        assert s1.started_at.month == 7
+
+    def test_ide_message_counts(self, ide_sessions_dir: Path) -> None:
+        """history[] messages are counted correctly (user/assistant)."""
+        adapter = KiroAdapter(
+            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
+        )
+        sessions = adapter.scan()
+        s1 = next(s for s in sessions if s.session_id == "ide-sess-0001")
+        assert s1.user_msgs == 2
+        assert s1.assistant_msgs == 2
+
+    def test_ide_model_extraction(self, ide_sessions_dir: Path) -> None:
+        """promptLogs modelTitle is extracted."""
+        adapter = KiroAdapter(
+            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
+        )
+        sessions = adapter.scan()
+        s1 = next(s for s in sessions if s.session_id == "ide-sess-0001")
+        assert "Claude Sonnet 4" in s1.models
+
+        s2 = next(s for s in sessions if s.session_id == "ide-sess-0002")
+        assert "Claude Haiku 3.5" in s2.models
+
+    def test_ide_workspace_sessions_traversal(self, ide_sessions_dir: Path) -> None:
+        """workspace-sessions/ directories are scanned."""
+        adapter = KiroAdapter(
+            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
+        )
+        sessions = adapter.scan()
+        ws = next(s for s in sessions if s.session_id == "ws-sess-0001")
+        assert ws.project_path == "/Users/test/projects/webapp"
+        assert ws.user_msgs == 1
+
+    def test_ide_empty_history_excluded(self, ide_sessions_dir: Path) -> None:
+        """Sessions with empty history[] are excluded."""
+        adapter = KiroAdapter(
+            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
+        )
+        sessions = adapter.scan()
+        ids = [s.session_id for s in sessions]
+        assert "ide-sess-0003" not in ids
+
+    def test_ide_cli_dedup(
+        self, kiro_sessions_dir: Path, ide_sessions_dir: Path, tmp_path: Path
+    ) -> None:
+        """Same session_id in both CLI and IDE should only appear once."""
+        # Create an IDE session with same ID as CLI session 1
+        dedup_dir = tmp_path / "dedup-ide" / "kiro.kiroagent" / "sessions"
+        dedup_dir.mkdir(parents=True)
+
+        cli_session_id = "aaaa1111-0000-0000-0000-000000000001"
+        index = [{"sessionId": cli_session_id, "dateCreated": 1751356800000}]
+        (dedup_dir / "sessions.json").write_text(json.dumps(index))
+
+        dup_data = {
+            "sessionId": cli_session_id,
+            "history": [
+                {"message": {"role": "user", "content": "duplicate"}, "promptLogs": []},
+                {"message": {"role": "assistant", "content": "response"}, "promptLogs": []},
+            ],
+        }
+        (dedup_dir / f"{cli_session_id}.json").write_text(json.dumps(dup_data))
+
+        adapter = KiroAdapter(
+            sessions_dir=kiro_sessions_dir,
+            ide_dirs=[dedup_dir.parent],
+        )
+        sessions = adapter.scan()
+
+        # Should only appear once (CLI wins since it's scanned first)
+        matching = [s for s in sessions if s.session_id == cli_session_id]
+        assert len(matching) == 1
+
+    def test_ide_prompt_word_counts(self, ide_sessions_dir: Path) -> None:
+        """Word counts from IDE user messages are extracted."""
+        adapter = KiroAdapter(
+            sessions_dir=Path("/nonexistent"), ide_dirs=[ide_sessions_dir]
+        )
+        sessions = adapter.scan()
+        s1 = next(s for s in sessions if s.session_id == "ide-sess-0001")
+        # "Implement the login page" = 4 words, "Now add form validation" = 4 words
+        assert len(s1.prompt_word_counts) == 2
+        assert s1.prompt_word_counts[0] == 4
+        assert s1.prompt_word_counts[1] == 4

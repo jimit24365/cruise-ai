@@ -43,7 +43,6 @@ CURSOR_APP_USER_DIR = next(
     (p for p in _CURSOR_APP_CANDIDATES if p.is_dir()), _CURSOR_APP_CANDIDATES[0]
 )
 CODEX_SESSIONS_DIR = HOME / ".codex" / "sessions"
-KIRO_SESSIONS_DIR = HOME / ".kiro" / "sessions" / "cli"
 
 # Framework detection maps (mirrored from history-scanner.js)
 JS_FRAMEWORK_MAP = {
