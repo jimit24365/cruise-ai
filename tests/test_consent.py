@@ -155,6 +155,35 @@ class TestNewSourceReprompt:
         # and the answer is persisted
         assert load_consent()["sources"]["kiro"] is True
 
+    def test_newly_enabled_source_invalidates_scan_cache(self, tmp_path, monkeypatch):
+        """Saying yes to a new source must take effect NOW — a scan cached
+        under the old consent scope can never serve the widened one."""
+        from nextmillionai.build_profile import _ensure_calibrated
+        from nextmillionai.paths import scan_results_path
+
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        self._seed_consent_without_kiro()
+        scan_results_path().parent.mkdir(parents=True, exist_ok=True)
+        scan_results_path().write_text("{}")
+
+        monkeypatch.setattr("builtins.input", lambda prompt: "y")
+        _ensure_calibrated(non_interactive=False)
+        assert not scan_results_path().exists()
+
+    def test_declined_new_source_keeps_scan_cache(self, tmp_path, monkeypatch):
+        """Answering no changes nothing scannable — the cache stays."""
+        from nextmillionai.build_profile import _ensure_calibrated
+        from nextmillionai.paths import scan_results_path
+
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        self._seed_consent_without_kiro()
+        scan_results_path().parent.mkdir(parents=True, exist_ok=True)
+        scan_results_path().write_text("{}")
+
+        monkeypatch.setattr("builtins.input", lambda prompt: "n")
+        _ensure_calibrated(non_interactive=False)
+        assert scan_results_path().exists()
+
     def test_non_interactive_stays_off_and_unpersisted(self, tmp_path, monkeypatch):
         from nextmillionai.build_profile import _ensure_calibrated
 

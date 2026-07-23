@@ -585,6 +585,13 @@ def _ensure_calibrated(non_interactive: bool = False) -> dict[str, bool]:
             sources = prompt_new_sources(missing, saved)
             save_consent(sources)
             consent = load_consent()
+            if any(sources.get(k) for k in missing):
+                # The cached scan predates this consent scope — drop it so
+                # the newly-granted source is scanned NOW, not after cache
+                # expiry (the user just said yes; the result must show it).
+                from nextmillionai.paths import scan_results_path
+
+                scan_results_path().unlink(missing_ok=True)
         elif missing:
             # --yes with an existing consent: new sources stay OFF for this
             # run and are deliberately NOT persisted — writing False here
