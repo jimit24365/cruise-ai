@@ -34,6 +34,7 @@ SOURCES = frozenset(
         "cursor.scored_commits",  # per-commit AI/human line attribution
         "cursor.plans",  # ~/.cursor/plans
         "codex.sessions",  # ~/.codex/sessions (flat + date-nested)
+        "kiro.sessions",  # ~/.kiro/sessions/cli + Kiro IDE app storage
         "other_tools.sessions",  # wider-field deep adapters (Cline/Continue/...)
         "git.commits",  # git log + manifests
         "ledger",  # durable history (supersedes live via max)
@@ -81,9 +82,10 @@ DERIVED: dict = {
         "session-span overlap is the weaker fallback",
     ),
     "subagentDispatches": _d(
-        ["claude_code.sessions", "claude_code.subagent_transcripts", "ledger"],
-        "max(Task tool_use count, subagent run files) per session; ledger-accumulated",
-        "Claude Code (only tool exposing dispatches)",
+        ["claude_code.sessions", "claude_code.subagent_transcripts", "kiro.sessions", "ledger"],
+        "max(Task tool_use count, subagent run files / child sessions) per "
+        "session; ledger-accumulated",
+        "Claude Code (Task calls + run files) and Kiro (subagent child sessions)",
     ),
     "longestSessionMinutes": _d(
         ["claude_code.sessions", "cursor.composer_history", "codex.sessions", "ledger"],
@@ -98,12 +100,12 @@ DERIVED: dict = {
         "Claude Code only — other tools don't expose plan mode (stated on card)",
     ),
     "avgPromptsPerSession": _d(
-        ["claude_code.sessions", "codex.sessions"],
+        ["claude_code.sessions", "codex.sessions", "kiro.sessions"],
         "mean parsed user prompts per session",
         "parsed-transcript tools only; Cursor bodies never read",
     ),
     "avgPromptWords": _d(
-        ["claude_code.sessions", "codex.sessions"],
+        ["claude_code.sessions", "codex.sessions", "kiro.sessions"],
         "mean word count of parsed prompts",
         "parsed-transcript tools only (stated on card)",
     ),
@@ -168,9 +170,9 @@ DERIVED: dict = {
         "see SCORING-METHODOLOGY §3",
     ),
     "sessionsWithSubagents": _d(
-        ["claude_code.sessions", "claude_code.subagent_transcripts", "ledger"],
+        ["claude_code.sessions", "claude_code.subagent_transcripts", "kiro.sessions", "ledger"],
         "count of sessions that dispatched ≥1 subagent; ledger-accumulated",
-        "Claude Code only",
+        "Claude Code and Kiro (subagent child sessions)",
     ),
     "totalSessions": _d(
         ["claude_code.sessions", "cursor.composer_history", "codex.sessions", "ledger"],

@@ -1343,6 +1343,165 @@ def build_experimental_signals(
     }
 
 
+# ── SESSION-METRIC FOLD ──────────────────────────────────────────────────────
+# scanner.compute_normalized derives session metrics from the claude/cursor
+# raw dicts only. The fold below adds the SAME measured signals from every
+# other deep session source's Session objects (kiro, codex, deep wider-field)
+# so a new adapter's sessions count without touching the scoring engine.
+# scoring.py stays name-blind and untouched; this is data flow, not formula.
+
+# Tools whose session metrics compute_normalized already derives from raw
+# dicts — folding their Session objects would double-count.
+_RAW_METRIC_TOOLS = frozenset({"claude_code", "cursor"})
+
+# Tools already counted in compute_normalized's tools_detected block —
+# excluded from the fold's uniqueToolCount/cliAiToolCount bumps.
+_RAW_DETECTED_TOOLS = frozenset({"claude_code", "cursor", "codex"})
+
+# CLI AI surfaces among foldable tools (extend as adapters land).
+_CLI_AI_SURFACE_TOOLS = frozenset({"kiro", "codex", "aider", "opencode"})
+
+# tool_calls_by_type names that mean "ran a terminal command".
+_TERMINAL_TOOL_NAMES = frozenset(
+    {"terminal", "shell", "bash", "execute_bash", "local_shell", "exec_command"}
+)
+
+
+def _session_mcp_calls(s: Session) -> int:
+    """MCP tool calls for one session.
+
+    The adapter's own declaration wins (``extras["mcpToolCalls"]``, set by
+    adapters that know their builtin tool names); fallback: tool names
+    carrying an explicit MCP marker.
+    """
+    declared = s.extras.get("mcpToolCalls")
+    if isinstance(declared, int):
+        return declared
+    return sum(
+        c
+        for name, c in (s.tool_calls_by_type or {}).items()
+        if name == "mcp" or name.startswith("mcp__") or name.startswith("@") or "___" in name
+    )
+
+
+def fold_session_metrics(
+    normalized: dict,
+    sessions: list[Session],
+    claude_data: dict | None,
+    cursor_data: dict | None,
+) -> None:
+    """Fold Session-object metrics from tools NOT already represented in
+    compute_normalized's raw-dict inputs into *normalized*, in place.
+
+    Averages are recomputed from raw sums (claude raw dict + fold
+    sessions), never merged from rounded outputs, so the math matches
+    compute_normalized exactly. When there is nothing to fold the dict is
+    untouched — claude/cursor-only profiles stay bit-identical.
+
+    Known limitation: model names are distinct LABELS per source (kiro
+    IDE stores display titles like "Claude Sonnet 4"), so modelCount can
+    count one model under two spellings — an honest count of distinct
+    labels, never invented usage.
+    """
+    fold = [s for s in sessions if s.tool not in _RAW_METRIC_TOOLS]
+    if not fold:
+        return
+
+    # Subagent sessions carry orchestrator-generated prompts, not human
+    # ones — excluded from prompt-derived averages (claude_code's subagent
+    # transcripts likewise never feed avgPromptWords).
+    human = [s for s in fold if not s.extras.get("is_subagent")]
+
+    cl_sessions = (claude_data or {}).get("sessions") or []
+    cl_n = len(cl_sessions)
+    cl_user = sum(s.get("userMessages", 0) for s in cl_sessions)
+    cl_words = sum(s.get("userWordCount", 0) for s in cl_sessions)
+
+    fold_user = sum(s.user_msgs for s in human)
+    fold_words = sum(sum(s.prompt_word_counts) for s in human)
+
+    # avgTurnsPerTask / avgPromptsPerSession: same inputs as the base
+    # (user messages over sessions), claude raw + fold sessions combined.
+    if cl_n + len(human) > 0 and cl_user + fold_user > 0:
+        merged_turns = round((cl_user + fold_user) / (cl_n + len(human)), 1)
+        normalized["avgTurnsPerTask"] = merged_turns
+        normalized["avgPromptsPerSession"] = merged_turns
+
+    # avgPromptWords: total prompt words over total user messages.
+    if cl_user + fold_user > 0 and cl_words + fold_words > 0:
+        normalized["avgPromptWords"] = round((cl_words + fold_words) / (cl_user + fold_user))
+
+    # terminalCommandCount: additive; a measured zero only lands when the
+    # source actually exposes tool-call names (never estimated).
+    fold_terminal = sum(
+        c
+        for s in fold
+        for name, c in (s.tool_calls_by_type or {}).items()
+        if name.lower() in _TERMINAL_TOOL_NAMES
+    )
+    has_tool_measures = any(s.tool_calls_by_type for s in fold)
+    if "terminalCommandCount" in normalized:
+        normalized["terminalCommandCount"] += fold_terminal
+    elif has_tool_measures:
+        normalized["terminalCommandCount"] = fold_terminal
+
+    # mcpToolCalls: base always sets the key (0 without claude data).
+    fold_mcp = sum(_session_mcp_calls(s) for s in fold)
+    normalized["mcpToolCalls"] = normalized.get("mcpToolCalls", 0) + fold_mcp
+
+    # modelCount: rebuild the raw-side name set (same reads as the base:
+    # claude models_used keys + cursor conversation models), union fold.
+    raw_models: set[str] = set((claude_data or {}).get("models_used") or {})
+    convos = (cursor_data or {}).get("conversations") or {}
+    raw_models.update(convos.get("models") or {})
+    fold_models = {m for s in fold for m in s.models if m}
+    if raw_models or fold_models:
+        normalized["modelCount"] = len(raw_models | fold_models)
+
+    # uniqueToolCount / cliAiToolCount: count each foldable tool once,
+    # excluding tools the base already detected via raw dicts.
+    fold_tools = {s.tool for s in fold if s.session_id} - _RAW_DETECTED_TOOLS
+    cli_tools = fold_tools & _CLI_AI_SURFACE_TOOLS
+    if "kiro" in cli_tools:
+        # Kiro counts as a CLI surface only with >=1 CLI-generation session
+        # (IDE-only usage is an editor surface, not a CLI one).
+        has_cli_kiro = any(s.tool == "kiro" and s.extras.get("source") != "ide" for s in fold)
+        if not has_cli_kiro:
+            cli_tools = cli_tools - {"kiro"}
+    if fold_tools:
+        normalized["uniqueToolCount"] = normalized.get("uniqueToolCount", 0) + len(fold_tools)
+    if cli_tools:
+        normalized["cliAiToolCount"] = normalized.get("cliAiToolCount", 0) + len(cli_tools)
+
+
+def attribute_subagent_dispatches(sessions: list[Session]) -> None:
+    """Credit parent sessions with dispatches for adapters that mark
+    orchestration via child sessions (``extras.is_subagent`` +
+    ``parent_session_id``) instead of task tool calls.
+
+    Mutates each parent's ``tool_calls_by_type["task"]`` (Session is a
+    frozen dataclass but its dicts are mutable), so every downstream
+    consumer keyed on "task" — build_harness_summary,
+    build_project_orchestration, and the durable ledger — counts them
+    from one place. ``max()`` guards a future adapter that records both a
+    dispatch tool call and child sessions. A pruned/missing parent is
+    skipped: no parent measured, no invented dispatch (the children still
+    count as sessions).
+    """
+    by_id = {s.session_id: s for s in sessions if s.session_id}
+    children: dict[str, int] = {}
+    for s in sessions:
+        if s.extras.get("is_subagent"):
+            pid = s.extras.get("parent_session_id")
+            if isinstance(pid, str) and pid:
+                children[pid] = children.get(pid, 0) + 1
+    for pid, count in children.items():
+        parent = by_id.get(pid)
+        if parent is not None:
+            tc = parent.tool_calls_by_type
+            tc["task"] = max(tc.get("task", 0), count)
+
+
 # ── COVERAGE REPORT ──────────────────────────────────────────────────────────
 
 _SOURCE_LABELS = {
@@ -1507,6 +1666,9 @@ def build_harness_summary(git_data: dict | None, sessions: list[Session] | None 
 # The NormalizedMetrics slots that count toward completeness — mirrors
 # schema.NormalizedMetrics. A profile with thin sources fills few of these.
 _CONFIDENCE_METRIC_SLOTS = 46
+# Kept at 4 deliberately: kiro and wider-field surfaces count toward, never
+# above, this cap (the ratio is clamped) — bumping the denominator would tax
+# every existing profile's confidence for a tool most users don't run.
 _ALL_STANDARD_SOURCES = 4  # claude_code, cursor, codex, git
 
 # A dimension scored from fewer than this many underlying events is marked
@@ -1595,7 +1757,8 @@ def build_confidence(
             "sources": {
                 "pct": round(sources * 100),
                 "detail": (
-                    f"{len(sources_used)} of {_ALL_STANDARD_SOURCES} standard sources collected"
+                    f"{min(len(sources_used), _ALL_STANDARD_SOURCES)} of"
+                    f" {_ALL_STANDARD_SOURCES} standard sources collected"
                 ),
             },
             "depth": {

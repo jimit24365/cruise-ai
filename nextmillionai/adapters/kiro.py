@@ -36,6 +36,32 @@ def _log(msg: str) -> None:
         print(f"[scanner] {msg}", file=sys.stderr)
 
 
+# Kiro's builtin (non-MCP) tool names. Anything else in a CLI transcript's
+# toolUse blocks is an MCP-provided tool (jira, confluence, gitlab, ...) —
+# declared per session via extras["mcpToolCalls"] so the aggregator's fold
+# never needs kiro-specific knowledge.
+KIRO_BUILTIN_TOOLS = frozenset(
+    {
+        "shell",
+        "read",
+        "write",
+        "edit",
+        "fs_read",
+        "fs_write",
+        "execute_bash",
+        "use_aws",
+        "report_issue",
+        "thinking",
+        "todo_list",
+        "knowledge",
+        "introspect",
+        "delegate",
+        "grep",
+        "glob",
+    }
+)
+
+
 class KiroAdapter:
     """Adapter that scans Kiro CLI and IDE sessions.
 
@@ -202,6 +228,9 @@ class KiroAdapter:
 
             # Only include sessions with actual activity
             if user_msgs > 0 or assistant_msgs > 0:
+                mcp_calls = sum(
+                    c for name, c in tool_calls.items() if name not in KIRO_BUILTIN_TOOLS
+                )
                 sessions.append(
                     Session(
                         tool="kiro",
@@ -218,6 +247,7 @@ class KiroAdapter:
                             "agent_name": agent_name,
                             "is_subagent": is_subagent,
                             "parent_session_id": meta.get("parent_session_id"),
+                            "mcpToolCalls": mcp_calls,
                         },
                     )
                 )

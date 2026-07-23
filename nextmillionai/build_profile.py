@@ -75,6 +75,13 @@ def run_scan(project_filter=None, enabled_sources=None, collection_config=None, 
     # Run adapters — returns Session objects + raw data dicts
     sessions, raw_data, git_data = run_adapters(pf, enabled_sources, collection_config)
 
+    # Adapters that mark orchestration via child sessions (kiro) get their
+    # parents credited with task dispatches BEFORE anything consumes
+    # tool_calls_by_type (harness, ledger, signal matrix).
+    from nextmillionai.aggregator import attribute_subagent_dispatches, fold_session_metrics
+
+    attribute_subagent_dispatches(sessions)
+
     # Extract per-tool raw data for backward compatibility
     claude_data = raw_data.get("claude_code")
     cursor_data = raw_data.get("cursor")
@@ -89,6 +96,11 @@ def run_scan(project_filter=None, enabled_sources=None, collection_config=None, 
         desktop_data=raw_data.get("claude_desktop"),
         cursor_consented=bool((enabled_sources or {}).get("cursor")),
     )
+
+    # Fold session-derived signals from every OTHER deep session source
+    # (kiro, codex, deep wider-field) into the same measured metrics —
+    # compute_normalized only reads the claude/cursor raw dicts.
+    fold_session_metrics(normalized, sessions, claude_data, cursor_data)
 
     # Cross-surface breadth: distinct tools with at least one PARSED
     # session — usage evidence for Context Command (v0.4.0), never mere
