@@ -591,3 +591,39 @@ class TestKiroAdapterIDE:
         assert len(s1.prompt_word_counts) == 2
         assert s1.prompt_word_counts[0] == 4
         assert s1.prompt_word_counts[1] == 4
+
+
+class TestKiroMcpDeclaration:
+    """CLI sessions declare their MCP call count (non-builtin tool names)
+    so the aggregator fold never needs kiro-specific knowledge."""
+
+    def test_builtin_only_session_declares_zero(self, kiro_sessions_dir: Path) -> None:
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
+        sessions = adapter.scan()
+        s1 = next(s for s in sessions if "000000000001" in s.session_id)
+        # read/shell/write are Kiro builtins
+        assert s1.extras["mcpToolCalls"] == 0
+
+    def test_mcp_tools_counted(self, kiro_sessions_dir: Path) -> None:
+        adapter = KiroAdapter(sessions_dir=kiro_sessions_dir, ide_dirs=[])
+        sessions = adapter.scan()
+        s2 = next(s for s in sessions if "000000000002" in s.session_id)
+        # get_merge_request is not a builtin → MCP-provided
+        assert s2.extras["mcpToolCalls"] == 1
+
+
+class TestKiroScannerConstants:
+    """Path constants live in nextmillionai.scanner (repo convention) and
+    are late-bound, so monkeypatching works even for bare KiroAdapter()."""
+
+    def test_bare_adapter_uses_scanner_constants(
+        self, kiro_sessions_dir: Path, monkeypatch
+    ) -> None:
+        import nextmillionai.scanner as scanner_mod
+
+        monkeypatch.setattr(scanner_mod, "KIRO_SESSIONS_DIR", kiro_sessions_dir)
+        monkeypatch.setattr(scanner_mod, "KIRO_IDE_DIRS", [])
+
+        adapter = KiroAdapter()  # no explicit dirs
+        assert adapter.detect() is True
+        assert len(adapter.scan()) == 2
