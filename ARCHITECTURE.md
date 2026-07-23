@@ -4,12 +4,12 @@
 
 | Module | Paths | Purpose |
 |--------|-------|---------|
-| **core** | `nextmillionai/scoring.py`, `nextmillionai/schema.py`, `nextmillionai/signal_registry.py`, `nextmillionai/docs/**` | Scoring engine, the one data contract, derived-field registry, methodology docs |
-| **scan** | `nextmillionai/scanner.py`, `nextmillionai/adapters/**`, `nextmillionai/code_intel.py`, `nextmillionai/history.py` | Multi-tool session scanner, per-tool adapters, opt-in code scan, durable ledger |
-| **serve** | `nextmillionai/hub.py`, `nextmillionai/build_profile.py`, `nextmillionai/live.py` | HTTP server, CLI entry point, live file-watcher/SSE |
-| **net** | `nextmillionai/network.py`, `nextmillionai/network_server.py`, `nextmillionai/sync_merge.py` | The ONLY outbound module (publish/sync, opt-in) + reference registry + device merge |
-| **face** | `nextmillionai/static/**` | Frontend HTML/CSS/JS (one assessment JSON renders both views) |
-| **bridge** | `nextmillionai-mcp/**` | MCP server for Claude/Cursor |
+| **core** | `cruise_ai/scoring.py`, `cruise_ai/schema.py`, `cruise_ai/signal_registry.py`, `cruise_ai/docs/**` | Scoring engine, the one data contract, derived-field registry, methodology docs |
+| **scan** | `cruise_ai/scanner.py`, `cruise_ai/adapters/**`, `cruise_ai/code_intel.py`, `cruise_ai/history.py` | Multi-tool session scanner, per-tool adapters, opt-in code scan, durable ledger |
+| **serve** | `cruise_ai/hub.py`, `cruise_ai/build_profile.py`, `cruise_ai/live.py` | HTTP server, CLI entry point, live file-watcher/SSE |
+| **net** | `cruise_ai/network.py`, `cruise_ai/network_server.py`, `cruise_ai/sync_merge.py` | The ONLY outbound module (publish/sync, opt-in) + reference registry + device merge |
+| **face** | `cruise_ai/static/**` | Frontend HTML/CSS/JS (one assessment JSON renders both views) |
+| **bridge** | `cruise_ai-mcp/**` | MCP server for Claude/Cursor |
 
 ### Shared utilities
 

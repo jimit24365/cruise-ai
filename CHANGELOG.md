@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2026-06-24
 
-First public release. nextmillionai is a local-first AI coding profile
+First public release. cruise_ai is a local-first AI coding profile
 builder — the open alternative to Paxel.
 
 ### Added

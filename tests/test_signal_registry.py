@@ -1,11 +1,11 @@
 """Enforcement for the signal dependency registry — a derived field
 without declared inputs is a CI failure, not a code-review hope."""
 
-from nextmillionai.signal_registry import DERIVED, LEDGER_SUPERSEDED, SOURCES
+from cruise_ai.signal_registry import DERIVED, LEDGER_SUPERSEDED, SOURCES
 
 
 def test_every_wrapped_stat_is_registered():
-    from nextmillionai.scoring import build_wrapped_stats
+    from cruise_ai.scoring import build_wrapped_stats
 
     stats = build_wrapped_stats({}, {"dominant": {"id": "x", "line": ""}})
     missing = set(stats) - set(DERIVED)
@@ -61,9 +61,9 @@ def test_assessment_staleness_detects_input_changes(tmp_path, monkeypatch):
     import os
     import time
 
-    from nextmillionai.profile_data import assessment_staleness
+    from cruise_ai.profile_data import assessment_staleness
 
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     data = tmp_path / "data"
     data.mkdir(parents=True)
 

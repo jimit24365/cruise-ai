@@ -9,11 +9,11 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _isolate_home(tmp_path, monkeypatch):
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
 
 
 def _start_hub(monkeypatch):
-    from nextmillionai import hub
+    from cruise_ai import hub
 
     server = hub.ThreadedHTTPServer(("localhost", 0), hub.ProfileHandler)
     port = server.server_address[1]

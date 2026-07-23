@@ -8,8 +8,8 @@ weight, or cites a study that doesn't exist, CI goes red and names it — the
 same drift discipline as the render-parity guards.
 """
 
-from nextmillionai import scoring
-from nextmillionai.methodology_spec import (
+from cruise_ai import scoring
+from cruise_ai.methodology_spec import (
     CITATIONS,
     DIM_ORDER,
     DIMENSION_META,
@@ -19,7 +19,7 @@ from nextmillionai.methodology_spec import (
     SECTION_LABELS,
     build_spec,
 )
-from nextmillionai.schema import METHODOLOGY_VERSION
+from cruise_ai.schema import METHODOLOGY_VERSION
 
 SPEC = build_spec()
 

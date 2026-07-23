@@ -9,8 +9,8 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from nextmillionai.adapters._base import Session
-from nextmillionai.history import (
+from cruise_ai.adapters._base import Session
+from cruise_ai.history import (
     append_snapshot,
     ledger_orchestration,
     load_snapshots,
@@ -21,7 +21,7 @@ from nextmillionai.history import (
 
 @pytest.fixture(autouse=True)
 def fake_home(tmp_path, monkeypatch):
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
 
 
 def make_session(sid, project="/p", task=0, start=None, hours=1):
@@ -114,7 +114,7 @@ class TestSnapshots:
 
 
 def test_ledger_totals_math():
-    from nextmillionai.history import ledger_totals
+    from cruise_ai.history import ledger_totals
 
     ledger = {
         "claude_code:a": {
@@ -143,10 +143,10 @@ def test_ledger_never_regresses_measured_work(tmp_path, monkeypatch):
     parse) must never lower task/agent counts already measured."""
     from datetime import datetime, timezone
 
-    from nextmillionai.adapters._base import Session
-    from nextmillionai.history import ledger_totals, update_session_ledger
+    from cruise_ai.adapters._base import Session
+    from cruise_ai.history import ledger_totals, update_session_ledger
 
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     rich = Session(
         tool="claude_code",
         session_id="s1",
@@ -175,7 +175,7 @@ def test_ledger_never_regresses_measured_work(tmp_path, monkeypatch):
 
 
 def test_ledger_totals_longest_and_deep():
-    from nextmillionai.history import ledger_totals
+    from cruise_ai.history import ledger_totals
 
     ledger = {
         "cursor:composer:x": {
@@ -195,7 +195,7 @@ def test_ledger_totals_longest_and_deep():
 def test_parallel_is_per_tool_never_cross_tool():
     """A Cursor tab open beside a Claude session is multi-surface work,
     not 'two agents at once' — only within-tool overlap counts."""
-    from nextmillionai.history import ledger_orchestration
+    from cruise_ai.history import ledger_orchestration
 
     ledger = {
         "claude_code:a": {
@@ -225,7 +225,7 @@ def test_parallel_is_per_tool_never_cross_tool():
 def test_ledger_totals_prefer_active_minutes():
     """Effective duration: gap-based active time where measured; span
     (capped) only when a tool exposes nothing better."""
-    from nextmillionai.history import ledger_totals
+    from cruise_ai.history import ledger_totals
 
     ledger = {
         "claude_code:a": {  # measured active time wins over its 4h span
@@ -245,7 +245,7 @@ def test_ledger_totals_prefer_active_minutes():
 
 
 def test_ledger_totals_marathon_sessions():
-    from nextmillionai.history import ledger_totals
+    from cruise_ai.history import ledger_totals
 
     ledger = {
         "claude_code:a": {"start": "2026-06-01T10:00:00", "end": "2026-06-01T10:20:00"},  # 20m
@@ -261,7 +261,7 @@ def test_ledger_totals_marathon_sessions():
 def test_parallel_from_overlapping_subagent_runs():
     """Overlapping agent-run transcripts are the HARD parallelism
     evidence — they count even when no two sessions overlap."""
-    from nextmillionai.history import ledger_orchestration
+    from cruise_ai.history import ledger_orchestration
 
     ledger = {
         "claude_code:a": {
@@ -291,7 +291,7 @@ class TestSubagentChildLedger:
     def _child(self, sid: str, minutes: int):
         from datetime import datetime, timedelta, timezone
 
-        from nextmillionai.adapters._base import Session
+        from cruise_ai.adapters._base import Session
 
         start = datetime(2026, 7, 1, 10, 0, tzinfo=timezone.utc)
         return Session(
@@ -307,7 +307,7 @@ class TestSubagentChildLedger:
     def _parent(self, minutes: int = 60):
         from datetime import datetime, timedelta, timezone
 
-        from nextmillionai.adapters._base import Session
+        from cruise_ai.adapters._base import Session
 
         start = datetime(2026, 7, 1, 9, 0, tzinfo=timezone.utc)
         return Session(
@@ -320,9 +320,9 @@ class TestSubagentChildLedger:
         )
 
     def test_children_book_as_agent_runtime_not_sessions(self, tmp_path, monkeypatch):
-        from nextmillionai.history import ledger_totals, update_session_ledger
+        from cruise_ai.history import ledger_totals, update_session_ledger
 
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         ledger = update_session_ledger(
             [self._parent(60), self._child("c1", 30), self._child("c2", 45)]
         )
@@ -336,14 +336,14 @@ class TestSubagentChildLedger:
     def test_subagent_flag_survives_remerge(self, tmp_path, monkeypatch):
         """A later rescan must never demote a recorded child to a user
         session (the flag is one-way, like every ledger max-guard)."""
-        from nextmillionai.history import ledger_totals, update_session_ledger
+        from cruise_ai.history import ledger_totals, update_session_ledger
 
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         update_session_ledger([self._child("c1", 30)])
         # Re-merge the same session WITHOUT the extras (pruned metadata)
         from datetime import datetime, timedelta, timezone
 
-        from nextmillionai.adapters._base import Session
+        from cruise_ai.adapters._base import Session
 
         start = datetime(2026, 7, 1, 10, 0, tzinfo=timezone.utc)
         bare = Session(

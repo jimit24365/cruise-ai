@@ -1,4 +1,4 @@
-"""Tests for nextmillionai.live — the local live-watch behind `report --live`.
+"""Tests for cruise_ai.live — the local live-watch behind `report --live`.
 
 Covers: fingerprinting, source discovery (none / sessions / repos),
 debounce under rapid successive edits, startup refresh against a stale
@@ -12,7 +12,7 @@ import threading
 import time
 from pathlib import Path
 
-from nextmillionai.live import (
+from cruise_ai.live import (
     LiveState,
     LiveWatcher,
     discover_watch_paths,
@@ -40,7 +40,7 @@ def test_tree_fingerprint_skips_heavy_dirs(tmp_path):
 
 def test_discover_watch_paths_no_sources(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path / ".nma"))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path / ".nma"))
     assert discover_watch_paths() == []
 
 
@@ -48,8 +48,8 @@ def test_discover_watch_paths_sessions_and_repos(tmp_path, monkeypatch):
     home = tmp_path / "home"
     (home / ".claude" / "projects").mkdir(parents=True)
     monkeypatch.setenv("HOME", str(home))
-    nma = tmp_path / "nma"
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(nma))
+    nma = tmp_path / "cruise-ai"
+    monkeypatch.setenv("CRUISE_AI_HOME", str(nma))
 
     repo = tmp_path / "repo"
     (repo / ".git").mkdir(parents=True)
@@ -184,7 +184,7 @@ def test_watcher_failure_surfaces_in_state():
 
 
 def _start_hub(monkeypatch):
-    from nextmillionai import hub
+    from cruise_ai import hub
 
     server = hub.ThreadedHTTPServer(("localhost", 0), hub.ProfileHandler)
     port = server.server_address[1]
@@ -210,7 +210,7 @@ def test_hub_live_status_endpoint(monkeypatch):
 
 
 def test_hub_live_sse_pushes_on_generation_bump(monkeypatch):
-    from nextmillionai.live import STATE
+    from cruise_ai.live import STATE
 
     server, port = _start_hub(monkeypatch)
     try:

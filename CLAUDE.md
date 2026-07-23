@@ -32,9 +32,9 @@ asking for one of these is a signal to ask, not authorization.
 
 ```bash
 python3 -m pytest tests/ -q -p no:cacheprovider --override-ini addopts=   # works on system 3.9
-uv tool run ruff check nextmillionai/ tests/ && uv tool run ruff format --check nextmillionai/ tests/
-uv run --python 3.12 --with mypy --no-project -- python -m mypy nextmillionai --ignore-missing-imports
-python3 -m nextmillionai --serve          # assess + both views on :7749
+uv tool run ruff check cruise_ai/ tests/ && uv tool run ruff format --check cruise_ai/ tests/
+uv run --python 3.12 --with mypy --no-project -- python -m mypy cruise_ai --ignore-missing-imports
+python3 -m cruise_ai --serve          # assess + both views on :7749
 ```
 
 All four gates must be green before every commit. Commit per workstream;
@@ -47,9 +47,9 @@ push to origin/main.
 - Heatmap/JS dates: use `_localDate()`, never `toISOString()` (IST shift).
 - `dataclass(slots=...)` guard in `adapters/_base.py` stays conditional
   (3.9 floor); don't run `ruff --unsafe-fixes` casually.
-- Durable evidence: `history.py` ledger under `~/.nextmillionai/data/history/`
+- Durable evidence: `history.py` ledger under `~/.cruise_ai/data/history/`
   — pipeline reads orchestration/dispatches/activity from it.
 - No emoji on web surfaces — `icons.js` glyph set only.
 - Scoring formulas + assessment JSON contract are versioned
-  (`nextmillionai/docs/SCORING-METHODOLOGY.md`, `docs/SCHEMA.md`) — changing
+  (`cruise_ai/docs/SCORING-METHODOLOGY.md`, `docs/SCHEMA.md`) — changing
   them is a deliberate methodology version bump, never a side effect.

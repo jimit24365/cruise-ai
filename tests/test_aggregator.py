@@ -12,9 +12,9 @@ from pathlib import Path
 
 import pytest
 
-from nextmillionai.adapters._base import Session
-from nextmillionai.adapters.claude_code import ClaudeCodeAdapter
-from nextmillionai.aggregator import (
+from cruise_ai.adapters._base import Session
+from cruise_ai.adapters.claude_code import ClaudeCodeAdapter
+from cruise_ai.aggregator import (
     build_activity_by_day,
     build_models_summary,
     build_scanned_projects,
@@ -530,7 +530,7 @@ class TestLeverageSignal:
         }
 
     def test_measured_facts(self):
-        from nextmillionai.aggregator import build_leverage_signal
+        from cruise_ai.aggregator import build_leverage_signal
 
         lev = build_leverage_signal(self._cursor(), {"totalEstimatedHours": 897.0})
         assert lev["aiShare"] == 98.7
@@ -541,7 +541,7 @@ class TestLeverageSignal:
         assert "265 tracked commits" in lev["basis"]
 
     def test_uncapped_multiple(self):
-        from nextmillionai.aggregator import build_leverage_signal
+        from cruise_ai.aggregator import build_leverage_signal
 
         lev = build_leverage_signal(
             self._cursor(commits=50, ai=3000, human=1000), {"totalEstimatedHours": 100}
@@ -551,7 +551,7 @@ class TestLeverageSignal:
         assert lev["outputMultipleCapped"] is False
 
     def test_all_ai_lines_no_silly_ratio(self):
-        from nextmillionai.aggregator import build_leverage_signal
+        from cruise_ai.aggregator import build_leverage_signal
 
         lev = build_leverage_signal(
             self._cursor(commits=50, ai=5000, human=0), {"totalEstimatedHours": 100}
@@ -560,14 +560,14 @@ class TestLeverageSignal:
         assert lev["outputMultiple"] is None  # never a fabricated ratio
 
     def test_thin_data_is_insufficient(self):
-        from nextmillionai.aggregator import build_leverage_signal
+        from cruise_ai.aggregator import build_leverage_signal
 
         assert build_leverage_signal(self._cursor(commits=5), {}) is None
         assert build_leverage_signal(self._cursor(commits=50, ai=300, human=100), {}) is None
         assert build_leverage_signal(None, {"totalEstimatedHours": 100}) is None
 
     def test_no_hours_no_counterfactual(self):
-        from nextmillionai.aggregator import build_leverage_signal
+        from cruise_ai.aggregator import build_leverage_signal
 
         lev = build_leverage_signal(self._cursor(), {})
         assert lev is not None  # measured facts still stand
@@ -579,7 +579,7 @@ class TestProvenanceSourceStates:
     coverage sources Provenance renders."""
 
     def _cov(self, enabled, detected, raw):
-        from nextmillionai.aggregator import build_coverage_report
+        from cruise_ai.aggregator import build_coverage_report
 
         return {
             s["id"]: s for s in build_coverage_report(enabled, {}, detected, raw, None)["sources"]
@@ -594,7 +594,7 @@ class TestProvenanceSourceStates:
         assert s["consented"] and s["collected"] and s["detectedOnMachine"]
 
     def test_desktop_present_but_unconsented_is_a_gap(self):
-        from nextmillionai.aggregator import build_coverage_report
+        from cruise_ai.aggregator import build_coverage_report
 
         rep = build_coverage_report(
             {"claude_desktop": False},
@@ -614,9 +614,9 @@ class TestProvenanceSourceStates:
         assert s["consented"] and s["detectedOnMachine"] and not s["collected"]
 
     def test_toggle_roundtrip(self, tmp_path, monkeypatch):
-        from nextmillionai.consent import load_consent, save_consent
+        from cruise_ai.consent import load_consent, save_consent
 
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         for value in (True, False, True):
             sources = dict(load_consent()["sources"]) if load_consent() else {}
             sources["claude_desktop"] = value
@@ -667,7 +667,7 @@ class TestFoldSessionMetrics:
 
     def test_noop_when_nothing_to_fold(self):
         """Claude/cursor-only profiles stay bit-identical."""
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         normalized = {"avgPromptWords": 15, "avgTurnsPerTask": 2.0, "mcpToolCalls": 3}
         before = dict(normalized)
@@ -678,7 +678,7 @@ class TestFoldSessionMetrics:
 
     def test_weighted_average_merge(self):
         """Merged averages recomputed from raw sums, matching the base formulas."""
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         normalized = {"avgTurnsPerTask": 2.0, "avgPromptWords": 15, "avgPromptsPerSession": 2.0}
         kiro = _kiro_session("k1", user_msgs=2, word_counts=[10, 30])
@@ -691,7 +691,7 @@ class TestFoldSessionMetrics:
 
     def test_kiro_only_sets_averages(self):
         """A kiro-only profile gets measured averages (no claude data)."""
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         normalized: dict = {}
         kiro = _kiro_session("k1", user_msgs=4, word_counts=[10, 10, 10, 30])
@@ -702,7 +702,7 @@ class TestFoldSessionMetrics:
     def test_subagent_prompts_excluded_from_averages(self):
         """Subagent sessions carry orchestrator prompts — never in averages,
         but their terminal commands still count."""
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         normalized: dict = {}
         parent = _kiro_session("k1", user_msgs=2, word_counts=[10, 10])
@@ -719,7 +719,7 @@ class TestFoldSessionMetrics:
         assert normalized["terminalCommandCount"] == 3  # subagent shell counts
 
     def test_terminal_alias_shell(self):
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         normalized = {"terminalCommandCount": 5}
         kiro = _kiro_session("k1", user_msgs=1, word_counts=[5], tools={"shell": 2, "read": 4})
@@ -727,7 +727,7 @@ class TestFoldSessionMetrics:
         assert normalized["terminalCommandCount"] == 7
 
     def test_mcp_declared_by_adapter_wins(self):
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         normalized: dict = {}
         kiro = _kiro_session(
@@ -741,7 +741,7 @@ class TestFoldSessionMetrics:
         assert normalized["mcpToolCalls"] == 4
 
     def test_mcp_marker_fallback(self):
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         normalized: dict = {}
         other = Session(
@@ -754,7 +754,7 @@ class TestFoldSessionMetrics:
         assert normalized["mcpToolCalls"] == 2
 
     def test_model_union(self):
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         normalized = {"modelCount": 1}
         kiro = _kiro_session(
@@ -765,7 +765,7 @@ class TestFoldSessionMetrics:
         assert normalized["modelCount"] == 2
 
     def test_tool_count_bumps(self):
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         normalized = {"uniqueToolCount": 2, "cliAiToolCount": 1}
         kiro = _kiro_session("k1", user_msgs=1, word_counts=[5], tools={"shell": 1})
@@ -774,7 +774,7 @@ class TestFoldSessionMetrics:
         assert normalized["cliAiToolCount"] == 2
 
     def test_ide_only_kiro_is_not_a_cli_surface(self):
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         normalized = {"uniqueToolCount": 2, "cliAiToolCount": 1}
         ide = _kiro_session("k1", user_msgs=1, word_counts=[5], extras={"source": "ide"})
@@ -785,7 +785,7 @@ class TestFoldSessionMetrics:
     def test_codex_sessions_never_double_count_tool_totals(self):
         """codex is already in compute_normalized's tools_detected — the
         fold must not bump uniqueToolCount/cliAiToolCount for it again."""
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         normalized = {"uniqueToolCount": 2, "cliAiToolCount": 2}
         codex = Session(tool="codex", session_id="c1", user_msgs=2, prompt_word_counts=[7, 9])
@@ -798,7 +798,7 @@ class TestFoldSessionMetrics:
 
 class TestAttributeSubagentDispatches:
     def test_parent_credited(self):
-        from nextmillionai.aggregator import attribute_subagent_dispatches
+        from cruise_ai.aggregator import attribute_subagent_dispatches
 
         parent = _kiro_session("k1", user_msgs=2)
         c1 = _kiro_session("k2", extras={"is_subagent": True, "parent_session_id": "k1"})
@@ -807,7 +807,7 @@ class TestAttributeSubagentDispatches:
         assert parent.tool_calls_by_type["task"] == 2
 
     def test_max_guards_double_recording(self):
-        from nextmillionai.aggregator import attribute_subagent_dispatches
+        from cruise_ai.aggregator import attribute_subagent_dispatches
 
         parent = _kiro_session("k1", user_msgs=2, tools={"task": 5})
         child = _kiro_session("k2", extras={"is_subagent": True, "parent_session_id": "k1"})
@@ -815,7 +815,7 @@ class TestAttributeSubagentDispatches:
         assert parent.tool_calls_by_type["task"] == 5
 
     def test_missing_parent_never_invents(self):
-        from nextmillionai.aggregator import attribute_subagent_dispatches
+        from cruise_ai.aggregator import attribute_subagent_dispatches
 
         orphan = _kiro_session("k9", extras={"is_subagent": True, "parent_session_id": "gone"})
         sessions = [orphan]
@@ -823,7 +823,7 @@ class TestAttributeSubagentDispatches:
         assert "task" not in orphan.tool_calls_by_type
 
     def test_claude_sessions_untouched(self):
-        from nextmillionai.aggregator import attribute_subagent_dispatches
+        from cruise_ai.aggregator import attribute_subagent_dispatches
 
         claude = Session(tool="claude_code", session_id="c1", tool_calls_by_type={"task": 3})
         attribute_subagent_dispatches([claude])
@@ -836,7 +836,7 @@ class TestFoldReviewFixes:
     def test_model_count_includes_cursor_by_model(self):
         """The raw-side rebuild must include cursor ai_code.byModel —
         adding a kiro source must never DECREASE modelCount."""
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         cursor_raw = {"ai_code": {"byModel": {"gpt-4.1": 5, "claude-3.7-sonnet": 3}}}
         normalized = {"modelCount": 2}
@@ -848,7 +848,7 @@ class TestFoldReviewFixes:
         """A deep tool exposing message counts but no prompt text (Cline,
         Continue, ...) must not drag avgPromptWords down — unmeasured
         never moves measured."""
-        from nextmillionai.aggregator import fold_session_metrics
+        from cruise_ai.aggregator import fold_session_metrics
 
         claude_raw = {
             "sessions": [{"userMessages": 4, "userWordCount": 60}],
@@ -863,7 +863,7 @@ class TestFoldReviewFixes:
         """attribute_subagent_dispatches injects a 'task' key; that alone
         must not claim a measured terminalCommandCount=0 for a source
         that exposes no tool names (kiro IDE)."""
-        from nextmillionai.aggregator import (
+        from cruise_ai.aggregator import (
             attribute_subagent_dispatches,
             fold_session_metrics,
         )
@@ -883,7 +883,7 @@ class TestFoldReviewFixes:
     def test_parent_lookup_is_tool_scoped(self):
         """A cross-tool session-id collision must never credit another
         tool's session with a dispatch."""
-        from nextmillionai.aggregator import attribute_subagent_dispatches
+        from cruise_ai.aggregator import attribute_subagent_dispatches
 
         claude_twin = Session(tool="claude_code", session_id="same-id")
         child = _kiro_session("k2", extras={"is_subagent": True, "parent_session_id": "same-id"})

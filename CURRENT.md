@@ -7,7 +7,7 @@ breaking what exists and to find the right doc — it does not narrate past
 sessions. What must never change without sign-off lives in
 [`docs/HARDLINES.md`](docs/HARDLINES.md).
 
-nextmillionai is a local-first AI coding profile builder — the open
+cruise_ai is a local-first AI coding profile builder — the open
 alternative to Paxel. It scans the user's own AI sessions (Claude Code,
 Cursor, Codex, Kiro) + git, scores how they build with AI, and renders a
 shareable **profile** and a deep **report** from ONE assessment JSON.
@@ -20,9 +20,9 @@ registry. Mission: reverse hiring on proof-based work.
 |---|---|---|
 | **Always** | `CLAUDE.md` | values, gates, conventions |
 | **Always** | this file | directional invariants + architecture + decisions |
-| Contract | `nextmillionai/docs/SCORING-METHODOLOGY.md` | every formula (served at `/methodology`) |
-| Contract | `nextmillionai/docs/methodology/DERIVATIONS.md` | @generated per-metric reference (logic + reasoning + provenance + citations) from the methodology registry |
-| Contract | `nextmillionai/docs/SCHEMA.md` | the one JSON + shareable/private map |
+| Contract | `cruise_ai/docs/SCORING-METHODOLOGY.md` | every formula (served at `/methodology`) |
+| Contract | `cruise_ai/docs/methodology/DERIVATIONS.md` | @generated per-metric reference (logic + reasoning + provenance + citations) from the methodology registry |
+| Contract | `cruise_ai/docs/SCHEMA.md` | the one JSON + shareable/private map |
 | Contract | `BUILDER-MODEL.md`, `TAXONOMY.md` | positioning enum, archetypes/kinds |
 | Contract | `docs/BUSINESS-FIT-MAP.md` | fit-map formulas + naming policy |
 | Map | `docs/README.md` | flat docs map — what every doc is for, by topic |
@@ -40,6 +40,7 @@ registry. Mission: reverse hiring on proof-based work.
 | Feature | `commands/assess.md`, `commands/enrich.md`, `commands/profile.md` | Claude Code plugin slash commands (MCP) |
 | Policy | `PRIVACY.md`, `DATA_COLLECTION.md`, `SECURITY.md` | the two promises, per-source reads |
 | Product | `README.md`, `THESIS.md`, `ARCHITECTURE.md` | quickstart, why, module map |
+| Product | `ROADMAP.md` | feature roadmap — categories, priorities, teach/auto modes |
 | Product | `docs/TRUST.md` | anti-gaming: what a report proves, what it doesn't, what we won't do |
 | Product | `docs/DESIGN.md` | in-app UI design language: real tokens/components from the shipped product (profile/report) |
 
@@ -115,7 +116,7 @@ piece exists and extend it; reach for the contract doc for detail.
   support is uneven. Revisit only when a platform supports MCP AND offers
   a user-initiated data export.
 - **GitHub-clone-first distribution.** No PyPI/npm package yet; runs
-  straight from the clone (`python3 -m nextmillionai`).
+  straight from the clone (`python3 -m cruise_ai`).
 
 ## Architecture map (60 seconds)
 
@@ -127,19 +128,19 @@ build_profile.run_scan → normalized metrics + harness + footprint inputs
    ├→ aggregator.py (activity, Lab insights, coverage, confidence, stack)
    └→ scoring.py (dimensions, archetypes, kinds, positioning)
         └→ business_fit.py (report-only fit map)
-profile.json (THE assessment JSON, ~/.nextmillionai/data/)
+profile.json (THE assessment JSON, ~/.cruise-ai/data/)
    ├→ hub.py serves /profile /report /methodology /how-it-works + APIs
    ├→ export.py static artifact (redacted via schema.build_shareable_profile
    │   + visibility.py per-section consent)
    └→ network.py publish (ONLY outbound module) → network_server.py registry
 static/js: icons.js (glyphs + right-click explain) · profile.js · report.js · tabs-shared.js
-nextmillionai-mcp/index.js: 14 tools, self-locating engine (coming soon)
+cruise_ai-mcp/index.js: 14 tools, self-locating engine (coming soon)
 ```
 
 ## Environment notes
 
 - System `python3` = 3.9 (package floor 3.9; CI runs 3.9–3.12).
-- Real data home: `~/.nextmillionai/`; test homes under `/tmp/nma-*`
+- Real data home: `~/.cruise-ai/`; test homes under `/tmp/nma-*`
   (`tests/conftest.py` guards tests off real machines' stores).
 - Static assets are `?v=`-cache-busted — bump the version in all HTML
   when changing css/js.

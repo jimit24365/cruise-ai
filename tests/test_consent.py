@@ -1,9 +1,9 @@
-"""Tests for the nextmillionai consent module."""
+"""Tests for the cruise_ai consent module."""
 
 import re
 from pathlib import Path
 
-from nextmillionai.consent import (
+from cruise_ai.consent import (
     CONSENT_VERSION,
     consented_sources,
     load_consent,
@@ -15,7 +15,7 @@ from nextmillionai.consent import (
 
 def test_save_and_load_consent(tmp_path, monkeypatch):
     """Round-trip: save consent then load it back."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     sources = {"claude_code": True, "cursor": False, "codex": True, "git": True}
     save_consent(sources)
 
@@ -28,7 +28,7 @@ def test_save_and_load_consent(tmp_path, monkeypatch):
 
 def test_reset_consent(tmp_path, monkeypatch):
     """reset_consent removes the consent file."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     save_consent({"claude_code": True, "cursor": True, "codex": True, "git": True})
     assert load_consent() is not None
 
@@ -39,9 +39,9 @@ def test_reset_consent(tmp_path, monkeypatch):
 def test_prompt_consent_yes_flag(tmp_path, monkeypatch):
     """Non-interactive mode enables all standard sources; experimental
     opt-in-only sources (claude_desktop) stay off when never answered."""
-    from nextmillionai.consent import OPT_IN_ONLY_SOURCES
+    from cruise_ai.consent import OPT_IN_ONLY_SOURCES
 
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     sources = prompt_consent(non_interactive=True)
     assert all(v is True for k, v in sources.items() if k not in OPT_IN_ONLY_SOURCES)
     assert all(sources[k] is False for k in OPT_IN_ONLY_SOURCES)
@@ -57,7 +57,7 @@ def test_prompt_consent_yes_flag(tmp_path, monkeypatch):
 def test_yes_flag_preserves_prior_opt_in(tmp_path, monkeypatch):
     """A consent the user already gave must survive `calibrate --yes` —
     re-running non-interactively never silently revokes claude_desktop."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     save_consent({"claude_code": True, "claude_desktop": True})
     sources = prompt_consent(non_interactive=True)
     assert sources["claude_desktop"] is True
@@ -66,7 +66,7 @@ def test_yes_flag_preserves_prior_opt_in(tmp_path, monkeypatch):
 def test_interactive_defaults_to_saved_answers(tmp_path, monkeypatch):
     """Re-running calibrate shows saved answers as defaults — pressing
     Enter keeps every prior choice (incl. opt-in-only ON and standard OFF)."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     save_consent({"claude_code": True, "cursor": False, "claude_desktop": True})
 
     prompts = []
@@ -90,7 +90,7 @@ def test_interactive_defaults_to_saved_answers(tmp_path, monkeypatch):
 
 def test_consented_sources_extracts_toggles(tmp_path, monkeypatch):
     """consented_sources extracts the sources dict from a consent object."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     sources = {"claude_code": True, "cursor": False, "codex": True, "git": True}
     save_consent(sources)
     consent = load_consent()
@@ -100,7 +100,7 @@ def test_consented_sources_extracts_toggles(tmp_path, monkeypatch):
 
 def test_load_consent_returns_none_when_missing(tmp_path, monkeypatch):
     """load_consent returns None when no consent file exists."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     assert load_consent() is None
 
 
@@ -108,7 +108,7 @@ def test_default_enabled_sources_matches_all_sources(tmp_path, monkeypatch):
     """default_enabled_sources() covers EVERY consent key: standard on,
     opt-in-only off. The single source of truth for scan defaults — a
     hand-written copy drifting from ALL_SOURCES is how kiro shipped dead."""
-    from nextmillionai.consent import ALL_SOURCES, OPT_IN_ONLY_SOURCES, default_enabled_sources
+    from cruise_ai.consent import ALL_SOURCES, OPT_IN_ONLY_SOURCES, default_enabled_sources
 
     defaults = default_enabled_sources()
     assert set(defaults) == set(ALL_SOURCES)
@@ -134,9 +134,9 @@ class TestNewSourceReprompt:
         )
 
     def test_interactive_prompts_only_new_sources(self, tmp_path, monkeypatch):
-        from nextmillionai.build_profile import _ensure_calibrated
+        from cruise_ai.build_profile import _ensure_calibrated
 
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         self._seed_consent_without_kiro()
 
         prompts = []
@@ -159,10 +159,10 @@ class TestNewSourceReprompt:
     def test_newly_enabled_source_invalidates_scan_cache(self, tmp_path, monkeypatch):
         """Saying yes to a new source must take effect NOW — a scan cached
         under the old consent scope can never serve the widened one."""
-        from nextmillionai.build_profile import _ensure_calibrated
-        from nextmillionai.paths import scan_results_path
+        from cruise_ai.build_profile import _ensure_calibrated
+        from cruise_ai.paths import scan_results_path
 
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         self._seed_consent_without_kiro()
         scan_results_path().parent.mkdir(parents=True, exist_ok=True)
         scan_results_path().write_text("{}")
@@ -174,10 +174,10 @@ class TestNewSourceReprompt:
 
     def test_declined_new_source_keeps_scan_cache(self, tmp_path, monkeypatch):
         """Answering no changes nothing scannable — the cache stays."""
-        from nextmillionai.build_profile import _ensure_calibrated
-        from nextmillionai.paths import scan_results_path
+        from cruise_ai.build_profile import _ensure_calibrated
+        from cruise_ai.paths import scan_results_path
 
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         self._seed_consent_without_kiro()
         scan_results_path().parent.mkdir(parents=True, exist_ok=True)
         scan_results_path().write_text("{}")
@@ -190,9 +190,9 @@ class TestNewSourceReprompt:
     def test_non_tty_never_prompts(self, tmp_path, monkeypatch):
         """cron/CI without --yes: stdin isn't a TTY — behaves like --yes
         (off, unpersisted, notice) instead of crashing on input()."""
-        from nextmillionai.build_profile import _ensure_calibrated
+        from cruise_ai.build_profile import _ensure_calibrated
 
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         self._seed_consent_without_kiro()
         monkeypatch.setattr("sys.stdin.isatty", lambda: False)
 
@@ -205,9 +205,9 @@ class TestNewSourceReprompt:
         assert "kiro" not in load_consent()["sources"]
 
     def test_non_interactive_stays_off_and_unpersisted(self, tmp_path, monkeypatch):
-        from nextmillionai.build_profile import _ensure_calibrated
+        from cruise_ai.build_profile import _ensure_calibrated
 
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         self._seed_consent_without_kiro()
 
         def no_input(prompt):  # pragma: no cover - would fail the test
@@ -222,9 +222,9 @@ class TestNewSourceReprompt:
         assert "kiro" not in load_consent()["sources"]
 
     def test_saved_answer_is_sticky(self, tmp_path, monkeypatch):
-        from nextmillionai.build_profile import _ensure_calibrated
+        from cruise_ai.build_profile import _ensure_calibrated
 
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         sources = {
             "claude_code": True,
             "cursor": True,
@@ -267,7 +267,7 @@ def test_no_outbound_network_calls():
     ]
     combined = re.compile("|".join(import_patterns))
 
-    src_dir = Path(__file__).resolve().parent.parent / "nextmillionai"
+    src_dir = Path(__file__).resolve().parent.parent / "cruise_ai"
     violations = []
 
     for py_file in sorted(src_dir.rglob("*.py")):
@@ -303,8 +303,8 @@ def test_assessment_path_never_imports_network():
     never at module level and never from scan/score/serve/enrich/export
     code. (sync is outbound like publish: the user pushes derived-only
     snapshots to a repo THEY own; the merge itself is local sync_merge.py.)"""
-    src_dir = Path(__file__).resolve().parent.parent / "nextmillionai"
-    pattern = re.compile(r"^\s*(import|from)\s+nextmillionai\.network\b")
+    src_dir = Path(__file__).resolve().parent.parent / "cruise_ai"
+    pattern = re.compile(r"^\s*(import|from)\s+cruise_ai\.network\b")
 
     violations = []
     for py_file in sorted(src_dir.rglob("*.py")):

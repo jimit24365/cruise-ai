@@ -1,8 +1,8 @@
 # Business Fit Map — Product & Methodology
 
 **Status:** shipped (report-only) · v1
-**Code:** `nextmillionai/business_fit.py` · rendered in the report's "AI engineering DNA" section
-**Related:** `SCORING-METHODOLOGY.md` §10, `nma_compare_to_role`
+**Code:** `cruise_ai/business_fit.py` · rendered in the report's "AI engineering DNA" section
+**Related:** `SCORING-METHODOLOGY.md` §10, `cruise_compare_to_role`
 
 The Business Fit Map positions a builder in a 2D landscape of AI business
 segments and shows **fit-to-segment** percentages.
@@ -22,7 +22,7 @@ answers *where that profile tends to fit*.
 ## What "93% fit" means — two cautions
 
 **1. Fit-to-context, never ranking.** Same output class as
-`nma_compare_to_role` (JD fit): your archetype profile compared to a
+`cruise_compare_to_role` (JD fit): your archetype profile compared to a
 *segment definition*. Allowed: "your profile aligns 93% with this
 segment's requirements," gap tables (required vs actual). Never allowed:
 percentiles, leaderboards, "better than N% of builders," any

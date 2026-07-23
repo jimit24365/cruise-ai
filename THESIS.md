@@ -1,4 +1,4 @@
-# nextmillionai — Why We Measure What We Measure
+# cruise_ai — Why We Measure What We Measure
 
 The thesis behind the scoring, and the outside evidence behind the thesis. This
 document exists so the taxonomy doesn't read as our own invention — every claim
@@ -13,7 +13,7 @@ AI changed how software gets built. But **whether you use AI is no longer the
 signal — how you build with it is.** Two engineers with the same tools and the
 same résumé produce wildly different outcomes: one ships fast and safe, one ships
 fast and fragile. The market already pays for the difference, yet nothing makes it
-visible — it's locked inside the IDE. nextmillionai reads the work you've already
+visible — it's locked inside the IDE. cruise_ai reads the work you've already
 done and makes the *how* legible, measured from observed behavior rather than
 self-report.
 
@@ -43,7 +43,7 @@ can turn negative in complex, mature codebases (Denisov-Blanch et al.,
 the constant holds: outcomes track the operator and the context, not the
 tool.
 
-→ This is why nextmillionai scores **Signal Clarity** (how precisely you direct),
+→ This is why cruise_ai scores **Signal Clarity** (how precisely you direct),
 **Recovery Velocity** (how you handle wrong output), and **work mode** (how you
 build) — not "do you use AI." Adoption is table stakes; the craft is the signal.
 
@@ -62,7 +62,7 @@ cost at the team level: as AI adoption rose, respondents reported an
 estimated 7.2% drop in delivery stability and 1.5% drop in throughput, and
 39% said they had little or no trust in AI-generated code (DORA, 2024).
 
-→ This is why nextmillionai scores **Build Stability** (does your AI-assisted code
+→ This is why cruise_ai scores **Build Stability** (does your AI-assisted code
 survive — churn, reverts), and why **Production Guardian** is a first-class
 archetype and **Security Instinct** is on the roadmap. The builders who catch what
 the model misses are doing the highest-value work.
@@ -77,7 +77,7 @@ changing **66% faster** in AI-exposed jobs (PwC, 2025). The value is real and
 rising. The problem: the evidence for *who actually has the skill* lives inside
 people's editors, where no résumé, LinkedIn, or interview can see it.
 
-→ This is the gap nextmillionai fills: a profile built from observed work, so the
+→ This is the gap cruise_ai fills: a profile built from observed work, so the
 premium-worthy skill is finally provable — by you, to you first, and (later, on
 your terms) to others.
 

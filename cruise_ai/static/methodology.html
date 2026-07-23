@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How this profile is made</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/profile.css?v=0.3.19">
+<style>
+.md{max-width:760px;margin:0 auto;padding:8px 0 60px}
+.md h1{font-size:clamp(26px,3.6vw,36px);margin:24px 0 8px}
+.md h2{font-family:var(--disp);font-size:21px;margin:34px 0 10px;padding-top:18px;border-top:1px solid var(--line)}
+.md h3{font-family:var(--disp);font-size:16px;margin:22px 0 6px}
+.md p{margin:10px 0;color:var(--ink-soft);font-size:14.5px}
+.md li{margin:5px 0 5px 22px;color:var(--ink-soft);font-size:14.5px}
+.md code{font-family:var(--mono);font-size:12px;background:var(--tint);border-radius:5px;padding:1px 6px}
+.md pre{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:12px 0}
+.md pre code{background:none;padding:0;font-size:11.5px;line-height:1.7}
+.md table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}
+.md th,.md td{border:1px solid var(--line);padding:7px 10px;text-align:left}
+.md th{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--surface-2)}
+.md blockquote{border-left:3px solid var(--accent);padding:4px 16px;margin:12px 0;color:var(--ink-soft);background:var(--surface-2);border-radius:0 8px 8px 0}
+.md hr{border:none;border-top:1px solid var(--line);margin:22px 0}
+.md a{color:var(--accent)}
+.meth-head{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:34px 0 6px;flex-wrap:wrap}
+.meth-eye{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.meth-toc{display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 8px}
+.toc-chip{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;text-decoration:none}
+.toc-chip:hover{border-color:var(--accent);color:var(--accent)}
+.md h2{scroll-margin-top:18px}
+/* === INTERACTIVE EXPLORER === */
+.mex{max-width:860px;margin:10px auto 0}
+.mex-scope{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--surface-2);border-radius:0 10px 10px 0;padding:14px 18px;margin:16px 0}
+.mex-scope .st{font-family:var(--disp);font-weight:600;font-size:15px;margin-bottom:6px}
+.mex-scope p{font-size:13px;color:var(--ink-soft);margin:5px 0;line-height:1.55}
+.mex-scope .notyet{color:var(--ink)}
+.mex-scope .principle{font-size:12px;color:var(--muted)}
+.mex-flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:24px 0 6px}
+.mex-node{font-family:var(--mono);font-size:11px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 11px;color:var(--ink);line-height:1.35}
+.mex-node b{font-family:var(--disp);font-weight:600}
+.mex-node.dash{border-style:dashed;color:var(--ink-soft)}
+.mex-arrow{color:var(--muted);font-size:13px}
+.mex-flow-note{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin:4px 0 0;padding-left:2px}
+.mex-h{font-family:var(--disp);font-size:19px;margin:30px 0 4px;padding-top:18px;border-top:1px solid var(--line)}
+.mex-sub{color:var(--muted);font-size:13px;margin:0 0 14px;max-width:64ch}
+.mex-modes{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.mex-mode{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;transition:.12s}
+.mex-mode:hover{border-color:var(--accent)}
+.mex-mode.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.mex-bars{display:flex;flex-direction:column;gap:6px}
+.mex-bar{display:grid;grid-template-columns:150px 1fr 44px 120px;align-items:center;gap:10px;cursor:pointer;padding:5px 6px;border-radius:8px;border:1px solid transparent}
+@media(max-width:560px){.mex-bar{grid-template-columns:120px 1fr 40px;row-gap:2px}.mex-bar .mex-prov{grid-column:2/4;justify-self:start}}
+.mex-bar:hover{background:var(--surface-2)}
+.mex-bar.sel{border-color:var(--accent);background:var(--surface-2)}
+.mex-bar .bn{font-size:12.5px;font-weight:500}
+.mex-bar .bt{height:14px;background:var(--tint);border-radius:5px;overflow:hidden}
+.mex-bar .bf{display:block;height:100%;background:var(--accent);border-radius:5px;transition:width .35s ease}
+/* Bar colored by evidence strength — heavier weights track stronger evidence */
+.mex-bar .bf.research-anchored{background:var(--blue)}
+.mex-bar .bf.reasoned-default{background:var(--mid)}
+.mex-bar .mex-prov{justify-self:start}
+.mex-bar .bw{font-family:var(--mono);font-size:11px;color:var(--ink-soft);text-align:right}
+.mex-detail{margin-top:16px;border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.mex-detail.show{display:block}
+.mex-detail .dh{background:var(--surface-2);padding:13px 16px;border-bottom:1px solid var(--line)}
+.mex-detail .dn{font-family:var(--disp);font-weight:600;font-size:16px}
+.mex-detail .dm{font-size:13px;color:var(--ink-soft);margin-top:3px}
+.mex-detail .db{padding:14px 16px}
+.mex-detail .dl{font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+.mex-detail .db>.dl:first-child{margin-top:0}
+.mex-chips{display:flex;flex-wrap:wrap;gap:6px}
+.mex-chips span{font-size:11.5px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:3px 9px;color:var(--ink-soft)}
+.mex-cite{font-size:12.5px;color:var(--ink-soft);margin:7px 0;padding-left:11px;border-left:2px solid var(--line)}
+.mex-cite b{color:var(--ink);font-weight:500}
+.mex-note{font-size:12.5px;color:var(--ink-soft);background:var(--surface-2);border-radius:8px;padding:9px 12px}
+.mex-bands{display:flex;flex-wrap:wrap;gap:6px}
+.mex-bands span{font-family:var(--mono);font-size:10.5px;border-radius:6px;padding:3px 9px;border:1px solid var(--line)}
+.mex-reg{display:flex;flex-direction:column;gap:18px}
+.mex-reggrp .rgl{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.mex-metric{border:1px solid var(--line);border-radius:10px;background:var(--surface);margin-bottom:7px;overflow:hidden}
+.mex-metric summary{list-style:none;cursor:pointer;padding:11px 14px;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.mex-metric summary::-webkit-details-marker{display:none}
+.mex-metric .ml{font-weight:500;font-size:13px;flex:1;min-width:120px}
+.mex-prov{font-family:var(--mono);font-size:8.5px;letter-spacing:.03em;text-transform:uppercase;border-radius:4px;padding:2px 6px}
+.mex-prov.measured{background:var(--green-bg);color:var(--good)}
+.mex-prov.research-anchored{background:var(--blue-bg);color:var(--blue)}
+.mex-prov.reasoned-default{background:var(--orange-bg);color:var(--mid)}
+.mex-prov.estimate{background:var(--tint);color:var(--muted)}
+.mex-type{font-family:var(--mono);font-size:8.5px;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:2px 6px}
+.mex-metric .mbody{padding:0 14px 13px;font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+.mex-metric .mbody .ml2{font-family:var(--mono);font-size:8.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:11px 0 3px}
+.mex-oq{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.mex-oq .oq{border:1px solid var(--line);border-radius:10px;padding:11px 14px;background:var(--surface)}
+.mex-oq .oqt{font-family:var(--disp);font-weight:600;font-size:13.5px;margin-bottom:3px}
+.mex-oq .oqd{font-size:12.5px;color:var(--ink-soft);line-height:1.5}
+.mex-sources{display:flex;flex-direction:column;gap:12px;margin-bottom:8px}
+.mex-srcgrp{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.mex-srcgrp .gl{font-family:var(--mono);font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);width:100%;margin-bottom:2px}
+.mex-src{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:12px}
+.mex-src .tt{font-family:var(--mono);font-size:8.5px;letter-spacing:.04em;text-transform:uppercase;border-radius:4px;padding:1px 5px}
+.mex-src .tt.deep{background:var(--green-bg);color:var(--good)}
+.mex-src .tt.counts{background:var(--orange-bg);color:var(--mid)}
+.mex-src .tt.presence{background:var(--tint);color:var(--muted)}
+.mex-shape{display:flex;flex-wrap:wrap;gap:10px}
+.mex-link{font-family:var(--mono);font-size:11.5px;color:var(--accent);text-decoration:none;border:1px solid var(--line);border-radius:8px;padding:8px 13px}
+.mex-link:hover{border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="meth-head">
+    <div>
+      <div class="meth-eye">How this profile is made</div>
+      <h1 style="font-family:var(--disp)">Scoring methodology</h1>
+    </div>
+    <div class="head-actions">
+      <a href="/profile" class="btn">&larr; Profile</a>
+      <a href="/report" class="btn">Report</a>
+    </div>
+  </div>
+  <div class="ctl-note">The canonical, versioned contract behind every number on your profile: the research anchors, the bands, the formulas, what's validated vs experimental — and how it evolves. No percentiles, no cohorts; measurements only.</div>
+  <section class="mex" id="methExplorer" aria-label="Interactive scoring explorer" hidden>
+    <div class="mex-scope" id="mexScope"></div>
+    <h2 class="mex-h">Where the data comes from</h2>
+    <p class="mex-sub">Every signal is read locally from your own AI coding tools and git — far more than the first-class tools. Each source declares a fidelity tier: <b>deep</b> (real sessions parsed) · <b>counts</b> (countable artifacts) · <b>presence</b> (install only, usage marked insufficient). Counts and presence never move a score.</p>
+    <div class="mex-sources" id="mexSources"></div>
+    <div class="mex-flow">
+      <span class="mex-node"><b>Local signals</b><br>sessions · commits · tools</span>
+      <span class="mex-arrow">&rarr;</span>
+      <span class="mex-node"><b>6 dimensions</b><br>each 0&ndash;100 vs research bands</span>
+      <span class="mex-arrow">&rarr;</span>
+      <span class="mex-node"><b>Composite</b><br>mode-weighted average</span>
+      <span class="mex-arrow">&rarr;</span>
+      <span class="mex-node"><b>One profile JSON</b></span>
+      <span class="mex-arrow">&rarr;</span>
+      <span class="mex-node dash"><b>Your agent's narrative</b><br>words only · never a number</span>
+    </div>
+    <div class="mex-flow-note">The same six dimensions also drive archetypes, kinds, and positioning — all from counted signals. No model ever writes a score.</div>
+    <h2 class="mex-h">What weighs how much</h2>
+    <p class="mex-sub">The composite is a weighted average of the six dimensions. Pick how you build to watch the weights adapt — then click any dimension for the signals and the research behind it.</p>
+    <div class="mex-modes" id="mexModes"></div>
+    <div class="mex-bars" id="mexBars"></div>
+    <p class="mex-flow-note">Bars are colored by evidence strength: <span class="mex-prov research-anchored">research anchored</span> weights rest on cited studies; <span class="mex-prov reasoned-default">reasoned default</span> weights are chosen constants &mdash; openly versioned, not yet validated. The heaviest weights track the strongest evidence &mdash; the reasoning behind each is in the <a href="https://github.com/cruise_ai/cruise_ai/blob/main/THESIS.md">thesis</a> and the studies in the <a href="https://github.com/cruise_ai/cruise_ai/blob/main/docs/REFERENCES.md">references</a>. Click a bar for the signals and the research behind it.</p>
+    <div class="mex-detail" id="mexDetail"></div>
+    <h2 class="mex-h">How every number is derived</h2>
+    <p class="mex-sub">Each number's exact logic, our reasoning for it, and an honest label for the kind of claim it is. <b>Measured</b> = a count, true by definition · <b>research-anchored</b> = grounded in a cited study · <b>reasoned-default</b> = a chosen constant, openly versioned, not yet validated · <b>estimate</b> = a labeled band. The six dimensions are detailed in the explorer above.</p>
+    <div class="mex-reg" id="mexReg"></div>
+    <h2 class="mex-h">Shape it — the methodology is open</h2>
+    <p class="mex-sub">Measuring how people build with AI is a young field. These are the calibrations we're least sure of — bring evidence, a study, or a good example.</p>
+    <div class="mex-oq" id="mexOpenQ"></div>
+    <div class="mex-shape">
+      <a class="mex-link" href="https://github.com/cruise_ai/cruise_ai/discussions/categories/methodology">Discuss the methodology &rarr;</a>
+      <a class="mex-link" href="https://github.com/cruise_ai/cruise_ai/blob/main/CONTRIBUTING.md">Propose a change &rarr;</a>
+    </div>
+  </section>
+  <nav class="meth-toc" id="methToc"></nav>
+  <div class="md" id="methBody">loading&hellip;</div>
+  <footer>
+    <div class="brand">next<span>million</span><span class="ai">ai</span></div>
+    <div class="foot-line">This document ships inside the package &middot; the same file your scores are computed against.</div>
+  </footer>
+</div>
+<script>
+// Minimal markdown renderer — headings, lists, tables, code, bold/italic/links.
+function esc(s){return s.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function inline(s){
+  return s
+    .replace(/`([^`]+)`/g,function(_,c){return '<code>'+c+'</code>';})
+    .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<i>$2</i>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>');
+}
+function renderMD(md){
+  var lines=md.split('\n'),out=[],i=0;
+  while(i<lines.length){
+    var l=lines[i];
+    if(l.startsWith('```')){
+      var buf=[];i++;
+      while(i<lines.length&&!lines[i].startsWith('```')){buf.push(esc(lines[i]));i++;}
+      i++;out.push('<pre><code>'+buf.join('\n')+'</code></pre>');continue;
+    }
+    if(/^\|/.test(l)&&i+1<lines.length&&/^\|[\s:|-]+\|?$/.test(lines[i+1])){
+      var head=l.split('|').slice(1,-1).map(function(c){return '<th>'+inline(esc(c.trim()))+'</th>';}).join('');
+      i+=2;var rows=[];
+      while(i<lines.length&&/^\|/.test(lines[i])){
+        rows.push('<tr>'+lines[i].split('|').slice(1,-1).map(function(c){return '<td>'+inline(esc(c.trim()))+'</td>';}).join('')+'</tr>');i++;
+      }
+      out.push('<table><thead><tr>'+head+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>');continue;
+    }
+    if(/^#{1,6}\s/.test(l)){var lvl=l.match(/^#+/)[0].length;var htxt=l.replace(/^#+\s*/,'');var hid=htxt.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');out.push('<h'+Math.min(lvl,3)+' id="'+hid+'">'+inline(esc(htxt))+'</h'+Math.min(lvl,3)+'>');i++;continue;}
+    if(/^---+\s*$/.test(l)){out.push('<hr>');i++;continue;}
+    if(/^\s*[-*]\s/.test(l)){
+      var items=[];
+      while(i<lines.length&&/^\s*[-*]\s/.test(lines[i])){items.push('<li>'+inline(esc(lines[i].replace(/^\s*[-*]\s/,'')))+'</li>');i++;}
+      out.push('<ul>'+items.join('')+'</ul>');continue;
+    }
+    if(/^\s*\d+\.\s/.test(l)){
+      var oitems=[];
+      while(i<lines.length&&/^\s*\d+\.\s/.test(lines[i])){oitems.push('<li>'+inline(esc(lines[i].replace(/^\s*\d+\.\s/,'')))+'</li>');i++;}
+      out.push('<ol>'+oitems.join('')+'</ol>');continue;
+    }
+    if(/^>\s?/.test(l)){
+      var q=[];
+      while(i<lines.length&&/^>\s?/.test(lines[i])){q.push(inline(esc(lines[i].replace(/^>\s?/,''))));i++;}
+      out.push('<blockquote>'+q.join('<br>')+'</blockquote>');continue;
+    }
+    if(l.trim()===''){i++;continue;}
+    var para=[];
+    while(i<lines.length&&lines[i].trim()!==''&&!/^(#|```|\||[-*]\s|\d+\.\s|>|---)/.test(lines[i])){para.push(inline(esc(lines[i])));i++;}
+    if(para.length)out.push('<p>'+para.join(' ')+'</p>');else i++;
+  }
+  return out.join('\n');
+}
+fetch('/api/methodology').then(function(r){return r.ok?r.text():null;}).then(function(md){
+  var body=document.getElementById('methBody');
+  body.innerHTML=md?renderMD(md):'<p>Methodology document not found.</p>';
+  // TOC chips from h2s
+  var toc=document.getElementById('methToc');
+  if(toc){
+    toc.innerHTML=Array.prototype.map.call(body.querySelectorAll('h2'),function(h){
+      return '<a class="toc-chip" href="#'+h.id+'">'+h.textContent+'</a>';
+    }).join('');
+  }
+  // honor #anchor arrival from right-click explain links
+  if(location.hash){
+    var target=document.getElementById(location.hash.slice(1));
+    if(target)setTimeout(function(){target.scrollIntoView({block:'start'});},60);
+  }
+}).catch(function(){document.getElementById('methBody').textContent='Could not load methodology.';});
+
+// Interactive explorer — data-driven from /api/methodology-spec (numbers live
+// from scoring.py; see methodology_spec.py). No external libraries.
+(function(){
+  fetch('/api/methodology-spec').then(function(r){return r.ok?r.json():null;}).then(function(spec){
+    if(!spec)return;
+    var sec=document.getElementById('methExplorer'); sec.hidden=false;
+    var ds=spec.dataSources||{};
+    var grpLabels={firstClass:'First-class',widerField:'Wider field',localRuntimes:'Local model runtimes',optIn:'Opt-in'};
+    document.getElementById('mexSources').innerHTML=Object.keys(grpLabels).filter(function(k){return ds[k];}).map(function(k){
+      return '<div class="mex-srcgrp"><span class="gl">'+grpLabels[k]+'</span>'+ds[k].map(function(t){
+        return '<span class="mex-src" title="'+esc(t.reads)+'">'+esc(t.label)+'<span class="tt '+t.tier+'">'+t.tier+'</span></span>';
+      }).join('')+'</div>';
+    }).join('');
+    var sc=spec.scope||{};
+    document.getElementById('mexScope').innerHTML='<div class="st">'+esc(sc.title||'')+'</div>'
+      +'<p>'+esc(sc.body||'')+'</p><p class="notyet">'+esc(sc.notYet||'')+'</p>'
+      +'<p class="principle">'+esc(sc.principle||'')+'</p>';
+    var dims=spec.dimensions||[],modes=spec.modes||[],bands=spec.bands||[];
+    var curMode=modes[0],selDim=null;
+    var modesEl=document.getElementById('mexModes'),barsEl=document.getElementById('mexBars'),detEl=document.getElementById('mexDetail');
+    modesEl.innerHTML=modes.map(function(m,i){return '<span class="mex-mode'+(i===0?' on':'')+'" data-mode="'+m.id+'" title="'+esc(m.line||'')+'">'+esc(m.label)+'</span>';}).join('');
+    function maxW(m){return Math.max.apply(null,dims.map(function(d){return m.weights[d.id]||0;}));}
+    function renderBars(){
+      var mx=maxW(curMode);
+      barsEl.innerHTML=dims.map(function(d){
+        var w=curMode.weights[d.id]||0;
+        var prov=d.provenance||'';
+        return '<div class="mex-bar'+(selDim===d.id?' sel':'')+'" data-dim="'+d.id+'"><span class="bn">'+esc(d.name)+'</span>'
+          +'<span class="bt"><span class="bf '+prov+'" style="width:'+(mx>0?Math.round(w/mx*100):0)+'%"></span></span>'
+          +'<span class="bw">'+Math.round(w*100)+'%</span>'
+          +(prov?'<span class="mex-prov '+prov+'" title="'+esc(d.reasoning||'')+'">'+esc(prov.replace(/-/g,' '))+'</span>':'<span></span>')+'</div>';
+      }).join('');
+    }
+    function renderDetail(){
+      if(!selDim){detEl.className='mex-detail';detEl.innerHTML='';return;}
+      var d=dims.filter(function(x){return x.id===selDim;})[0];if(!d)return;
+      var w=Math.round((curMode.weights[d.id]||0)*100);
+      var sigs=(d.signals||[]).map(function(s){return '<span>'+esc(s)+'</span>';}).join('');
+      var bandsHtml=bands.map(function(b){return '<span style="border-color:'+esc(b.color)+'">'+esc(b.label)+' ≥'+b.min+'</span>';}).join('');
+      var cites=(d.citations||[]).map(function(c){return '<div class="mex-cite"><b>'+esc(c.label)+'</b> &mdash; '+esc(c.finding)+'</div>';}).join('');
+      detEl.className='mex-detail show';
+      detEl.innerHTML='<div class="dh"><div class="dn">'+esc(d.name)+' &middot; '+w+'% in this mode</div><div class="dm">'+esc(d.measures)+'</div></div>'
+        +'<div class="db"><div class="dl">Signals it reads</div><div class="mex-chips">'+sigs+'</div>'
+        +'<div class="dl">Levels</div><div class="mex-bands">'+bandsHtml+'</div>'
+        +(cites?'<div class="dl">Research behind it</div>'+cites:'')
+        +'<div class="dl">Evidence strength</div><div class="mex-note">'+esc(d.evidenceNote||'')+'</div></div>';
+    }
+    modesEl.addEventListener('click',function(e){
+      var t=e.target.closest('.mex-mode');if(!t)return;
+      curMode=modes.filter(function(m){return m.id===t.dataset.mode;})[0];
+      Array.prototype.forEach.call(modesEl.children,function(c){c.classList.toggle('on',c===t);});
+      renderBars();renderDetail();
+    });
+    barsEl.addEventListener('click',function(e){
+      var t=e.target.closest('.mex-bar');if(!t)return;
+      selDim=(selDim===t.dataset.dim)?null:t.dataset.dim;
+      renderBars();renderDetail();
+    });
+    renderBars();
+    var metrics=spec.metrics||[],sections=spec.sectionLabels||{};
+    var bySec={};metrics.forEach(function(m){(bySec[m.section]=bySec[m.section]||[]).push(m);});
+    document.getElementById('mexReg').innerHTML=Object.keys(sections).filter(function(s){return bySec[s];}).map(function(s){
+      return '<div class="mex-reggrp"><div class="rgl">'+esc(sections[s])+'</div>'+bySec[s].map(function(m){
+        var cites=(m.citations||[]).map(function(c){return '<div class="mex-cite"><b>'+esc(c.label)+'</b> &mdash; '+esc(c.finding)+'</div>';}).join('');
+        return '<details class="mex-metric"><summary><span class="ml">'+esc(m.label)+'</span>'
+          +'<span class="mex-type">'+esc(m.type)+'</span><span class="mex-prov '+m.provenance+'">'+esc(m.provenance.replace(/-/g,' '))+'</span></summary>'
+          +'<div class="mbody"><div class="ml2">How it is derived</div>'+esc(m.derivation)
+          +'<div class="ml2">Why</div>'+esc(m.reasoning)
+          +(m.basis?'<div class="ml2">Basis</div>'+esc(m.basis):'')
+          +(cites?'<div class="ml2">Research behind it</div>'+cites:'')+'</div></details>';
+      }).join('')+'</div>';
+    }).join('');
+    var oq=spec.openQuestions||[];
+    document.getElementById('mexOpenQ').innerHTML=oq.map(function(q){
+      return '<div class="oq"><div class="oqt">'+esc(q.title)+'</div><div class="oqd">'+esc(q.detail)+'</div></div>';
+    }).join('');
+  }).catch(function(){});
+})();
+</script>
+</body>
+</html>

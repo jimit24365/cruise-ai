@@ -6,7 +6,7 @@ updates:
       interval: weekly
 
   - package-ecosystem: npm
-    directory: /nextmillionai-mcp
+    directory: /cruise_ai-mcp
     schedule:
       interval: weekly
 

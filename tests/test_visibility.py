@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from nextmillionai.schema import build_shareable_profile
-from nextmillionai.visibility import (
+from cruise_ai.schema import build_shareable_profile
+from cruise_ai.visibility import (
     VALID_SECTION_IDS,
     default_visibility_config,
     load_visibility_config,
@@ -16,8 +16,8 @@ from nextmillionai.visibility import (
 
 @pytest.fixture(autouse=True)
 def _isolate_home(tmp_path, monkeypatch):
-    """Point NEXTMILLIONAI_HOME to a temp dir so tests don't touch real data."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    """Point CRUISE_AI_HOME to a temp dir so tests don't touch real data."""
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
 
 
 # ── Default config ───────────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ class TestDefaultConfig:
         assert set(cfg["sections"].keys()) == VALID_SECTION_IDS
 
     def test_all_visible_by_default(self):
-        from nextmillionai.visibility import PRIVATE_BY_DEFAULT_SECTIONS
+        from cruise_ai.visibility import PRIVATE_BY_DEFAULT_SECTIONS
 
         cfg = default_visibility_config()
         for sid, flags in cfg["sections"].items():
@@ -42,7 +42,7 @@ class TestDefaultConfig:
         assert cfg["sections"]["growthAreas"]["includeInShareable"] is False
 
     def test_growth_areas_shareable_on_explicit_opt_in(self):
-        from nextmillionai.schema import build_shareable_profile
+        from cruise_ai.schema import build_shareable_profile
 
         profile = {
             "schema_version": "1.0",

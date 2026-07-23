@@ -1,5 +1,5 @@
 name: Bug Report
-description: Report a bug in nextmillionai
+description: Report a bug in cruise_ai
 labels: ["bug"]
 body:
   - type: textarea
@@ -15,7 +15,7 @@ body:
       label: Steps to reproduce
       description: Minimal steps to reproduce the behavior.
       placeholder: |
-        1. Run `nextmillionai ...`
+        1. Run `cruise_ai ...`
         2. Open http://localhost:5000
         3. See error
     validations:

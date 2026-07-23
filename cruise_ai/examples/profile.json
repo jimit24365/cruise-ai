@@ -1,0 +1,4861 @@
+{
+ "schema_version": "1.1",
+ "taxonomy_version": "0.2.1",
+ "name": "Maya Chen",
+ "title": "AI Engineer",
+ "experience_years": null,
+ "ai_experience_years": null,
+ "location": "Lisbon",
+ "work_style": "remote",
+ "notice_period": "",
+ "stack": [],
+ "projects": [],
+ "intent_score": 74,
+ "composite": 74,
+ "dimensions": {
+  "signal_clarity": {
+   "score": 69,
+   "evidence": [
+    "88% first-shot acceptance rate",
+    "21.5 avg turns per task",
+    "100% of prompts include file/code references",
+    "3 distinct AI models used"
+   ],
+   "name": "Signal Clarity",
+   "weight": 0.18,
+   "description": "How effectively they communicate intent to AI \u2014 prompt specificity, first-shot accuracy, and context utilization.",
+   "sampleSize": 70,
+   "provisional": false
+  },
+  "build_stability": {
+   "score": 77,
+   "evidence": [
+    "91% AI-generated lines survive in commits",
+    "96% of introduced errors resolved",
+    "8% human review/edit rate on AI output",
+    "60 commits with AI attribution scored"
+   ],
+   "name": "Build Stability",
+   "weight": 0.22,
+   "description": "Whether AI-assisted code survives production \u2014 revert rates, error introduction, test discipline, and code survival.",
+   "sampleSize": 60,
+   "provisional": false
+  },
+  "decision_weight": {
+   "score": 57,
+   "evidence": [
+    "9 architecture plans created",
+    "16 avg lines per architecture plan",
+    "100% reference-rich prompts",
+    "82% agent/composer mode usage"
+   ],
+   "name": "Decision Weight",
+   "weight": 0.18,
+   "description": "Quality of architectural and technical decisions \u2014 planning before building, alternatives considered, and decisions that stick.",
+   "sampleSize": 9,
+   "provisional": true
+  },
+  "recovery_velocity": {
+   "score": 99,
+   "evidence": [
+    "96% error resolution rate",
+    "0.01 errors per AI block",
+    "87% correction convergence",
+    "1505 terminal commands (debugging signal)"
+   ],
+   "name": "Recovery Velocity",
+   "weight": 0.15,
+   "description": "How quickly they detect and recover from AI errors \u2014 systematic debugging, pre-commit catches, and post-recovery stability.",
+   "sampleSize": 60,
+   "provisional": false
+  },
+  "context_command": {
+   "score": 65,
+   "evidence": [
+    "100% reference-rich prompts",
+    "3 projects with maintained context",
+    "139 days of continuous AI usage history",
+    "70 deep sessions (>30 min)",
+    "2 AI surfaces with real sessions (usage, not installs)"
+   ],
+   "name": "Context Command",
+   "weight": 0.12,
+   "description": "How effectively they maintain context across sessions and tools \u2014 reference usage, MCP bridging, session continuity, and retrieval patterns.",
+   "sampleSize": 70,
+   "provisional": false
+  },
+  "orchestration_range": {
+   "score": 67,
+   "evidence": [
+    "3 distinct AI tool types used",
+    "0 MCP servers configured",
+    "1 CLI AI tools",
+    "100% agent mode usage",
+    "72 subagent dispatches across 18 sessions",
+    "70 AI sessions across 3 projects"
+   ],
+   "name": "Orchestration Range",
+   "weight": 0.15,
+   "description": "Multi-tool, multi-model, multi-agent fluency \u2014 MCP servers, CLI tools, strategic model selection, and cross-tool workflows.",
+   "sampleSize": 70,
+   "provisional": false
+  }
+ },
+ "archetypes": [
+  {
+   "id": "code_weaver",
+   "name": "Code Weaver",
+   "icon": "\u25c7",
+   "color": "#6ee7b7",
+   "description": "Clean, surviving AI code \u2014 high test coverage, strong edit survival, thorough review.",
+   "soughtBy": "Quality-focused teams, fintech, healthcare tech",
+   "score": 84,
+   "level": {
+    "id": "advanced",
+    "label": "Advanced",
+    "color": "#67e8f9"
+   },
+   "evidence": [
+    "91% AI code survives in commits",
+    "96% error fix rate",
+    "8% post-AI edit rate (healthy review)"
+   ]
+  },
+  {
+   "id": "system_thinker",
+   "name": "System Thinker",
+   "icon": "\u2394",
+   "color": "#fbbf24",
+   "description": "Architecture-first, plan-then-build \u2014 high Decision Weight, systematic design with AI assistance.",
+   "soughtBy": "Architecture teams, staff+ roles, technical leadership",
+   "score": 78,
+   "level": {
+    "id": "advanced",
+    "label": "Advanced",
+    "color": "#67e8f9"
+   },
+   "evidence": [
+    "100% reference-rich prompts",
+    "21.5 avg turns per task (deliberate iteration)",
+    "82% agent/composer mode"
+   ]
+  },
+  {
+   "id": "context_engineer",
+   "name": "Context Engineer",
+   "icon": "\u2386",
+   "color": "#818cf8",
+   "description": "Engineers context, rules, memory, retrieval, long-session state. Core driver of Context Command and Signal Clarity.",
+   "soughtBy": "AI product teams, developer experience, platform engineering",
+   "score": 62,
+   "level": {
+    "id": "proficient",
+    "label": "Proficient",
+    "color": "#fbbf24"
+   },
+   "evidence": [
+    "9 specs/plans written before coding",
+    "100% reference-rich prompts",
+    "88% first-shot acceptance (context quality)"
+   ]
+  },
+  {
+   "id": "automation_engineer",
+   "name": "Production Guardian",
+   "icon": "\u2699",
+   "color": "#f97316",
+   "description": "Safety rails, production-risk instinct, review-heavy. High Recovery Velocity and Build Stability through test discipline.",
+   "soughtBy": "DevOps, CI/CD teams, infrastructure, SRE",
+   "score": 62,
+   "level": {
+    "id": "proficient",
+    "label": "Proficient",
+    "color": "#fbbf24"
+   },
+   "evidence": [
+    "1505 terminal commands tracked"
+   ]
+  },
+  {
+   "id": "rapid_prototyper",
+   "name": "Rapid Prototyper",
+   "icon": "\u2197",
+   "color": "#a78bfa",
+   "description": "Concept to working app \u2014 high leverage, features-heavy. Agent leverage is a strength.",
+   "soughtBy": "Startups, 0\u21921 product teams, hackathon culture",
+   "score": 49,
+   "level": {
+    "id": "developing",
+    "label": "Developing",
+    "color": "#a1a1aa"
+   },
+   "evidence": [
+    "11x AI leverage ratio",
+    "600 AI code blocks shipped",
+    "3 projects built"
+   ]
+  },
+  {
+   "id": "agent_builder",
+   "name": "Agent Harness Builder",
+   "icon": "\u25ce",
+   "color": "#67e8f9",
+   "description": "Builds and supervises the agent loop \u2014 parallel-agent management, output gating, MCP bridges.",
+   "soughtBy": "AI platform teams, agent infrastructure",
+   "score": 42,
+   "level": {
+    "id": "developing",
+    "label": "Developing",
+    "color": "#a1a1aa"
+   },
+   "evidence": [
+    "100% agent mode usage",
+    "9 architecture plans generated",
+    "0 MCP integrations built"
+   ]
+  },
+  {
+   "id": "cli_native",
+   "name": "CLI-Native Builder",
+   "icon": "\u25b8",
+   "color": "#e879f9",
+   "description": "Uses AI coding tools beyond the editor \u2014 expands Orchestration Range through CLI AI mastery.",
+   "soughtBy": "DevOps, infrastructure, CLI-heavy teams",
+   "score": 42,
+   "level": {
+    "id": "developing",
+    "label": "Developing",
+    "color": "#a1a1aa"
+   },
+   "evidence": [
+    "1 CLI AI tools used"
+   ]
+  },
+  {
+   "id": "multi_agent_orchestrator",
+   "name": "Multi-Agent Orchestrator",
+   "icon": "\u2637",
+   "color": "#38bdf8",
+   "description": "Runs and coordinates multiple agents in parallel \u2014 worktrees, subagents, fleet management.",
+   "soughtBy": "AI-native teams, fleet-scale engineering",
+   "score": 41,
+   "level": {
+    "id": "developing",
+    "label": "Developing",
+    "color": "#a1a1aa"
+   },
+   "evidence": [
+    "4 max parallel agents",
+    "100% agent mode usage"
+   ]
+  },
+  {
+   "id": "integration_architect",
+   "name": "Integration / MCP Engineer",
+   "icon": "\u2b21",
+   "color": "#7eb8d4",
+   "description": "Wires MCP servers, connectors, cross-service orchestration. Drives Orchestration Range and Context Command.",
+   "soughtBy": "Enterprise AI, API-first companies",
+   "score": 22,
+   "level": {
+    "id": "emerging",
+    "label": "Emerging",
+    "color": "#52525b"
+   },
+   "evidence": [
+    "3 tool types integrated",
+    "0 MCP servers configured",
+    "3 cross-project breadth",
+    "1 languages in AI-assisted work"
+   ]
+  }
+ ],
+ "titles": [
+  {
+   "id": "craft_engineer",
+   "name": "AI Craft Engineer",
+   "tagline": "Produces clean, reviewed, production-surviving AI code",
+   "idealFor": "Quality-focused teams, fintech, healthcare tech",
+   "emoji": "\u25c7",
+   "rare": false,
+   "legendary": false,
+   "baseline": false
+  },
+  {
+   "id": "ai_explorer",
+   "name": "AI Explorer",
+   "tagline": "Building with AI \u2014 exploring toward a specialized craft",
+   "idealFor": "Anyone building with AI; the starting craft, not a lesser one",
+   "emoji": "\u25c8",
+   "rare": false,
+   "legendary": false,
+   "baseline": true
+  }
+ ],
+ "primaryTitle": {
+  "id": "craft_engineer",
+  "name": "AI Craft Engineer",
+  "tagline": "Produces clean, reviewed, production-surviving AI code",
+  "idealFor": "Quality-focused teams, fintech, healthcare tech",
+  "emoji": "\u25c7",
+  "rare": false,
+  "legendary": false,
+  "baseline": false
+ },
+ "workMode": {
+  "dominant": {
+   "id": "Prompt-Iterate",
+   "line": "You riff in fast cycles."
+  },
+  "secondary": [
+   {
+    "id": "Multi-Agent-Orchestrated",
+    "line": "You run a fleet."
+   },
+   {
+    "id": "Architect-First",
+    "line": "You plan before you build."
+   },
+   {
+    "id": "One-Shot-Verify",
+    "line": "You ship in one run, then verify."
+   }
+  ]
+ },
+ "antiPatterns": [],
+ "trajectory": {
+  "id": "stable",
+  "label": "Stable",
+  "description": "Consistent AI usage patterns \u2014 established working style."
+ },
+ "map": {
+  "x": 52.0,
+  "y": 45.8,
+  "xLabel": [
+   "Explorer",
+   "Architect"
+  ],
+  "yLabel": [
+   "Solo",
+   "Orchestrator"
+  ]
+ },
+ "growthEdge": {
+  "suggestion": "Reference specific files when you riff \u2014 context sharpens each cycle.",
+  "context": "Prompt-Iterate"
+ },
+ "wrappedStats": {
+  "maxParallelAgents": 4,
+  "subagentDispatches": 72,
+  "longestSessionMinutes": 358,
+  "planModePercent": 12.9,
+  "avgPromptsPerSession": 21.5,
+  "avgPromptWords": 32,
+  "longestStreakDays": 10,
+  "deepSessionCount": 70,
+  "marathonSessionCount": 56,
+  "featureToFixRatio": 1.91,
+  "goToPrompt": null,
+  "tools": [
+   "Claude Code",
+   "Cursor"
+  ],
+  "models": [
+   "claude-opus-4-7"
+  ],
+  "totalActiveHours": 252.7,
+  "agentRuntimeHours": 39.0,
+  "subagentRunCount": 72,
+  "peakProductivityHour": 23,
+  "workMode": "You riff in fast cycles."
+ },
+ "dataCompleteness": 1.0,
+ "tools_detected": [
+  "claude_code",
+  "cursor_ide"
+ ],
+ "signals": {
+  "ai_code_blocks": 600,
+  "ai_lines_survived": 13620,
+  "scored_commits": 60,
+  "architecture_plans": 9,
+  "models_used": [
+   "claude-haiku-4-5",
+   "claude-opus-4-7",
+   "claude-sonnet-4-6"
+  ]
+ },
+ "verification": {
+  "source": "claude_code",
+  "verified": true
+ },
+ "compositeLabel": "strength index \u2014 Prompt-Iterate",
+ "dominantMode": "Prompt-Iterate",
+ "titlesCatalog": [
+  {
+   "id": "agentic_engineer",
+   "name": "Agentic Engineer",
+   "emoji": "\u25ce",
+   "tagline": "Commands AI agents as force multipliers",
+   "idealFor": "AI-first startups, agent platform teams",
+   "rare": false,
+   "legendary": false,
+   "baseline": false,
+   "earned": false,
+   "earnedBy": "Agent Builder \u2265 80",
+   "nearestGap": {
+    "archetype": "Agent Builder",
+    "toGo": 38
+   }
+  },
+  {
+   "id": "systems_architect",
+   "name": "AI Systems Architect",
+   "emoji": "\u2b21",
+   "tagline": "Connects systems, APIs, and AI services at scale",
+   "idealFor": "Enterprise AI, API-first companies, platform teams",
+   "rare": false,
+   "legendary": false,
+   "baseline": false,
+   "earned": false,
+   "earnedBy": "Integration Architect \u2265 80",
+   "nearestGap": {
+    "archetype": "Integration Architect",
+    "toGo": 58
+   }
+  },
+  {
+   "id": "craft_engineer",
+   "name": "AI Craft Engineer",
+   "emoji": "\u25c7",
+   "tagline": "Produces clean, reviewed, production-surviving AI code",
+   "idealFor": "Quality-focused teams, fintech, healthcare tech",
+   "rare": false,
+   "legendary": false,
+   "baseline": false,
+   "earned": true,
+   "earnedBy": "Code Weaver \u2265 80"
+  },
+  {
+   "id": "velocity_engineer",
+   "name": "AI Velocity Engineer",
+   "emoji": "\u2197",
+   "tagline": "Ships at extreme speed with AI leverage",
+   "idealFor": "Startups, 0\u21921 product teams, hackathon culture",
+   "rare": false,
+   "legendary": false,
+   "baseline": false,
+   "earned": false,
+   "earnedBy": "Rapid Prototyper \u2265 80",
+   "nearestGap": {
+    "archetype": "Rapid Prototyper",
+    "toGo": 31
+   }
+  },
+  {
+   "id": "context_architect",
+   "name": "Context Architect",
+   "emoji": "\u2386",
+   "tagline": "Engineers AI context for maximum first-shot accuracy",
+   "idealFor": "AI product teams, developer experience, tooling",
+   "rare": false,
+   "legendary": false,
+   "baseline": false,
+   "earned": false,
+   "earnedBy": "Context Engineer \u2265 80",
+   "nearestGap": {
+    "archetype": "Context Engineer",
+    "toGo": 18
+   }
+  },
+  {
+   "id": "design_engineer",
+   "name": "AI Design Engineer",
+   "emoji": "\u2394",
+   "tagline": "Plans architectures with AI before writing a line",
+   "idealFor": "Architecture teams, staff+ roles, technical leadership",
+   "rare": false,
+   "legendary": false,
+   "baseline": false,
+   "earned": false,
+   "earnedBy": "System Thinker \u2265 80",
+   "nearestGap": {
+    "archetype": "System Thinker",
+    "toGo": 2
+   }
+  },
+  {
+   "id": "devops_ai",
+   "name": "AI DevOps Engineer",
+   "emoji": "\u2699",
+   "tagline": "Automates pipelines, tests, and infra with AI",
+   "idealFor": "DevOps, CI/CD teams, infrastructure, SRE",
+   "rare": false,
+   "legendary": false,
+   "baseline": false,
+   "earned": false,
+   "earnedBy": "Automation Engineer \u2265 75 or CLI-Native Builder \u2265 75",
+   "nearestGap": {
+    "archetype": "Automation Engineer",
+    "toGo": 13
+   }
+  },
+  {
+   "id": "full_stack_ai",
+   "name": "Full-Stack AI Engineer",
+   "emoji": "\u26a1",
+   "tagline": "Builds, reviews, and ships AI-powered systems end-to-end",
+   "idealFor": "Founding engineer roles, full-stack AI product teams",
+   "rare": true,
+   "legendary": false,
+   "baseline": false,
+   "earned": false,
+   "earnedBy": "Agent Builder \u2265 75 + Code Weaver \u2265 70 + Rapid Prototyper \u2265 70",
+   "nearestGap": {
+    "archetype": "Agent Builder",
+    "toGo": 33
+   }
+  },
+  {
+   "id": "ai_platform_lead",
+   "name": "AI Platform Engineer",
+   "emoji": "\ud83d\udd37",
+   "tagline": "Designs and builds multi-agent AI infrastructure",
+   "idealFor": "AI platform teams, infrastructure leads, Series B+ startups",
+   "rare": true,
+   "legendary": false,
+   "baseline": false,
+   "earned": false,
+   "earnedBy": "Agent Builder \u2265 80 + Integration Architect \u2265 75 + System Thinker \u2265 70",
+   "nearestGap": {
+    "archetype": "Integration Architect",
+    "toGo": 53
+   }
+  },
+  {
+   "id": "ai_craftmaster",
+   "name": "AI Craft Master",
+   "emoji": "\ud83d\udc8e",
+   "tagline": "Meticulous quality through superior context and planning",
+   "idealFor": "Security-critical, compliance, regulated industries",
+   "rare": true,
+   "legendary": false,
+   "baseline": false,
+   "earned": false,
+   "earnedBy": "Code Weaver \u2265 80 + Context Engineer \u2265 75 + System Thinker \u2265 70",
+   "nearestGap": {
+    "archetype": "Context Engineer",
+    "toGo": 13
+   }
+  },
+  {
+   "id": "shipping_machine",
+   "name": "AI Shipping Machine",
+   "emoji": "\ud83d\ude80",
+   "tagline": "Maximum velocity with agent orchestration",
+   "idealFor": "YC startups, rapid growth teams, MVP builders",
+   "rare": true,
+   "legendary": false,
+   "baseline": false,
+   "earned": false,
+   "earnedBy": "Rapid Prototyper \u2265 85 + Agent Builder \u2265 75",
+   "nearestGap": {
+    "archetype": "Rapid Prototyper",
+    "toGo": 36
+   }
+  },
+  {
+   "id": "ai_pioneer",
+   "name": "AI Pioneer",
+   "emoji": "\ud83c\udfc6",
+   "tagline": "Excellence across all dimensions of AI engineering",
+   "idealFor": "Technical co-founder, CTO, principal engineer, AI research lead",
+   "rare": true,
+   "legendary": true,
+   "baseline": false,
+   "earned": false,
+   "earnedBy": "6+ archetypes scored \u2265 75, at least one \u2265 90"
+  },
+  {
+   "id": "ai_explorer",
+   "name": "AI Explorer",
+   "emoji": "\u25c8",
+   "tagline": "Building with AI \u2014 exploring toward a specialized craft",
+   "idealFor": "Anyone building with AI; the starting craft, not a lesser one",
+   "rare": false,
+   "legendary": false,
+   "baseline": true,
+   "earned": true,
+   "earnedBy": "Any AI coding activity \u2014 the baseline craft"
+  }
+ ],
+ "positioning": {
+  "leverageMode": {
+   "current": "designs_the_loop",
+   "evidence": [
+    "72 subagent dispatches across 18 sessions",
+    "Agent context files (CLAUDE.md/rules) detected",
+    "9 architecture plans",
+    "4 max parallel agents, 100% agent mode"
+   ],
+   "subFlavor": "orchestrating"
+  },
+  "buildDomain": {
+   "primary": "ai_products",
+   "evidence": [
+    "1 repo ship agent/harness/MCP infrastructure (MCP SDK)",
+    "1 repo ship an LLM wired behind product code (Anthropic SDK)"
+   ],
+   "distribution": [
+    {
+     "domain": "ai_products",
+     "weight": 47,
+     "projects": 1
+    },
+    {
+     "domain": "products",
+     "weight": 38,
+     "projects": 1
+    },
+    {
+     "domain": "ai_systems",
+     "weight": 16,
+     "projects": 1
+    }
+   ]
+  },
+  "techDomains": [
+   {
+    "name": "JavaScript",
+    "weight": 100,
+    "evidence": [
+     "64 commits"
+    ]
+   }
+  ],
+  "footprint": {
+   "cells": [
+    {
+     "domain": "ai_products",
+     "stage": "harnessing",
+     "weight": 47,
+     "projects": 1
+    },
+    {
+     "domain": "products",
+     "stage": "prompting",
+     "weight": 38,
+     "projects": 1
+    },
+    {
+     "domain": "ai_systems",
+     "stage": "prompting",
+     "weight": 16,
+     "projects": 1
+    }
+   ],
+   "basis": "per-repo framework + scaffolding signals, weighted by commits"
+  }
+ },
+ "businessFit": {
+  "position": {
+   "x": -0.115,
+   "y": 0.281
+  },
+  "axes": {
+   "x": [
+    "AI-Augmented",
+    "AI-Native"
+   ],
+   "y": [
+    "Velocity",
+    "Precision"
+   ]
+  },
+  "zones": [
+   {
+    "id": "ai_security",
+    "name": "AI Security & Safety",
+    "x": 0.0,
+    "y": 0.7,
+    "radiusX": 0.15,
+    "radiusY": 0.12,
+    "color": "#B5485D",
+    "categories": [
+     "AI safety",
+     "red teaming",
+     "compliance tooling"
+    ],
+    "description": "AI safety, security testing, and compliance systems",
+    "requirements": [
+     {
+      "archetypeId": "code_weaver",
+      "minScore": 85,
+      "weight": 0.35,
+      "actual": 84
+     },
+     {
+      "archetypeId": "automation_engineer",
+      "minScore": 80,
+      "weight": 0.3,
+      "actual": 62
+     },
+     {
+      "archetypeId": "system_thinker",
+      "minScore": 75,
+      "weight": 0.25,
+      "actual": 78
+     },
+     {
+      "archetypeId": "context_engineer",
+      "minScore": 60,
+      "weight": 0.1,
+      "actual": 62
+     }
+    ],
+    "affinity": 93,
+    "gaps": [
+     {
+      "archetypeId": "code_weaver",
+      "required": 85,
+      "actual": 84
+     },
+     {
+      "archetypeId": "automation_engineer",
+      "required": 80,
+      "actual": 62
+     }
+    ],
+    "isStrongFit": false
+   },
+   {
+    "id": "vertical_ai",
+    "name": "Vertical AI SaaS",
+    "x": 0.2,
+    "y": 0.4,
+    "radiusX": 0.22,
+    "radiusY": 0.18,
+    "color": "#1F9254",
+    "categories": [
+     "legal workflow AI",
+     "healthcare AI",
+     "finance automation"
+    ],
+    "description": "AI applied to healthcare, legal, finance \u2014 regulated domains",
+    "requirements": [
+     {
+      "archetypeId": "code_weaver",
+      "minScore": 80,
+      "weight": 0.35,
+      "actual": 84
+     },
+     {
+      "archetypeId": "automation_engineer",
+      "minScore": 70,
+      "weight": 0.25,
+      "actual": 62
+     },
+     {
+      "archetypeId": "integration_architect",
+      "minScore": 70,
+      "weight": 0.25,
+      "actual": 22
+     },
+     {
+      "archetypeId": "system_thinker",
+      "minScore": 60,
+      "weight": 0.15,
+      "actual": 78
+     }
+    ],
+    "affinity": 80,
+    "gaps": [
+     {
+      "archetypeId": "automation_engineer",
+      "required": 70,
+      "actual": 62
+     },
+     {
+      "archetypeId": "integration_architect",
+      "required": 70,
+      "actual": 22
+     }
+    ],
+    "isStrongFit": false
+   },
+   {
+    "id": "ai_infra",
+    "name": "AI Infrastructure",
+    "x": 0.6,
+    "y": 0.5,
+    "radiusX": 0.16,
+    "radiusY": 0.14,
+    "color": "#CB5A45",
+    "categories": [
+     "foundation models",
+     "inference platforms",
+     "model serving"
+    ],
+    "description": "Foundation models, inference platforms, core AI infrastructure",
+    "requirements": [
+     {
+      "archetypeId": "system_thinker",
+      "minScore": 85,
+      "weight": 0.3,
+      "actual": 78
+     },
+     {
+      "archetypeId": "agent_builder",
+      "minScore": 80,
+      "weight": 0.3,
+      "actual": 42
+     },
+     {
+      "archetypeId": "automation_engineer",
+      "minScore": 75,
+      "weight": 0.25,
+      "actual": 62
+     },
+     {
+      "archetypeId": "code_weaver",
+      "minScore": 70,
+      "weight": 0.15,
+      "actual": 84
+     }
+    ],
+    "affinity": 79,
+    "gaps": [
+     {
+      "archetypeId": "system_thinker",
+      "required": 85,
+      "actual": 78
+     },
+     {
+      "archetypeId": "agent_builder",
+      "required": 80,
+      "actual": 42
+     },
+     {
+      "archetypeId": "automation_engineer",
+      "required": 75,
+      "actual": 62
+     }
+    ],
+    "isStrongFit": false
+   },
+   {
+    "id": "ai_enterprise",
+    "name": "AI-Augmented Enterprise",
+    "x": -0.3,
+    "y": 0.3,
+    "radiusX": 0.22,
+    "radiusY": 0.18,
+    "color": "#CF8A1A",
+    "categories": [
+     "enterprise SaaS AI",
+     "workplace productivity",
+     "integration layers"
+    ],
+    "description": "Adding AI capabilities to existing enterprise products",
+    "requirements": [
+     {
+      "archetypeId": "integration_architect",
+      "minScore": 80,
+      "weight": 0.35,
+      "actual": 22
+     },
+     {
+      "archetypeId": "code_weaver",
+      "minScore": 70,
+      "weight": 0.25,
+      "actual": 84
+     },
+     {
+      "archetypeId": "automation_engineer",
+      "minScore": 65,
+      "weight": 0.25,
+      "actual": 62
+     },
+     {
+      "archetypeId": "system_thinker",
+      "minScore": 60,
+      "weight": 0.15,
+      "actual": 78
+     }
+    ],
+    "affinity": 73,
+    "gaps": [
+     {
+      "archetypeId": "integration_architect",
+      "required": 80,
+      "actual": 22
+     },
+     {
+      "archetypeId": "automation_engineer",
+      "required": 65,
+      "actual": 62
+     }
+    ],
+    "isStrongFit": false
+   },
+   {
+    "id": "dev_tools",
+    "name": "AI Developer Tools",
+    "x": 0.3,
+    "y": -0.4,
+    "radiusX": 0.2,
+    "radiusY": 0.18,
+    "color": "#3F6CC7",
+    "categories": [
+     "IDE copilots",
+     "code assistants",
+     "dev environments"
+    ],
+    "description": "Building AI-powered tools that make developers more productive",
+    "requirements": [
+     {
+      "archetypeId": "agent_builder",
+      "minScore": 85,
+      "weight": 0.35,
+      "actual": 42
+     },
+     {
+      "archetypeId": "rapid_prototyper",
+      "minScore": 80,
+      "weight": 0.25,
+      "actual": 49
+     },
+     {
+      "archetypeId": "context_engineer",
+      "minScore": 70,
+      "weight": 0.2,
+      "actual": 62
+     },
+     {
+      "archetypeId": "code_weaver",
+      "minScore": 60,
+      "weight": 0.2,
+      "actual": 84
+     }
+    ],
+    "affinity": 70,
+    "gaps": [
+     {
+      "archetypeId": "agent_builder",
+      "required": 85,
+      "actual": 42
+     },
+     {
+      "archetypeId": "rapid_prototyper",
+      "required": 80,
+      "actual": 49
+     },
+     {
+      "archetypeId": "context_engineer",
+      "required": 70,
+      "actual": 62
+     }
+    ],
+    "isStrongFit": false
+   },
+   {
+    "id": "ai_startups",
+    "name": "AI-First Startups",
+    "x": -0.2,
+    "y": -0.5,
+    "radiusX": 0.22,
+    "radiusY": 0.16,
+    "color": "#E2542C",
+    "categories": [
+     "seed-stage builders",
+     "indie AI products",
+     "rapid MVP shops"
+    ],
+    "description": "Early-stage companies shipping fast with AI leverage",
+    "requirements": [
+     {
+      "archetypeId": "rapid_prototyper",
+      "minScore": 85,
+      "weight": 0.35,
+      "actual": 49
+     },
+     {
+      "archetypeId": "agent_builder",
+      "minScore": 70,
+      "weight": 0.3,
+      "actual": 42
+     },
+     {
+      "archetypeId": "cli_native",
+      "minScore": 50,
+      "weight": 0.2,
+      "actual": 42
+     },
+     {
+      "archetypeId": "context_engineer",
+      "minScore": 50,
+      "weight": 0.15,
+      "actual": 62
+     }
+    ],
+    "affinity": 70,
+    "gaps": [
+     {
+      "archetypeId": "rapid_prototyper",
+      "required": 85,
+      "actual": 49
+     },
+     {
+      "archetypeId": "agent_builder",
+      "required": 70,
+      "actual": 42
+     },
+     {
+      "archetypeId": "cli_native",
+      "required": 50,
+      "actual": 42
+     }
+    ],
+    "isStrongFit": false
+   },
+   {
+    "id": "ai_consumer",
+    "name": "AI Consumer Products",
+    "x": -0.5,
+    "y": -0.3,
+    "radiusX": 0.16,
+    "radiusY": 0.14,
+    "color": "#8A5BC7",
+    "categories": [
+     "consumer chatbots",
+     "AI search",
+     "companion apps"
+    ],
+    "description": "Consumer-facing AI products \u2014 chatbots, search, companions",
+    "requirements": [
+     {
+      "archetypeId": "rapid_prototyper",
+      "minScore": 80,
+      "weight": 0.35,
+      "actual": 49
+     },
+     {
+      "archetypeId": "context_engineer",
+      "minScore": 70,
+      "weight": 0.25,
+      "actual": 62
+     },
+     {
+      "archetypeId": "integration_architect",
+      "minScore": 65,
+      "weight": 0.25,
+      "actual": 22
+     },
+     {
+      "archetypeId": "code_weaver",
+      "minScore": 55,
+      "weight": 0.15,
+      "actual": 84
+     }
+    ],
+    "affinity": 67,
+    "gaps": [
+     {
+      "archetypeId": "rapid_prototyper",
+      "required": 80,
+      "actual": 49
+     },
+     {
+      "archetypeId": "context_engineer",
+      "required": 70,
+      "actual": 62
+     },
+     {
+      "archetypeId": "integration_architect",
+      "required": 65,
+      "actual": 22
+     }
+    ],
+    "isStrongFit": false
+   },
+   {
+    "id": "autonomous_agents",
+    "name": "Autonomous Agents",
+    "x": 0.7,
+    "y": 0.0,
+    "radiusX": 0.18,
+    "radiusY": 0.2,
+    "color": "#7C5BD6",
+    "categories": [
+     "agent orchestration",
+     "multi-agent frameworks",
+     "MCP tooling"
+    ],
+    "description": "Multi-agent orchestration and autonomous AI systems",
+    "requirements": [
+     {
+      "archetypeId": "agent_builder",
+      "minScore": 85,
+      "weight": 0.3,
+      "actual": 42
+     },
+     {
+      "archetypeId": "multi_agent_orchestrator",
+      "minScore": 65,
+      "weight": 0.15,
+      "actual": 41
+     },
+     {
+      "archetypeId": "integration_architect",
+      "minScore": 75,
+      "weight": 0.25,
+      "actual": 22
+     },
+     {
+      "archetypeId": "system_thinker",
+      "minScore": 70,
+      "weight": 0.15,
+      "actual": 78
+     },
+     {
+      "archetypeId": "context_engineer",
+      "minScore": 60,
+      "weight": 0.15,
+      "actual": 62
+     }
+    ],
+    "affinity": 62,
+    "gaps": [
+     {
+      "archetypeId": "agent_builder",
+      "required": 85,
+      "actual": 42
+     },
+     {
+      "archetypeId": "multi_agent_orchestrator",
+      "required": 65,
+      "actual": 41
+     },
+     {
+      "archetypeId": "integration_architect",
+      "required": 75,
+      "actual": 22
+     }
+    ],
+    "isStrongFit": false
+   }
+  ],
+  "topFits": [
+   {
+    "id": "ai_security",
+    "name": "AI Security & Safety",
+    "affinity": 93
+   },
+   {
+    "id": "vertical_ai",
+    "name": "Vertical AI SaaS",
+    "affinity": 80
+   },
+   {
+    "id": "ai_infra",
+    "name": "AI Infrastructure",
+    "affinity": 79
+   }
+  ],
+  "framing": "Fit-to-segment, not a ranking. Scores compare your archetype profile to segment requirements derived from your local sessions + git \u2014 never to other builders."
+ },
+ "scoredAt": 1781517007.269103,
+ "toolsDetail": [],
+ "assessment": {
+  "schema_version": "1.1",
+  "taxonomy_version": "0.2.1",
+  "methodology_version": "0.4.4",
+  "generated_at": "2026-06-15T09:50:07.279490+00:00",
+  "sources_used": [
+   "Claude Code",
+   "Cursor IDE",
+   "git"
+  ],
+  "sessions": 70,
+  "dateRange": "2026-01-26 to 2026-06-14",
+  "privacyMode": "local-only",
+  "confidence": 90,
+  "confidenceFactors": {
+   "completeness": {
+    "pct": 100,
+    "detail": "48 of 46 metric slots measured"
+   },
+   "sources": {
+    "pct": 75,
+    "detail": "3 of 4 standard sources collected"
+   },
+   "depth": {
+    "pct": 83,
+    "detail": "5 of 6 dimensions on a sufficient sample"
+   },
+   "volume": {
+    "pct": 100,
+    "detail": "252.7h active (40h = full weight)"
+   },
+   "window": {
+    "pct": 100,
+    "detail": "95 active days (90 = full weight)"
+   }
+  }
+ },
+ "enrichment": {
+  "narrative": "Builds production software with AI as a collaborator, not a vending machine: precise, reference-rich direction up front, fast iterative loops, and nothing shipped until it is verified. The signature is strongest in Recovery Velocity and Build Stability, with 91% of AI-authored code surviving in commits.",
+  "positioningLine": "A JavaScript ai_products builder operating mostly at the designs_the_loop level.",
+  "whatYouBuilt": [
+   "Shipped lighthouse-app, an AI-native product (Next.js with the Anthropic SDK wired into the runtime) \u2014 the largest body of work, committed steadily across roughly four months.",
+   "Built harbor-mcp, a Model Context Protocol server with zod-validated tools that exposes capabilities to coding agents.",
+   "Kept tidewater-shop, a React and Express storefront, on a steady release cadence alongside the bigger builds."
+  ],
+  "decisionPatterns": {
+   "style": "Plans the risky work, then builds in small verifiable steps.",
+   "stats": {
+    "detected": 4,
+    "byDomain": {
+     "refactoring": 2,
+     "debugging": 1,
+     "delivery": 1
+    },
+    "highValue": 2
+   },
+   "named": [
+    {
+     "name": "Plan-before-build on structural changes",
+     "evidence": "Nine written plans precede coding; the router split ran as reversible extraction steps with the suite checked after each move."
+    },
+    {
+     "name": "Reproduce, then fix",
+     "evidence": "Failing pricing cases reproduced locally before any change; 96% of flagged errors resolved."
+    },
+    {
+     "name": "Test the risky path before merge",
+     "evidence": "An integration test covered the checkout retry and declined-card branch before it shipped."
+    },
+    {
+     "name": "Reference-rich direction",
+     "evidence": "Every prompt cites specific files or fixtures; 21.5 turns of deliberate iteration per task on average."
+    }
+   ]
+  },
+  "strengths": [
+   {
+    "claim": "Durable AI-assisted code (Code Weaver)",
+    "evidence": "91% of AI-authored lines survive in commits; 96% error-fix rate."
+   },
+   {
+    "claim": "Deliberate, spec-led iteration (System Thinker)",
+    "evidence": "100% reference-rich prompts; 21.5 average turns per task."
+   },
+   {
+    "claim": "Carries context across tools (Context Engineer)",
+    "evidence": "Nine specs and plans written before coding; consistent context across Claude Code and Cursor."
+   }
+  ],
+  "growthAreas": [
+   {
+    "observed": "Parallelism tops out around four agents at once.",
+    "nextSignal": "Fan a well-scoped task across more subagents \u2014 orchestration grows with breadth, not just depth."
+   },
+   {
+    "observed": "Work concentrates in JavaScript product code.",
+    "nextSignal": "A second language or a non-product repo would broaden the build-domain footprint."
+   }
+  ],
+  "howYouUseAI": {
+   "persona": "Dances with Robots",
+   "line": "Riffs in fast, verified cycles \u2014 directs, checks, then ships."
+  },
+  "generatedAt": "2026-06-15T09:50:07Z",
+  "source": "agent"
+ },
+ "experimental": {
+  "available": true,
+  "signals": [
+   {
+    "label": "Delegation funnel",
+    "headline": "runs agent fleets",
+    "detail": "Of 85 sessions: 82% delegate file edits, 82% run terminal commands, 0% reach through MCP tools, 21% dispatch subagents (72 dispatches); peak 4 agent(s) in parallel. The next rung of the funnel is where leverage grows \u2014 if the work decomposes.",
+    "confidence": 75,
+    "kind": "measured"
+   },
+   {
+    "label": "Prompt evolution",
+    "headline": "steady: 32 \u2192 32 words",
+    "detail": "Average prompt length per month, 2026-01 to 2026-06. Longer prompts usually mean more constraints stated up front; leaner prompts on the same work can mean the harness now carries the context. Neither is better \u2014 the trend is yours.",
+    "confidence": 80,
+    "kind": "measured",
+    "series": [
+     31.8,
+     31.8,
+     31.8,
+     31.8,
+     31.8,
+     31.8
+    ],
+    "seriesLabels": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06"
+    ]
+   },
+   {
+    "label": "Correction loops",
+    "headline": "falling: 32 \u2192 17 turns",
+    "detail": "Average user turns per session by month \u2014 you're reaching done in fewer turns. Window 2026-01 to 2026-06.",
+    "confidence": 70,
+    "kind": "measured",
+    "series": [
+     32.0,
+     21.5,
+     21.5,
+     21.0,
+     22.0,
+     17.0
+    ],
+    "seriesLabels": [
+     "2026-01",
+     "2026-02",
+     "2026-03",
+     "2026-04",
+     "2026-05",
+     "2026-06"
+    ]
+   },
+   {
+    "label": "Session rhythm",
+    "headline": "20 active weeks, peak 4/wk",
+    "detail": "Sessions per active week (last ~6 months shown). Bursts and gaps are both visible \u2014 this is cadence, not a grade.",
+    "confidence": 80,
+    "kind": "measured",
+    "series": [
+     4,
+     3,
+     4,
+     3,
+     4,
+     3,
+     3,
+     4,
+     4,
+     3,
+     4,
+     3,
+     4,
+     3,
+     4,
+     3,
+     4,
+     3,
+     4,
+     3
+    ]
+   },
+   {
+    "label": "Model routing",
+    "headline": "3 models, 0% multi-model",
+    "detail": "mostly one model per session: 0 of 85 sessions used more than one model. Routing by task is an orchestration signal; loyalty is a consistency signal.",
+    "confidence": 70,
+    "kind": "measured"
+   },
+   {
+    "label": "Focus shape",
+    "headline": "0% multi-project days",
+    "detail": "On 0% of active days you touched more than one project \u2014 a mostly single-project working style. Interleaving suits orchestration; single-project days suit depth. Different, not better.",
+    "confidence": 75,
+    "kind": "measured"
+   },
+   {
+    "label": "Context scaffolding",
+    "headline": "1 of 3 repos (33%)",
+    "detail": "Repos with agent context files (CLAUDE.md). Scaffolded repos let agents start warm; the unscaffolded ones are the cheapest leverage still on the table.",
+    "confidence": 75,
+    "kind": "measured"
+   },
+   {
+    "label": "Harness inventory",
+    "headline": "1 skills",
+    "detail": "Agent tooling across your repos: 1 skills. CLAUDE.md in 1 repos (3 lines total). This is the craft of making agents start warm \u2014 skills, subagents, commands, and hooks are reusable leverage.",
+    "confidence": 80,
+    "kind": "measured"
+   },
+   {
+    "label": "Solo-equivalent time",
+    "headline": "~336\u2013505h",
+    "detail": "Your 253 measured hands-on hours shipped 13,620 AI-authored lines (91.9% of tracked output). Solo-equivalent time is a research-anchored BAND (studies report ~25\u201350% task-time savings with AI assistance; evidence is mixed \u2014 one 2025 RCT found experienced devs slower on familiar code), applied to your measured hands-on hours. An estimate, never a score.",
+    "confidence": 40,
+    "kind": "estimate"
+   }
+  ],
+  "codeIntelligence": []
+ },
+ "coverage": {
+  "sources": [
+   {
+    "id": "claude_code",
+    "label": "Claude Code",
+    "detectedOnMachine": true,
+    "consented": true,
+    "collected": true
+   },
+   {
+    "id": "cursor",
+    "label": "Cursor IDE",
+    "detectedOnMachine": true,
+    "consented": true,
+    "collected": true
+   },
+   {
+    "id": "codex",
+    "label": "Codex CLI",
+    "detectedOnMachine": false,
+    "consented": true,
+    "collected": false
+   },
+   {
+    "id": "git",
+    "label": "git",
+    "detectedOnMachine": true,
+    "consented": true,
+    "collected": true
+   },
+   {
+    "id": "other_tools",
+    "label": "Other AI tools (VS Code Copilot/Cline/Cody, Continue, Aider, Windsurf, Zed, JetBrains)",
+    "detectedOnMachine": false,
+    "consented": true,
+    "collected": false
+   },
+   {
+    "id": "local_models",
+    "label": "Local model runtimes (Ollama/LM Studio/llama.cpp)",
+    "detectedOnMachine": false,
+    "consented": true,
+    "collected": false
+   },
+   {
+    "id": "claude_desktop",
+    "label": "Claude Desktop",
+    "detectedOnMachine": false,
+    "consented": false,
+    "collected": false
+   }
+  ],
+  "window": {
+   "value": "all"
+  },
+  "repos": {
+   "value": "all"
+  },
+  "codeScan": {
+   "ran": false,
+   "gap": "Local code scan (structure, deps, tests, deploy configs) not run.",
+   "widen": "python3 -m cruise_ai assess --code (opt-in, metrics only)"
+  },
+  "gaps": [
+   {
+    "source": "code_scan",
+    "gap": "Local code scan (structure, deps, tests, deploy configs) not run.",
+    "widen": "python3 -m cruise_ai assess --code (opt-in, metrics only)"
+   }
+  ],
+  "complete": false
+ },
+ "activity": {
+  "streak": 10,
+  "activeDays": 95,
+  "avgSessionHours": 3.6,
+  "totalSessions": 70,
+  "days": [
+   {
+    "date": "2026-01-26",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 358.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-01-27",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-01-28",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 328.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-01-29",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-01-30",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 294.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-01-31",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-01",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 265.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-02",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-03",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 231.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-04",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-05",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 202.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-06",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-07",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-08",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 169.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-09",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 136.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-10",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-11",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 108.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-12",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-13",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 75.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-14",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-15",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 358.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-16",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-17",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 328.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-18",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-19",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 294.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-20",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-21",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 265.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-22",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-23",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 231.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-24",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-25",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-26",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 202.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-27",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 169.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-02-28",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-01",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 136.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-02",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-03",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 108.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-04",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-05",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 75.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-06",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-07",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 358.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-08",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-09",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 328.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-10",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-11",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 294.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-12",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-13",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 265.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-14",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-15",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-16",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 231.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-17",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 202.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-18",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-19",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 169.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-20",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-21",
+    "sessions": 1,
+    "commits": 2,
+    "activeMinutes": 136.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-22",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-23",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 108.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-24",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-25",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 75.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-26",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-27",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 358.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-28",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-29",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 328.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-30",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-03-31",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 294.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-01",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-02",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-03",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 265.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-04",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 231.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-05",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-06",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 202.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-07",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-08",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 169.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-09",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-10",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 136.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-11",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-12",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 108.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-13",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-14",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 75.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-15",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-16",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 358.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-17",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-18",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 328.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-19",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-20",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-21",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 294.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-22",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 265.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-23",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-24",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 231.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-25",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-26",
+    "sessions": 1,
+    "commits": 2,
+    "activeMinutes": 202.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-27",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-28",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 169.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-29",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-04-30",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 136.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-01",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-02",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 108.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-03",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-04",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 75.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-05",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-06",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 358.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-07",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-08",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-09",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 328.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-10",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 294.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-11",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-12",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 265.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-13",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-14",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 231.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-15",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-16",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 202.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-17",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-18",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 169.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-19",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-20",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 136.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-21",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-22",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 108.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-23",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-24",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 75.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-25",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-26",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-27",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 358.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-28",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 328.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-29",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-30",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 294.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-05-31",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-01",
+    "sessions": 1,
+    "commits": 2,
+    "activeMinutes": 265.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-02",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-03",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 231.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-04",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-05",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 202.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-06",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-07",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 169.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-08",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-09",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 136.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "tidewater-shop",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-10",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-11",
+    "sessions": 1,
+    "commits": 0,
+    "activeMinutes": 108.0,
+    "tools": [
+     "claude_code"
+    ],
+    "topProject": "harbor-mcp",
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-12",
+    "sessions": 0,
+    "commits": 0,
+    "activeMinutes": null,
+    "tools": [],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-13",
+    "sessions": 0,
+    "commits": 1,
+    "activeMinutes": null,
+    "tools": [
+     "git"
+    ],
+    "topProject": null,
+    "aiRatio": null,
+    "preAi": false
+   },
+   {
+    "date": "2026-06-14",
+    "sessions": 1,
+    "commits": 1,
+    "activeMinutes": 75.0,
+    "tools": [
+     "claude_code",
+     "git"
+    ],
+    "topProject": "lighthouse-app",
+    "aiRatio": null,
+    "preAi": false
+   }
+  ]
+ },
+ "summaryLine": "Iterates in Prompt Iterate mode \u2014 strongest in Recovery Velocity and Build Stability, 4 parallel agents.",
+ "activityByDay": [
+  {
+   "date": "2026-01-26",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 358.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-01-27",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-01-28",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 328.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-01-29",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-01-30",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 294.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-01-31",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-01",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 265.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-02",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-03",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 231.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-04",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-05",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 202.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-06",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-07",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-08",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 169.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-09",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 136.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-10",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-11",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 108.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-12",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-13",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 75.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-14",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-15",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 358.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-16",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-17",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 328.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-18",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-19",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 294.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-20",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-21",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 265.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-22",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-23",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 231.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-24",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-25",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-26",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 202.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-27",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 169.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-02-28",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-01",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 136.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-02",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-03",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 108.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-04",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-05",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 75.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-06",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-07",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 358.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-08",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-09",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 328.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-10",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-11",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 294.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-12",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-13",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 265.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-14",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-15",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-16",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 231.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-17",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 202.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-18",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-19",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 169.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-20",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-21",
+   "sessions": 1,
+   "commits": 2,
+   "activeMinutes": 136.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-22",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-23",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 108.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-24",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-25",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 75.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-26",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-27",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 358.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-28",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-29",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 328.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-30",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-03-31",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 294.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-01",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-02",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-03",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 265.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-04",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 231.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-05",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-06",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 202.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-07",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-08",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 169.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-09",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-10",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 136.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-11",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-12",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 108.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-13",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-14",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 75.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-15",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-16",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 358.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-17",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-18",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 328.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-19",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-20",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-21",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 294.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-22",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 265.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-23",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-24",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 231.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-25",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-26",
+   "sessions": 1,
+   "commits": 2,
+   "activeMinutes": 202.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-27",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-28",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 169.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-29",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-04-30",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 136.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-01",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-02",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 108.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-03",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-04",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 75.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-05",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-06",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 358.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-07",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-08",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-09",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 328.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-10",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 294.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-11",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-12",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 265.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-13",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-14",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 231.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-15",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-16",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 202.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-17",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-18",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 169.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-19",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-20",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 136.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-21",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-22",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 108.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-23",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-24",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 75.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-25",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-26",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-27",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 358.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-28",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 328.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-29",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-30",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 294.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-05-31",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-01",
+   "sessions": 1,
+   "commits": 2,
+   "activeMinutes": 265.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-02",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-03",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 231.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-04",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-05",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 202.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-06",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-07",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 169.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-08",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-09",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 136.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "tidewater-shop",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-10",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-11",
+   "sessions": 1,
+   "commits": 0,
+   "activeMinutes": 108.0,
+   "tools": [
+    "claude_code"
+   ],
+   "topProject": "harbor-mcp",
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-12",
+   "sessions": 0,
+   "commits": 0,
+   "activeMinutes": null,
+   "tools": [],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-13",
+   "sessions": 0,
+   "commits": 1,
+   "activeMinutes": null,
+   "tools": [
+    "git"
+   ],
+   "topProject": null,
+   "aiRatio": null,
+   "preAi": false
+  },
+  {
+   "date": "2026-06-14",
+   "sessions": 1,
+   "commits": 1,
+   "activeMinutes": 75.0,
+   "tools": [
+    "claude_code",
+    "git"
+   ],
+   "topProject": "lighthouse-app",
+   "aiRatio": null,
+   "preAi": false
+  }
+ ],
+ "harness": {
+  "skills": 1,
+  "agents": 0,
+  "commands": 0,
+  "hooks": 0,
+  "rules": 0,
+  "plugins": 0,
+  "claudeMdRepos": 1,
+  "claudeMdLines": 3,
+  "mcpRepos": 0,
+  "scaffoldedRepos": 1,
+  "totalRepos": 3,
+  "subagentDispatches": 72,
+  "sessionsWithSubagents": 18,
+  "available": true
+ },
+ "scannedProjects": [
+  {
+   "name": "lighthouse-app",
+   "languages": [],
+   "lastActive": "2026-06-14",
+   "sessionCount": 24,
+   "series": [
+    1,
+    5,
+    5,
+    5,
+    5,
+    3
+   ]
+  },
+  {
+   "name": "harbor-mcp",
+   "languages": [],
+   "lastActive": "2026-06-12",
+   "sessionCount": 23,
+   "series": [
+    1,
+    4,
+    6,
+    5,
+    5,
+    2
+   ]
+  },
+  {
+   "name": "tidewater-shop",
+   "languages": [],
+   "lastActive": "2026-06-10",
+   "sessionCount": 23,
+   "series": [
+    1,
+    5,
+    5,
+    5,
+    5,
+    2
+   ]
+  },
+  {
+   "name": "harbor-mcp",
+   "languages": [
+    "JavaScript"
+   ],
+   "lastActive": null,
+   "sessionCount": 0
+  },
+  {
+   "name": "lighthouse-app",
+   "languages": [
+    "JavaScript"
+   ],
+   "lastActive": null,
+   "sessionCount": 0
+  },
+  {
+   "name": "tidewater-shop",
+   "languages": [
+    "JavaScript"
+   ],
+   "lastActive": null,
+   "sessionCount": 0
+  }
+ ],
+ "stackSummary": {
+  "languages": {
+   "JavaScript": 1.0
+  },
+  "frameworks": [
+   "Anthropic SDK",
+   "Express",
+   "MCP SDK",
+   "Next.js",
+   "React",
+   "Zod"
+  ],
+  "aiFrameworks": [
+   "Anthropic SDK",
+   "MCP SDK"
+  ],
+  "databases": [],
+  "cloud": []
+ },
+ "modelsSummary": {
+  "byModel": {
+   "claude-opus-4-7": 249,
+   "claude-sonnet-4-6": 248,
+   "claude-haiku-4-5": 248
+  },
+  "primaryModel": "claude-opus-4-7"
+ },
+ "leverage": {
+  "aiShare": 91.9,
+  "aiLines": 13620,
+  "humanLines": 1200,
+  "trackedCommits": 60,
+  "outputMultiple": 12.3,
+  "outputMultipleCapped": false,
+  "handsOnHours": 252.7,
+  "agentHours": 39.0,
+  "soloEquivalentHours": {
+   "low": 336,
+   "high": 505
+  },
+  "basis": "Per-commit authorship attribution over 60 tracked commits (Cursor scored commits \u2014 commits without attribution are not counted).",
+  "estimateNote": "Solo-equivalent time is a research-anchored BAND (studies report ~25\u201350% task-time savings with AI assistance; evidence is mixed \u2014 one 2025 RCT found experienced devs slower on familiar code), applied to your measured hands-on hours. An estimate, never a score."
+ },
+ "avatar": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+PHN0b3Agb2Zmc2V0PSIwIiBzdG9wLWNvbG9yPSIjRkY1QTM2Ii8+PHN0b3Agb2Zmc2V0PSIwLjU1IiBzdG9wLWNvbG9yPSIjRkZBNjNEIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjRkY2QkMxIi8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIHJ4PSIyMiIgZmlsbD0idXJsKCNnKSIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9Ijc4IiByPSIzNCIgZmlsbD0iI0ZCRjdFRiIvPjxwYXRoIGQ9Ik00NCAxNzggQzQ0IDEzMCA3MCAxMTIgMTAwIDExMiBDMTMwIDExMiAxNTYgMTMwIDE1NiAxNzggWiIgZmlsbD0iI0ZCRjdFRiIvPjwvc3ZnPgo="
+}

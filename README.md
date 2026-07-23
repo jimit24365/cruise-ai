@@ -37,7 +37,7 @@ cruise-ai teach           # Interactive learning mode
 
 ## How It Works
 
-cruise-ai scans your local AI tool sessions (Kiro, Claude Code, Cursor, Codex, and more) to understand your patterns — then applies evidence-based rules to suggest improvements. Everything runs locally. No data leaves your machine.
+cruise-ai scans your local AI tool sessions (Kiro, Claude Code, Cursor, Codex, and more) to understand your patterns — then applies evidence-based rules to suggest improvements. Everything is computed entirely from local files. No data leaves your machine — your prompts, responses, and code never reach cruise_ai servers.
 
 ## Credits
 

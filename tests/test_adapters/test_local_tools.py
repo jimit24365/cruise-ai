@@ -9,8 +9,8 @@ sessions, honest counts). Fidelity must ride along in raw_data."""
 import json
 from pathlib import Path
 
-from nextmillionai.adapters.local_models import detect_local_models
-from nextmillionai.adapters.local_tools import (
+from cruise_ai.adapters.local_models import detect_local_models
+from cruise_ai.adapters.local_tools import (
     AiderAdapter,
     AntigravityAdapter,
     ClineAdapter,
@@ -46,7 +46,7 @@ def test_all_adapters_absent_home(tmp_path):
 
 
 def test_aider_parses_session_markers(tmp_path, monkeypatch):
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path / "nma"))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path / "cruise-ai"))
     (tmp_path / ".aider.chat.history.md").write_text(
         "# aider chat started at 2026-06-01 10:00:00\n\n"
         "#### make the tests pass\n\nok done\n\n"
@@ -274,7 +274,7 @@ def test_antigravity_detects_vscode_state_dir(tmp_path):
 
 
 def test_opencode_filebased_sessions(tmp_path):
-    from nextmillionai.adapters.local_tools import OpenCodeAdapter
+    from cruise_ai.adapters.local_tools import OpenCodeAdapter
 
     base = tmp_path / ".local" / "share" / "opencode" / "storage"
     sdir = base / "session" / "projhash"
@@ -310,7 +310,7 @@ def test_opencode_filebased_sessions(tmp_path):
 def test_opencode_sqlite_sessions(tmp_path):
     import sqlite3
 
-    from nextmillionai.adapters.local_tools import OpenCodeAdapter
+    from cruise_ai.adapters.local_tools import OpenCodeAdapter
 
     root = tmp_path / ".local" / "share" / "opencode"
     root.mkdir(parents=True)
@@ -347,7 +347,7 @@ def test_opencode_sqlite_sessions(tmp_path):
 
 
 def test_opencode_present_but_empty(tmp_path):
-    from nextmillionai.adapters.local_tools import OpenCodeAdapter
+    from cruise_ai.adapters.local_tools import OpenCodeAdapter
 
     (tmp_path / ".local" / "share" / "opencode" / "storage" / "session").mkdir(parents=True)
     a = OpenCodeAdapter(home=tmp_path)
@@ -356,7 +356,7 @@ def test_opencode_present_but_empty(tmp_path):
     assert a.raw_data()["sessions"] == 0
 
 
-# ── Custom adapters (nextmillionai.config.json) ──────────────────────────────
+# ── Custom adapters (cruise_ai.config.json) ──────────────────────────────
 
 
 def test_custom_adapter_file_per_session(tmp_path):
@@ -384,9 +384,9 @@ def test_custom_adapter_loaded_from_config(tmp_path, monkeypatch):
     logs = tmp_path / "logs"
     logs.mkdir()
     (logs / "a.txt").write_text("x")
-    nma_home = tmp_path / "nma-home"
-    nma_home.mkdir()
-    (nma_home / "nextmillionai.config.json").write_text(
+    cruise_home = tmp_path / "cruise-ai-home"
+    cruise_home.mkdir()
+    (cruise_home / "cruise-ai.config.json").write_text(
         json.dumps(
             {
                 "adapters": [
@@ -397,7 +397,7 @@ def test_custom_adapter_loaded_from_config(tmp_path, monkeypatch):
             }
         )
     )
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(nma_home))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(cruise_home))
     monkeypatch.chdir(tmp_path)  # no cwd config
     adapters = load_custom_adapters(home=tmp_path)
     assert [a.name for a in adapters] == ["diyharness"]
@@ -442,8 +442,8 @@ def test_no_local_models(tmp_path):
 
 def test_registry_consent_group_gates_other_tools(tmp_path, monkeypatch):
     """other_tools=False keeps every wider-field adapter out of the run."""
-    import nextmillionai.adapters._registry as registry
-    from nextmillionai.adapters._registry import run_adapters
+    import cruise_ai.adapters._registry as registry
+    from cruise_ai.adapters._registry import run_adapters
 
     conv = tmp_path / ".continue" / "sessions"
     conv.mkdir(parents=True)

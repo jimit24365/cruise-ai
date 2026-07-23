@@ -1,0 +1,22 @@
+{
+  "name": "cruise-ai-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for cruise_ai \u2014 AI coding profile tools for Claude and Cursor",
+  "type": "module",
+  "main": "index.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^4.4.3"
+  },
+  "bin": {
+    "cruise-ai-mcp": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "README.md"
+  ]
+}

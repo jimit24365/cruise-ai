@@ -7,7 +7,7 @@ active-days, or date range. This guards that clamp (representation only — no
 score reads the activity surface).
 """
 
-from nextmillionai.build_profile import _is_active_day, _longest_streak, tag_ai_era
+from cruise_ai.build_profile import _is_active_day, _longest_streak, tag_ai_era
 
 
 def _days():

@@ -1,9 +1,9 @@
 # Repo chart & flow
 
-How nextmillionai is laid out and how data moves through it — one page,
+How cruise_ai is laid out and how data moves through it — one page,
 agent- and human-readable. Module ownership lives in
 [ARCHITECTURE.md](../ARCHITECTURE.md); the scoring pipeline has its own
-chart in [SCORING-METHODOLOGY.md](../nextmillionai/docs/SCORING-METHODOLOGY.md#scoring-flow).
+chart in [SCORING-METHODOLOGY.md](../cruise_ai/docs/SCORING-METHODOLOGY.md#scoring-flow).
 
 ## The flow (scan → score → serve → share)
 
@@ -54,11 +54,11 @@ machine — both explicit, derived-only, and revocable.
 | Module | Lives in | Does |
 |---|---|---|
 | **scan** | `scanner.py`, `adapters/**`, `code_intel.py`, `history.py` | Read each tool's local store; normalize; durable ledger |
-| **core** | `scoring.py`, `schema.py`, `signal_registry.py`, `nextmillionai/docs/**` | Score, the one JSON contract, derived-field registry, methodology |
+| **core** | `scoring.py`, `schema.py`, `signal_registry.py`, `cruise_ai/docs/**` | Score, the one JSON contract, derived-field registry, methodology |
 | **serve** | `hub.py`, `build_profile.py`, `live.py` | CLI, localhost server, live file-watcher/SSE |
 | **net** | `network.py`, `network_server.py`, `sync_merge.py` | Only outbound module + reference registry + device merge |
 | **face** | `static/**` | One JSON renders both views (`tabs-shared.*`) |
-| **bridge** | `nextmillionai-mcp/**` | MCP server (14 tools), self-locating engine |
+| **bridge** | `cruise_ai-mcp/**` | MCP server (14 tools), self-locating engine |
 
 ## Command → surface map
 

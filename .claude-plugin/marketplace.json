@@ -1,11 +1,11 @@
 {
-  "name": "nextmillionai",
+  "name": "cruise_ai",
   "owner": {
-    "name": "nextmillionai contributors"
+    "name": "cruise_ai contributors"
   },
   "plugins": [
     {
-      "name": "nextmillionai",
+      "name": "cruise_ai",
       "source": "./",
       "description": "Private, local-first AI coding profile builder — assess how you build with AI from inside your coding agent."
     }

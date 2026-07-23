@@ -1,6 +1,6 @@
 """The generated derivations doc must stay in lockstep with the registry.
 
-DERIVATIONS.md is @generated from nextmillionai/methodology_spec.py (which is
+DERIVATIONS.md is @generated from cruise_ai/methodology_spec.py (which is
 guarded against the scoring engine). This test re-renders it and asserts the
 committed file matches — so the doc, the /methodology explorer, and the code can
 never disagree. If it fails: run scripts/render_methodology_registry.py and commit.
@@ -10,7 +10,7 @@ import importlib.util
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DOC = ROOT / "nextmillionai" / "docs" / "methodology" / "DERIVATIONS.md"
+DOC = ROOT / "cruise_ai" / "docs" / "methodology" / "DERIVATIONS.md"
 SCRIPT = ROOT / "scripts" / "render_methodology_registry.py"
 
 

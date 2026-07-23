@@ -16,13 +16,13 @@ import json
 
 import pytest
 
-from nextmillionai.schema import METHODOLOGY_VERSION, SCHEMA_VERSION
+from cruise_ai.schema import METHODOLOGY_VERSION, SCHEMA_VERSION
 
 # ── Engine-version plumbing ──────────────────────────────────────────────────
 
 
 def test_methodology_constant_matches_doc_header():
-    from nextmillionai.paths import DOCS_DIR
+    from cruise_ai.paths import DOCS_DIR
 
     head = (DOCS_DIR / "SCORING-METHODOLOGY.md").read_text()[:2000]
     assert f"`{METHODOLOGY_VERSION}`" in head, (
@@ -32,7 +32,7 @@ def test_methodology_constant_matches_doc_header():
 
 
 def test_stale_engine_invalidates_scan_cache():
-    from nextmillionai.build_profile import _scan_cache_valid
+    from cruise_ai.build_profile import _scan_cache_valid
 
     fresh = {"engine": {"schema": SCHEMA_VERSION, "methodology": METHODOLOGY_VERSION}}
     assert _scan_cache_valid(fresh, code_scan=False) is True
@@ -48,9 +48,9 @@ def test_stale_engine_invalidates_scan_cache():
 
 
 def test_staleness_flags_engine_mismatch(tmp_path, monkeypatch):
-    from nextmillionai.profile_data import assessment_staleness
+    from cruise_ai.profile_data import assessment_staleness
 
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     data = tmp_path / "data"
     data.mkdir(parents=True)
     (data / "profile.json").write_text(json.dumps({"assessment": {"methodology_version": "0.0.1"}}))
@@ -64,11 +64,11 @@ def test_staleness_flags_engine_mismatch(tmp_path, monkeypatch):
 @pytest.fixture()
 def assessed_profile(tmp_path, monkeypatch):
     """Run the REAL cmd_assess over a synthetic home and return the JSON."""
-    import nextmillionai.scanner as scanner_mod
-    from nextmillionai.build_profile import cmd_assess
-    from nextmillionai.consent import save_consent
+    import cruise_ai.scanner as scanner_mod
+    from cruise_ai.build_profile import cmd_assess
+    from cruise_ai.consent import save_consent
 
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path / "nma"))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path / "cruise-ai"))
 
     # One Claude project with two dated sessions (one >2h marathon with
     # an idle gap, one short) + a subagent run
@@ -133,7 +133,7 @@ def assessed_profile(tmp_path, monkeypatch):
         code = False
 
     cmd_assess(Args())
-    from nextmillionai.paths import profile_path
+    from cruise_ai.paths import profile_path
 
     return json.loads(profile_path().read_text())
 
@@ -175,9 +175,9 @@ def test_one_fact_one_value(assessed_profile):
 
 def test_assess_is_deterministic(assessed_profile, tmp_path):
     """Same inputs, same engine → byte-identical derived output."""
-    from nextmillionai.scoring import score_profile
+    from cruise_ai.scoring import score_profile
 
-    scan = json.loads((tmp_path / "nma" / "data" / "scan_results.json").read_text())
+    scan = json.loads((tmp_path / "cruise-ai" / "data" / "scan_results.json").read_text())
     a = score_profile(scan)
     b = score_profile(scan)
     # scoredAt is run metadata, not a derived value
@@ -197,7 +197,7 @@ def test_formula_fingerprint_pins_scoring_to_its_doc():
     import importlib.util
     from pathlib import Path
 
-    from nextmillionai.paths import DOCS_DIR
+    from cruise_ai.paths import DOCS_DIR
 
     root = Path(__file__).resolve().parent.parent
     spec = importlib.util.spec_from_file_location(

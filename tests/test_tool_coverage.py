@@ -9,8 +9,8 @@ own fidelity, and git + the local runtimes must be present. So the methodology
 can never silently under-state — or mis-tier — what is read.
 """
 
-from nextmillionai.adapters._registry import get_git_adapter, get_session_adapters
-from nextmillionai.methodology_spec import TOOL_COVERAGE, coverage_ids
+from cruise_ai.adapters._registry import get_git_adapter, get_session_adapters
+from cruise_ai.methodology_spec import TOOL_COVERAGE, coverage_ids
 
 
 def test_every_session_adapter_is_documented():
@@ -31,7 +31,7 @@ def test_git_and_local_runtimes_are_documented():
 
 
 def test_declared_tier_matches_adapter_fidelity():
-    from nextmillionai.adapters.local_tools import get_local_tool_adapters
+    from cruise_ai.adapters.local_tools import get_local_tool_adapters
 
     declared = {t["id"]: t["tier"] for grp in TOOL_COVERAGE.values() for t in grp}
     for a in get_local_tool_adapters():
@@ -53,7 +53,7 @@ def _seeded_kiro_adapter(tmp_path):
     """A KiroAdapter over a minimal synthetic store (never a real ~/.kiro)."""
     import json
 
-    from nextmillionai.adapters.kiro import KiroAdapter
+    from cruise_ai.adapters.kiro import KiroAdapter
 
     kiro_dir = tmp_path / "cli"
     kiro_dir.mkdir()
@@ -113,7 +113,7 @@ def test_first_class_tools_named_in_served_scope():
     session tool — a stale 'Claude Code, Cursor, and Codex' string there
     contradicts the coverage table two sections away (exactly what
     happened when Kiro landed)."""
-    from nextmillionai.methodology_spec import SCOPE
+    from cruise_ai.methodology_spec import SCOPE
 
     first_class = [t["label"] for t in TOOL_COVERAGE.get("firstClass", [])]
     body = SCOPE["body"]

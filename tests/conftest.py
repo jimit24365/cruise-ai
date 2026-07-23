@@ -14,7 +14,7 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def _no_real_cursor_app_storage(tmp_path, monkeypatch):
-    import nextmillionai.scanner as scanner_mod
+    import cruise_ai.scanner as scanner_mod
 
     monkeypatch.setattr(
         scanner_mod, "CURSOR_APP_USER_DIR", tmp_path / "no-cursor-app", raising=True
@@ -23,7 +23,7 @@ def _no_real_cursor_app_storage(tmp_path, monkeypatch):
 
 @pytest.fixture(autouse=True)
 def _no_real_kiro_stores(tmp_path, monkeypatch):
-    import nextmillionai.scanner as scanner_mod
+    import cruise_ai.scanner as scanner_mod
 
     monkeypatch.setattr(scanner_mod, "KIRO_SESSIONS_DIR", tmp_path / "no-kiro", raising=True)
     monkeypatch.setattr(scanner_mod, "KIRO_IDE_DIRS", [], raising=True)

@@ -10,7 +10,7 @@ import json
 
 import pytest
 
-from nextmillionai.enrichment import (
+from cruise_ai.enrichment import (
     build_heuristic_enrichment,
     ingest_enrichment,
     parse_submission,
@@ -230,7 +230,7 @@ class TestHeuristicFallback:
 
 
 def test_v2_prompt_directives_present():
-    from nextmillionai.enrichment import build_enrichment_prompt
+    from cruise_ai.enrichment import build_enrichment_prompt
 
     prompt = build_enrichment_prompt({"confidence": 80}, "mode", "arch", [])
     # AI-integration work is first-class
@@ -247,7 +247,7 @@ def test_v2_prompt_directives_present():
 
 
 def test_v2_prompt_keeps_six_block_contract_and_rules():
-    from nextmillionai.enrichment import build_enrichment_prompt
+    from cruise_ai.enrichment import build_enrichment_prompt
 
     prompt = build_enrichment_prompt({}, "m", "a", [])
     for block in (
@@ -293,7 +293,7 @@ def _fake_sessions():
 
 
 def test_excerpts_are_diverse_not_just_longest():
-    from nextmillionai.enrichment import select_excerpts
+    from cruise_ai.enrichment import select_excerpts
 
     ex = select_excerpts(_fake_sessions(), max_excerpts=4)
     projects = {e["project"] for e in ex}
@@ -304,7 +304,7 @@ def test_excerpts_are_diverse_not_just_longest():
 
 
 def test_excerpts_carry_dates_as_pointers():
-    from nextmillionai.enrichment import select_excerpts
+    from cruise_ai.enrichment import select_excerpts
 
     ex = select_excerpts(_fake_sessions(), max_excerpts=4)
     assert all(e["date"] for e in ex)
@@ -361,7 +361,7 @@ def _bank_inputs():
 
 
 def test_evidence_bank_builds_citable_pointers():
-    from nextmillionai.enrichment import build_evidence_bank
+    from cruise_ai.enrichment import build_evidence_bank
 
     bank = build_evidence_bank(*_bank_inputs())
     alpha = next(r for r in bank["repos"] if r["repo"] == "alpha")
@@ -376,7 +376,7 @@ def test_evidence_bank_builds_citable_pointers():
 
 
 def test_prompt_embeds_bank_and_sourcing_rule():
-    from nextmillionai.enrichment import build_enrichment_prompt, build_evidence_bank
+    from cruise_ai.enrichment import build_enrichment_prompt, build_evidence_bank
 
     bank = build_evidence_bank(*_bank_inputs())
     prompt = build_enrichment_prompt({}, "m", "a", [], bank)
@@ -393,7 +393,7 @@ def test_generated_prompt_file_carries_generated_banner():
     (the template itself must NOT carry it — it IS the source)."""
     from pathlib import Path
 
-    from nextmillionai.enrichment import GENERATED_BANNER, prompt_file_text
+    from cruise_ai.enrichment import GENERATED_BANNER, prompt_file_text
 
     assert "@generated" in GENERATED_BANNER
     assert "DO NOT EDIT" in GENERATED_BANNER

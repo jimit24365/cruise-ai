@@ -1,7 +1,7 @@
 # Surface spec: the Report (agent-readable)
 
 A structured reference for AI agents on what the **report** is and how it
-differs from the profile. JSON contract: [`SCHEMA.md`](../../nextmillionai/docs/SCHEMA.md).
+differs from the profile. JSON contract: [`SCHEMA.md`](../../cruise_ai/docs/SCHEMA.md).
 
 - **What it is:** the deep, shareable deliverable — prose + the full
   evidence. Same person as the profile, more depth.

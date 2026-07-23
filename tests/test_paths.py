@@ -1,4 +1,4 @@
-"""Tests for nextmillionai.paths — path resolution across platforms.
+"""Tests for cruise_ai.paths — path resolution across platforms.
 
 Covers project-path resolution with hyphenated names and
 Linux/Windows/macOS home-directory layouts.
@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 from pathlib import PurePosixPath, PureWindowsPath
 
-from nextmillionai.paths import (
+from cruise_ai.paths import (
     config_path,
     consent_path,
     data_dir,
@@ -18,38 +18,38 @@ from nextmillionai.paths import (
     user_home,
 )
 
-# ── NEXTMILLIONAI_HOME override ──────────────────────────────────────────────
+# ── CRUISE_AI_HOME override ──────────────────────────────────────────────
 
 
 class TestUserHome:
     def test_uses_env_variable(self, tmp_path, monkeypatch):
-        custom = tmp_path / "custom-nma-home"
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(custom))
+        custom = tmp_path / "custom-cruise-ai-home"
+        monkeypatch.setenv("CRUISE_AI_HOME", str(custom))
         result = user_home()
         assert result == custom
         assert result.is_dir()
 
     def test_creates_directory(self, tmp_path, monkeypatch):
         target = tmp_path / "fresh" / "nested"
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(target))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(target))
         result = user_home()
         assert result.is_dir()
 
     def test_default_location(self, monkeypatch):
-        monkeypatch.delenv("NEXTMILLIONAI_HOME", raising=False)
+        monkeypatch.delenv("CRUISE_AI_HOME", raising=False)
         result = user_home()
-        assert result.name == ".nextmillionai"
+        assert result.name == ".cruise-ai"
 
 
 class TestDataDir:
     def test_under_home(self, tmp_path, monkeypatch):
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         d = data_dir()
         assert d == tmp_path / "data"
         assert d.is_dir()
 
     def test_is_child_of_user_home(self, tmp_path, monkeypatch):
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         d = data_dir()
         h = user_home()
         assert str(d).startswith(str(h))
@@ -57,19 +57,19 @@ class TestDataDir:
 
 class TestDerivedPaths:
     def test_scan_results_path(self, tmp_path, monkeypatch):
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         p = scan_results_path()
         assert p.name == "scan_results.json"
         assert p.parent == data_dir()
 
     def test_profile_path(self, tmp_path, monkeypatch):
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         p = profile_path()
         assert p.name == "profile.json"
         assert p.parent == data_dir()
 
     def test_consent_path(self, tmp_path, monkeypatch):
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         p = consent_path()
         assert p.name == "consent.json"
         assert p.parent == data_dir()
@@ -83,32 +83,32 @@ class TestConfigPath:
     persists across repo clones, the same as the rest of the durable state."""
 
     def test_home_config_wins_over_cwd(self, tmp_path, monkeypatch):
-        home = tmp_path / "nma-home"
+        home = tmp_path / "cruise-ai-home"
         home.mkdir()
-        (home / "nextmillionai.config.json").write_text('{"name": "Home Identity"}')
+        (home / "cruise-ai.config.json").write_text('{"name": "Home Identity"}')
         cwd = tmp_path / "repo"
         cwd.mkdir()
-        (cwd / "nextmillionai.config.json").write_text('{"name": "Cwd Identity"}')
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(home))
+        (cwd / "cruise-ai.config.json").write_text('{"name": "Cwd Identity"}')
+        monkeypatch.setenv("CRUISE_AI_HOME", str(home))
         monkeypatch.chdir(cwd)
-        assert config_path() == home / "nextmillionai.config.json"
+        assert config_path() == home / "cruise-ai.config.json"
 
     def test_cwd_is_fallback_when_no_home_config(self, tmp_path, monkeypatch):
-        home = tmp_path / "nma-home"
+        home = tmp_path / "cruise-ai-home"
         home.mkdir()  # no config file in the home dir
         cwd = tmp_path / "repo"
         cwd.mkdir()
-        (cwd / "nextmillionai.config.json").write_text('{"name": "Cwd Identity"}')
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(home))
+        (cwd / "cruise-ai.config.json").write_text('{"name": "Cwd Identity"}')
+        monkeypatch.setenv("CRUISE_AI_HOME", str(home))
         monkeypatch.chdir(cwd)
-        assert config_path() == cwd / "nextmillionai.config.json"
+        assert config_path() == cwd / "cruise-ai.config.json"
 
     def test_none_when_absent(self, tmp_path, monkeypatch):
-        home = tmp_path / "nma-home"
+        home = tmp_path / "cruise-ai-home"
         home.mkdir()
         cwd = tmp_path / "repo"
         cwd.mkdir()
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(home))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(home))
         monkeypatch.chdir(cwd)
         assert config_path() is None
 

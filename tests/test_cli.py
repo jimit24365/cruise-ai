@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-from nextmillionai.consent import (
+from cruise_ai.consent import (
     default_collection_config,
     load_collection_config,
     load_consent,
@@ -24,7 +24,7 @@ def test_collection_config_default_maximal():
 
 def test_collection_config_save_load(tmp_path, monkeypatch):
     """Round-trip: save collection config then load it back."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     config = {"window": 30, "repos": "all"}
     save_collection_config(config)
 
@@ -37,7 +37,7 @@ def test_collection_config_save_load(tmp_path, monkeypatch):
 
 def test_collection_config_save_with_repo_list(tmp_path, monkeypatch):
     """Collection config with explicit repo list."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     config = {"window": 7, "repos": ["/home/user/project-a", "/home/user/project-b"]}
     save_collection_config(config)
 
@@ -48,13 +48,13 @@ def test_collection_config_save_with_repo_list(tmp_path, monkeypatch):
 
 def test_collection_config_load_returns_none_when_missing(tmp_path, monkeypatch):
     """load_collection_config returns None when no file exists."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     assert load_collection_config() is None
 
 
 def test_collection_config_load_handles_corrupt_file(tmp_path, monkeypatch):
     """load_collection_config returns None for corrupt JSON."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     data_dir = tmp_path / "data"
     data_dir.mkdir(parents=True)
     (data_dir / "collection_config.json").write_text("not json")
@@ -63,7 +63,7 @@ def test_collection_config_load_handles_corrupt_file(tmp_path, monkeypatch):
 
 def test_prompt_collection_scope_non_interactive():
     """Non-interactive collection scope returns maximal defaults."""
-    from nextmillionai.consent import prompt_collection_scope
+    from cruise_ai.consent import prompt_collection_scope
 
     config = prompt_collection_scope(non_interactive=True)
     assert config["window"] == "all"
@@ -75,9 +75,9 @@ def test_prompt_collection_scope_non_interactive():
 
 def test_cmd_calibrate_writes_both_files(tmp_path, monkeypatch):
     """calibrate --yes writes both consent.json and collection_config.json."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
 
-    from nextmillionai.build_profile import cmd_calibrate
+    from cruise_ai.build_profile import cmd_calibrate
 
     class Args:
         yes = True
@@ -95,9 +95,9 @@ def test_cmd_calibrate_writes_both_files(tmp_path, monkeypatch):
 
 def test_cmd_assess_auto_calibrates(tmp_path, monkeypatch):
     """assess with no consent auto-runs calibrate first."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
 
-    from nextmillionai.build_profile import _ensure_calibrated
+    from cruise_ai.build_profile import _ensure_calibrated
 
     # No consent file exists yet
     assert load_consent() is None
@@ -112,14 +112,14 @@ def test_cmd_assess_auto_calibrates(tmp_path, monkeypatch):
 
 def test_ensure_calibrated_creates_default_config_if_missing(tmp_path, monkeypatch):
     """If consent exists but collection_config doesn't, default config is created."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
 
     # Create consent but no collection config
     save_consent({"claude_code": True, "cursor": True, "codex": True, "git": True})
     assert load_consent() is not None
     assert load_collection_config() is None
 
-    from nextmillionai.build_profile import _ensure_calibrated
+    from cruise_ai.build_profile import _ensure_calibrated
 
     _ensure_calibrated(non_interactive=True)
 
@@ -130,12 +130,12 @@ def test_ensure_calibrated_creates_default_config_if_missing(tmp_path, monkeypat
 
 def test_cmd_enrich_generates_prompt(capsys, tmp_path, monkeypatch):
     """enrich subcommand generates enrichment prompt."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
 
     save_consent({"claude_code": True, "cursor": True, "codex": True, "git": True})
     save_collection_config({"window": "all", "repos": "all"})
 
-    from nextmillionai.paths import data_dir, profile_path
+    from cruise_ai.paths import data_dir, profile_path
 
     data_dir()
     profile = {
@@ -157,7 +157,7 @@ def test_cmd_enrich_generates_prompt(capsys, tmp_path, monkeypatch):
         json.dump(profile, f)
 
     monkeypatch.setattr(
-        "nextmillionai.adapters._registry.get_session_adapters",
+        "cruise_ai.adapters._registry.get_session_adapters",
         lambda: [],
     )
 
@@ -171,11 +171,11 @@ def test_cmd_enrich_generates_prompt(capsys, tmp_path, monkeypatch):
             return None
 
     monkeypatch.setattr(
-        "nextmillionai.adapters._registry.get_git_adapter",
+        "cruise_ai.adapters._registry.get_git_adapter",
         lambda: FakeGit(),
     )
 
-    from nextmillionai.build_profile import cmd_enrich
+    from cruise_ai.build_profile import cmd_enrich
 
     class Args:
         submit = None
@@ -193,7 +193,7 @@ def test_cmd_enrich_generates_prompt(capsys, tmp_path, monkeypatch):
 
 def test_print_signal_insights_with_data(capsys):
     """Signal insights print real metrics, not fabricated praise."""
-    from nextmillionai.build_profile import _print_signal_insights
+    from cruise_ai.build_profile import _print_signal_insights
 
     scan_results = {
         "tools_detected": ["claude_code", "cursor_ide"],
@@ -237,7 +237,7 @@ def test_print_signal_insights_with_data(capsys):
 
 def test_print_signal_insights_thin_data(capsys):
     """Thin data produces honest warning, not fabricated praise."""
-    from nextmillionai.build_profile import _print_signal_insights
+    from cruise_ai.build_profile import _print_signal_insights
 
     scan_results = {
         "tools_detected": ["claude_code"],
@@ -260,7 +260,7 @@ def test_print_signal_insights_thin_data(capsys):
 
 def test_print_signal_insights_no_streak(capsys):
     """Non-consecutive days don't claim a streak."""
-    from nextmillionai.build_profile import _print_signal_insights
+    from cruise_ai.build_profile import _print_signal_insights
 
     scan_results = {
         "tools_detected": ["claude_code"],
@@ -287,13 +287,13 @@ def test_print_signal_insights_no_streak(capsys):
 
 
 def test_longest_streak_empty():
-    from nextmillionai.build_profile import _longest_streak
+    from cruise_ai.build_profile import _longest_streak
 
     assert _longest_streak([]) == 0
 
 
 def test_longest_streak_consecutive():
-    from nextmillionai.build_profile import _longest_streak
+    from cruise_ai.build_profile import _longest_streak
 
     activity = [
         {"date": "2025-01-01", "sessions": 2},
@@ -308,7 +308,7 @@ def test_longest_streak_consecutive():
 
 
 def test_longest_streak_single_day():
-    from nextmillionai.build_profile import _longest_streak
+    from cruise_ai.build_profile import _longest_streak
 
     assert _longest_streak([{"date": "2025-06-01", "sessions": 1}]) == 1
     # A padded zero-activity day is not a streak
@@ -320,10 +320,10 @@ def test_longest_streak_single_day():
 
 def test_main_parses_calibrate_subcommand():
     """argparse recognizes 'calibrate' subcommand."""
-    from nextmillionai.build_profile import main
+    from cruise_ai.build_profile import main
 
-    with patch("sys.argv", ["nextmillionai", "calibrate", "--yes"]):
-        with patch("nextmillionai.build_profile.cmd_calibrate") as mock_cal:
+    with patch("sys.argv", ["cruise_ai", "calibrate", "--yes"]):
+        with patch("cruise_ai.build_profile.cmd_calibrate") as mock_cal:
             main()
             mock_cal.assert_called_once()
             args = mock_cal.call_args[0][0]
@@ -333,10 +333,10 @@ def test_main_parses_calibrate_subcommand():
 
 def test_main_parses_assess_subcommand():
     """argparse recognizes 'assess' subcommand."""
-    from nextmillionai.build_profile import main
+    from cruise_ai.build_profile import main
 
-    with patch("sys.argv", ["nextmillionai", "assess", "--rescan"]):
-        with patch("nextmillionai.build_profile.cmd_assess") as mock_assess:
+    with patch("sys.argv", ["cruise_ai", "assess", "--rescan"]):
+        with patch("cruise_ai.build_profile.cmd_assess") as mock_assess:
             main()
             mock_assess.assert_called_once()
             args = mock_assess.call_args[0][0]
@@ -346,10 +346,10 @@ def test_main_parses_assess_subcommand():
 
 def test_main_parses_report_subcommand():
     """argparse recognizes 'report' subcommand."""
-    from nextmillionai.build_profile import main
+    from cruise_ai.build_profile import main
 
-    with patch("sys.argv", ["nextmillionai", "report", "--port", "8080"]):
-        with patch("nextmillionai.build_profile.cmd_report") as mock_report:
+    with patch("sys.argv", ["cruise_ai", "report", "--port", "8080"]):
+        with patch("cruise_ai.build_profile.cmd_report") as mock_report:
             main()
             mock_report.assert_called_once()
             args = mock_report.call_args[0][0]
@@ -359,10 +359,10 @@ def test_main_parses_report_subcommand():
 
 def test_main_parses_enrich_subcommand():
     """argparse recognizes 'enrich' subcommand."""
-    from nextmillionai.build_profile import main
+    from cruise_ai.build_profile import main
 
-    with patch("sys.argv", ["nextmillionai", "enrich"]):
-        with patch("nextmillionai.build_profile.cmd_enrich") as mock_enrich:
+    with patch("sys.argv", ["cruise_ai", "enrich"]):
+        with patch("cruise_ai.build_profile.cmd_enrich") as mock_enrich:
             main()
             mock_enrich.assert_called_once()
 
@@ -370,14 +370,14 @@ def test_main_parses_enrich_subcommand():
 def test_legacy_preview_flag():
     """--preview flag routes to show_preview."""
 
-    with patch("sys.argv", ["nextmillionai", "--preview"]):
-        with patch("nextmillionai.build_profile.show_preview") as mock_preview:
-            with patch("nextmillionai.build_profile._handle_legacy", wraps=None) as _:
+    with patch("sys.argv", ["cruise_ai", "--preview"]):
+        with patch("cruise_ai.build_profile.show_preview") as mock_preview:
+            with patch("cruise_ai.build_profile._handle_legacy", wraps=None) as _:
                 # Need to patch _handle_legacy to avoid actual imports
                 pass
 
     # Simpler approach: test _handle_legacy directly
-    from nextmillionai.build_profile import _handle_legacy
+    from cruise_ai.build_profile import _handle_legacy
 
     class Args:
         tools = False
@@ -389,15 +389,15 @@ def test_legacy_preview_flag():
         project = None
         port = 7749
 
-    with patch("nextmillionai.build_profile.show_preview") as mock_preview:
-        with patch("nextmillionai.paths.data_dir"):
+    with patch("cruise_ai.build_profile.show_preview") as mock_preview:
+        with patch("cruise_ai.paths.data_dir"):
             _handle_legacy(Args())
             mock_preview.assert_called_once()
 
 
 def test_legacy_tools_flag():
     """--tools flag routes to list_tools."""
-    from nextmillionai.build_profile import _handle_legacy
+    from cruise_ai.build_profile import _handle_legacy
 
     class Args:
         tools = True
@@ -409,15 +409,15 @@ def test_legacy_tools_flag():
         project = None
         port = 7749
 
-    with patch("nextmillionai.scanner.list_tools") as mock_tools:
-        with patch("nextmillionai.paths.data_dir"):
+    with patch("cruise_ai.scanner.list_tools") as mock_tools:
+        with patch("cruise_ai.paths.data_dir"):
             _handle_legacy(Args())
             mock_tools.assert_called_once()
 
 
 def test_legacy_serve_flag_runs_assess_then_report():
     """--serve flag runs assess then report."""
-    from nextmillionai.build_profile import _handle_legacy
+    from cruise_ai.build_profile import _handle_legacy
 
     class Args:
         tools = False
@@ -429,9 +429,9 @@ def test_legacy_serve_flag_runs_assess_then_report():
         project = None
         port = 7749
 
-    with patch("nextmillionai.build_profile.cmd_assess") as mock_assess:
-        with patch("nextmillionai.build_profile.cmd_report") as mock_report:
-            with patch("nextmillionai.paths.data_dir"):
+    with patch("cruise_ai.build_profile.cmd_assess") as mock_assess:
+        with patch("cruise_ai.build_profile.cmd_report") as mock_report:
+            with patch("cruise_ai.paths.data_dir"):
                 _handle_legacy(Args())
                 mock_assess.assert_called_once()
                 mock_report.assert_called_once()
@@ -442,7 +442,7 @@ def test_legacy_serve_flag_runs_assess_then_report():
 
 def test_collection_config_path_exists():
     """collection_config_path is available from paths module."""
-    from nextmillionai.paths import collection_config_path
+    from cruise_ai.paths import collection_config_path
 
     p = collection_config_path()
     assert p.name == "collection_config.json"
@@ -457,7 +457,7 @@ class TestGitAutoDiscovery:
 
     def test_discover_repos_finds_git_dirs(self, tmp_path, monkeypatch):
         """Auto-discovery finds directories containing .git/."""
-        from nextmillionai.adapters.git import GitAdapter
+        from cruise_ai.adapters.git import GitAdapter
 
         # Create fake repos under tmp_path
         repo_a = tmp_path / "code" / "project-a"
@@ -470,7 +470,7 @@ class TestGitAutoDiscovery:
         adapter = GitAdapter()
 
         # Patch _COMMON_ROOTS to only use our tmp_path
-        import nextmillionai.adapters.git as git_mod
+        import cruise_ai.adapters.git as git_mod
 
         monkeypatch.setattr(git_mod, "_COMMON_ROOTS", [tmp_path / "code"])
 
@@ -486,7 +486,7 @@ class TestGitAutoDiscovery:
 
     def test_discover_repos_respects_depth_limit(self, tmp_path, monkeypatch):
         """Repos deeper than max_depth are not found."""
-        from nextmillionai.adapters.git import GitAdapter
+        from cruise_ai.adapters.git import GitAdapter
 
         # Create a deep repo: tmp_path/a/b/c/d/deep-repo/.git (depth=5)
         deep = tmp_path / "a" / "b" / "c" / "d" / "deep-repo"
@@ -495,7 +495,7 @@ class TestGitAutoDiscovery:
         shallow = tmp_path / "a" / "shallow-repo"
         (shallow / ".git").mkdir(parents=True)
 
-        import nextmillionai.adapters.git as git_mod
+        import cruise_ai.adapters.git as git_mod
 
         monkeypatch.setattr(git_mod, "_COMMON_ROOTS", [tmp_path])
         monkeypatch.setattr(Path, "cwd", lambda: tmp_path / "nonexistent")
@@ -509,14 +509,14 @@ class TestGitAutoDiscovery:
 
     def test_discover_repos_skips_dotdirs(self, tmp_path, monkeypatch):
         """Directories starting with '.' are skipped during discovery."""
-        from nextmillionai.adapters.git import GitAdapter
+        from cruise_ai.adapters.git import GitAdapter
 
         hidden = tmp_path / ".hidden" / "secret-repo"
         (hidden / ".git").mkdir(parents=True)
         visible = tmp_path / "visible-repo"
         (visible / ".git").mkdir(parents=True)
 
-        import nextmillionai.adapters.git as git_mod
+        import cruise_ai.adapters.git as git_mod
 
         monkeypatch.setattr(git_mod, "_COMMON_ROOTS", [tmp_path])
         monkeypatch.setattr(Path, "cwd", lambda: tmp_path / "nonexistent")
@@ -537,7 +537,7 @@ class TestGitWindow:
 
     def test_window_all_no_since(self, tmp_path, monkeypatch):
         """window='all' should not include --since in git commands."""
-        from nextmillionai.adapters.git import GitAdapter
+        from cruise_ai.adapters.git import GitAdapter
 
         repo = tmp_path / "my-repo"
         (repo / ".git").mkdir(parents=True)
@@ -548,7 +548,7 @@ class TestGitWindow:
             calls.append(args)
             return ""
 
-        import nextmillionai.adapters.git as git_mod
+        import cruise_ai.adapters.git as git_mod
 
         monkeypatch.setattr(git_mod, "git_run", fake_git_run)
         monkeypatch.setattr(
@@ -573,7 +573,7 @@ class TestGitWindow:
 
     def test_window_30_days_since(self, tmp_path, monkeypatch):
         """window=30 should include --since=30 days ago."""
-        from nextmillionai.adapters.git import GitAdapter
+        from cruise_ai.adapters.git import GitAdapter
 
         repo = tmp_path / "my-repo"
         (repo / ".git").mkdir(parents=True)
@@ -584,7 +584,7 @@ class TestGitWindow:
             calls.append(args)
             return ""
 
-        import nextmillionai.adapters.git as git_mod
+        import cruise_ai.adapters.git as git_mod
 
         monkeypatch.setattr(git_mod, "git_run", fake_git_run)
         monkeypatch.setattr(
@@ -612,7 +612,7 @@ class TestGitWindow:
 
     def test_window_none_defaults_to_6_months(self, tmp_path, monkeypatch):
         """window=None should use legacy --since=6 months ago."""
-        from nextmillionai.adapters.git import GitAdapter
+        from cruise_ai.adapters.git import GitAdapter
 
         repo = tmp_path / "my-repo"
         (repo / ".git").mkdir(parents=True)
@@ -623,7 +623,7 @@ class TestGitWindow:
             calls.append(args)
             return ""
 
-        import nextmillionai.adapters.git as git_mod
+        import cruise_ai.adapters.git as git_mod
 
         monkeypatch.setattr(git_mod, "git_run", fake_git_run)
         monkeypatch.setattr(
@@ -654,7 +654,7 @@ class TestGitWindow:
 
 def test_git_repo_filter(tmp_path, monkeypatch):
     """repo_filter limits scanning to matching repos only."""
-    from nextmillionai.adapters.git import GitAdapter
+    from cruise_ai.adapters.git import GitAdapter
 
     repo_a = tmp_path / "repo-a"
     (repo_a / ".git").mkdir(parents=True)
@@ -667,7 +667,7 @@ def test_git_repo_filter(tmp_path, monkeypatch):
         scanned.append(str(cwd))
         return ""
 
-    import nextmillionai.adapters.git as git_mod
+    import cruise_ai.adapters.git as git_mod
 
     monkeypatch.setattr(git_mod, "git_run", fake_git_run)
     monkeypatch.setattr(
@@ -699,7 +699,7 @@ def test_git_repo_filter(tmp_path, monkeypatch):
 
 def test_git_commit_dates_in_output(tmp_path, monkeypatch):
     """scan_projects returns commit_dates in each project dict."""
-    from nextmillionai.adapters.git import GitAdapter
+    from cruise_ai.adapters.git import GitAdapter
 
     repo = tmp_path / "my-repo"
     (repo / ".git").mkdir(parents=True)
@@ -714,7 +714,7 @@ def test_git_commit_dates_in_output(tmp_path, monkeypatch):
             return "abc123 feat: first\ndef456 fix: second"
         return ""
 
-    import nextmillionai.adapters.git as git_mod
+    import cruise_ai.adapters.git as git_mod
 
     monkeypatch.setattr(git_mod, "git_run", fake_git_run)
     monkeypatch.setattr(
@@ -745,7 +745,7 @@ def test_git_commit_dates_in_output(tmp_path, monkeypatch):
 
 def test_run_adapters_passes_collection_config(monkeypatch):
     """collection_config flows from run_adapters to GitAdapter.scan_projects."""
-    from nextmillionai.adapters._registry import run_adapters
+    from cruise_ai.adapters._registry import run_adapters
 
     captured = {}
 
@@ -764,11 +764,11 @@ def test_run_adapters_passes_collection_config(monkeypatch):
 
     # Disable session adapters so we only test git flow
     monkeypatch.setattr(
-        "nextmillionai.adapters._registry.get_session_adapters",
+        "cruise_ai.adapters._registry.get_session_adapters",
         lambda: [],
     )
     monkeypatch.setattr(
-        "nextmillionai.adapters._registry.get_git_adapter",
+        "cruise_ai.adapters._registry.get_git_adapter",
         lambda: MockGitAdapter(),
     )
 
@@ -784,7 +784,7 @@ def test_run_adapters_passes_collection_config(monkeypatch):
 
 def test_run_adapters_repos_all_means_no_filter(monkeypatch):
     """repos='all' in collection_config means repo_filter=None."""
-    from nextmillionai.adapters._registry import run_adapters
+    from cruise_ai.adapters._registry import run_adapters
 
     captured = {}
 
@@ -802,11 +802,11 @@ def test_run_adapters_repos_all_means_no_filter(monkeypatch):
             return None
 
     monkeypatch.setattr(
-        "nextmillionai.adapters._registry.get_session_adapters",
+        "cruise_ai.adapters._registry.get_session_adapters",
         lambda: [],
     )
     monkeypatch.setattr(
-        "nextmillionai.adapters._registry.get_git_adapter",
+        "cruise_ai.adapters._registry.get_git_adapter",
         lambda: MockGitAdapter(),
     )
 
@@ -825,10 +825,10 @@ def test_run_adapters_repos_all_means_no_filter(monkeypatch):
 
 def test_sources_subcommand_registered():
     """argparse recognizes 'sources' subcommand."""
-    from nextmillionai.build_profile import main
+    from cruise_ai.build_profile import main
 
-    with patch("sys.argv", ["nextmillionai", "sources", "--yes"]):
-        with patch("nextmillionai.build_profile.cmd_sources") as mock_sources:
+    with patch("sys.argv", ["cruise_ai", "sources", "--yes"]):
+        with patch("cruise_ai.build_profile.cmd_sources") as mock_sources:
             main()
             mock_sources.assert_called_once()
             args = mock_sources.call_args[0][0]
@@ -838,7 +838,7 @@ def test_sources_subcommand_registered():
 
 def test_sources_subcommand_output(tmp_path, monkeypatch, capsys):
     """cmd_sources prints discovered source summary."""
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
 
     # Pre-create consent and config
     save_consent({"claude_code": True, "cursor": False, "codex": True, "git": True})
@@ -889,7 +889,7 @@ def test_sources_subcommand_output(tmp_path, monkeypatch, capsys):
     ]
 
     monkeypatch.setattr(
-        "nextmillionai.adapters._registry.get_session_adapters",
+        "cruise_ai.adapters._registry.get_session_adapters",
         lambda: fake_adapters,
     )
 
@@ -912,11 +912,11 @@ def test_sources_subcommand_output(tmp_path, monkeypatch, capsys):
             return None
 
     monkeypatch.setattr(
-        "nextmillionai.adapters._registry.get_git_adapter",
+        "cruise_ai.adapters._registry.get_git_adapter",
         lambda: MockGitAdapter(),
     )
 
-    from nextmillionai.build_profile import cmd_sources
+    from cruise_ai.build_profile import cmd_sources
 
     class Args:
         yes = True
@@ -954,7 +954,7 @@ def test_codex_raw_data_has_date_range(tmp_path, monkeypatch):
     ]
     session_file.write_text("\n".join(lines))
 
-    from nextmillionai.adapters.codex import CodexAdapter
+    from cruise_ai.adapters.codex import CodexAdapter
 
     adapter = CodexAdapter(sessions_dir=sessions_dir)
     adapter.scan()
@@ -972,12 +972,12 @@ def test_codex_raw_data_has_date_range(tmp_path, monkeypatch):
 
 def test_git_raw_data_includes_metadata(tmp_path, monkeypatch):
     """Git raw_data includes auto_discovered_repos, session_derived_repos, window."""
-    from nextmillionai.adapters.git import GitAdapter
+    from cruise_ai.adapters.git import GitAdapter
 
     repo = tmp_path / "my-repo"
     (repo / ".git").mkdir(parents=True)
 
-    import nextmillionai.adapters.git as git_mod
+    import cruise_ai.adapters.git as git_mod
 
     monkeypatch.setattr(git_mod, "git_run", lambda args, cwd=None, timeout=15: "")
     monkeypatch.setattr(
@@ -1010,7 +1010,7 @@ class TestE2ESmokeTest:
 
     def _make_sessions(self):
         """Build a minimal list of Session objects for the pipeline."""
-        from nextmillionai.adapters._base import Session
+        from cruise_ai.adapters._base import Session
 
         sessions = []
         for i in range(5):
@@ -1064,19 +1064,19 @@ class TestE2ESmokeTest:
 
     def test_full_pipeline_assess_produces_valid_profile(self, tmp_path, monkeypatch):
         """Assess pipeline produces a valid scan result then a scored profile."""
-        from nextmillionai.build_profile import run_scan
-        from nextmillionai.scoring import score_profile
+        from cruise_ai.build_profile import run_scan
+        from cruise_ai.scoring import score_profile
 
         sessions = self._make_sessions()
         raw_data = self._make_raw_data()
         git_data = self._make_git_data()
 
         with patch(
-            "nextmillionai.adapters._registry.run_adapters",
+            "cruise_ai.adapters._registry.run_adapters",
             return_value=(sessions, raw_data, git_data),
         ):
             with patch(
-                "nextmillionai.aggregator.build_experimental_signals",
+                "cruise_ai.aggregator.build_experimental_signals",
                 return_value={"available": False, "signals": [], "codeIntelligence": []},
             ):
                 scan_result = run_scan()
@@ -1117,20 +1117,20 @@ class TestE2ESmokeTest:
 
     def test_shareable_profile_has_no_private_data(self, tmp_path, monkeypatch):
         """Shareable profile must exclude private fields."""
-        from nextmillionai.build_profile import run_scan
-        from nextmillionai.schema import build_shareable_profile
-        from nextmillionai.scoring import score_profile
+        from cruise_ai.build_profile import run_scan
+        from cruise_ai.schema import build_shareable_profile
+        from cruise_ai.scoring import score_profile
 
         sessions = self._make_sessions()
         raw_data = self._make_raw_data()
         git_data = self._make_git_data()
 
         with patch(
-            "nextmillionai.adapters._registry.run_adapters",
+            "cruise_ai.adapters._registry.run_adapters",
             return_value=(sessions, raw_data, git_data),
         ):
             with patch(
-                "nextmillionai.aggregator.build_experimental_signals",
+                "cruise_ai.aggregator.build_experimental_signals",
                 return_value={"available": False, "signals": [], "codeIntelligence": []},
             ):
                 scan_result = run_scan()
@@ -1178,20 +1178,20 @@ class TestE2ESmokeTest:
 
     def test_enrichment_heuristic_fallback(self, tmp_path, monkeypatch):
         """Heuristic enrichment produces valid six-block structure."""
-        from nextmillionai.build_profile import run_scan
-        from nextmillionai.enrichment import build_heuristic_enrichment, validate_enrichment
-        from nextmillionai.scoring import score_profile
+        from cruise_ai.build_profile import run_scan
+        from cruise_ai.enrichment import build_heuristic_enrichment, validate_enrichment
+        from cruise_ai.scoring import score_profile
 
         sessions = self._make_sessions()
         raw_data = self._make_raw_data()
         git_data = self._make_git_data()
 
         with patch(
-            "nextmillionai.adapters._registry.run_adapters",
+            "cruise_ai.adapters._registry.run_adapters",
             return_value=(sessions, raw_data, git_data),
         ):
             with patch(
-                "nextmillionai.aggregator.build_experimental_signals",
+                "cruise_ai.aggregator.build_experimental_signals",
                 return_value={"available": False, "signals": [], "codeIntelligence": []},
             ):
                 scan_result = run_scan()
@@ -1217,7 +1217,7 @@ class TestE2ESmokeTest:
 
         banned_patterns = ["IDE telemetry"]
         code_dirs = [
-            Path(__file__).parent.parent / "nextmillionai" / "static",
+            Path(__file__).parent.parent / "cruise_ai" / "static",
         ]
 
         for code_dir in code_dirs:
@@ -1234,20 +1234,20 @@ class TestE2ESmokeTest:
 
     def test_no_file_paths_in_shareable_json(self, tmp_path, monkeypatch):
         """Shareable JSON must not contain filesystem paths."""
-        from nextmillionai.build_profile import run_scan
-        from nextmillionai.schema import build_shareable_profile
-        from nextmillionai.scoring import score_profile
+        from cruise_ai.build_profile import run_scan
+        from cruise_ai.schema import build_shareable_profile
+        from cruise_ai.scoring import score_profile
 
         sessions = self._make_sessions()
         raw_data = self._make_raw_data()
         git_data = self._make_git_data()
 
         with patch(
-            "nextmillionai.adapters._registry.run_adapters",
+            "cruise_ai.adapters._registry.run_adapters",
             return_value=(sessions, raw_data, git_data),
         ):
             with patch(
-                "nextmillionai.aggregator.build_experimental_signals",
+                "cruise_ai.aggregator.build_experimental_signals",
                 return_value={"available": False, "signals": [], "codeIntelligence": []},
             ):
                 scan_result = run_scan()
@@ -1264,8 +1264,8 @@ class TestCommandUX:
     """Regression tests from the full-command UX audit."""
 
     def test_assess_project_rejects_missing_path(self, capsys, monkeypatch, tmp_path):
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
-        from nextmillionai.build_profile import cmd_assess
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
+        from cruise_ai.build_profile import cmd_assess
 
         class Args:
             yes = True
@@ -1278,11 +1278,11 @@ class TestCommandUX:
         assert "project path not found" in out
 
     def test_guard_hints_are_clone_adaptive(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         import pytest as _pytest
 
-        from nextmillionai.export import export_static
-        from nextmillionai.paths import cli_invocation
+        from cruise_ai.export import export_static
+        from cruise_ai.paths import cli_invocation
 
         with _pytest.raises(RuntimeError) as exc:
             export_static(tmp_path / "out")
@@ -1290,15 +1290,15 @@ class TestCommandUX:
         assert cli_invocation() in str(exc.value)
 
     def test_scanner_quiet_by_default(self, monkeypatch, capsys):
-        monkeypatch.delenv("NEXTMILLIONAI_VERBOSE", raising=False)
-        from nextmillionai.scanner import log
+        monkeypatch.delenv("CRUISE_AI_VERBOSE", raising=False)
+        from cruise_ai.scanner import log
 
         log("should not appear")
         assert "[scanner]" not in capsys.readouterr().err
 
     def test_scanner_verbose_when_enabled(self, monkeypatch, capsys):
-        monkeypatch.setenv("NEXTMILLIONAI_VERBOSE", "1")
-        from nextmillionai.scanner import log
+        monkeypatch.setenv("CRUISE_AI_VERBOSE", "1")
+        from cruise_ai.scanner import log
 
         log("should appear")
         assert "[scanner] should appear" in capsys.readouterr().err

@@ -3,31 +3,30 @@ requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "nextmillionai"
-version = "1.0.0"
-description = "Build your AI coding profile — scan, score, and serve."
+name = "cruise-ai"
+version = "0.1.0"
+description = "Self-driven AI developer coaching. Zero effort, maximum signal."
 readme = "README.md"
-license = "Apache-2.0"
+license = "MIT"
 requires-python = ">=3.9"
 dependencies = []
+authors = [{name = "Jimit Shah", email = "jimit24365@gmail.com"}]
 
 [project.urls]
-Homepage = "https://nextmillionai.org"
-Repository = "https://github.com/nextmillionai/nextmillionai"
-Documentation = "https://nextmillionai.org/docs"
-Issues = "https://github.com/nextmillionai/nextmillionai/issues"
+Repository = "https://github.com/jimit24365/cruise-ai"
+Issues = "https://github.com/jimit24365/cruise-ai/issues"
 
 [project.optional-dependencies]
 dev = ["ruff>=0.4", "mypy>=1.10", "pytest>=8", "pytest-cov>=5", "pre-commit>=3"]
 
 [project.scripts]
-nextmillionai = "nextmillionai.build_profile:main"
+cruise-ai = "cruise_ai.build_profile:main"
 
 [tool.setuptools.packages.find]
-include = ["nextmillionai*"]
+include = ["cruise_ai*"]
 
 [tool.setuptools.package-data]
-nextmillionai = ["static/**/*", "docs/**/*"]
+cruise_ai = ["static/**/*", "docs/**/*"]
 
 [tool.ruff]
 target-version = "py39"
@@ -37,7 +36,7 @@ line-length = 100
 select = ["E", "F", "W", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
-addopts = "--cov=nextmillionai.scoring --cov=nextmillionai.scanner --cov-report=term-missing"
+addopts = "--cov=cruise_ai.scoring --cov=cruise_ai.scanner --cov-report=term-missing"
 
 [tool.mypy]
 python_version = "3.9"

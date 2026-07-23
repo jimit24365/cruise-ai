@@ -1,12 +1,12 @@
 # Privacy
 
-nextmillionai makes two promises. Both are literally true, enforced in
+cruise_ai makes two promises. Both are literally true, enforced in
 code, and tested in CI.
 
 ## The two promises
 
 **1. Your code, sessions, prompts, scores, and narratives never reach
-nextmillionai by default.** There is no server in the assessment path
+cruise_ai by default.** There is no server in the assessment path
 and no silent upload. `calibrate`, `assess`, `report`, `enrich`, and
 `export` run entirely on your machine. A CI test
 (`test_no_outbound_network_calls`) fails the build if any module in the
@@ -23,7 +23,7 @@ model computes or changes a score.
 ## The one exception — and it is yours to take
 
 The only way any data reaches a network is the explicit, opt-in
-`nextmillionai publish`, and even then:
+`cruise_ai publish`, and even then:
 
 - **Derived and user-curated only.** What is sent is the same
   visibility-filtered shareable JSON used by `export`: the scores,
@@ -36,14 +36,14 @@ The only way any data reaches a network is the explicit, opt-in
   section; the publish prompt lists exactly which sections will be
   sent and requires explicit confirmation. `publish --dry-run` shows
   the same without sending anything.
-- **Revocable.** `nextmillionai unpublish` removes your record from
+- **Revocable.** `cruise_ai unpublish` removes your record from
   the registry. The registry enforces this with a revoke token only
   you hold.
 - **Validated on the receiving side too.** The registry re-checks every
   payload against the derived-only allowlist and rejects anything else.
 
-There is no hosted nextmillionai registry today — the default registry
-is one you (or anyone) self-hosts with `nextmillionai network serve`.
+There is no hosted cruise_ai registry today — the default registry
+is one you (or anyone) self-hosts with `cruise_ai network serve`.
 A hosted network is roadmap, and when it exists it will run this same
 consent-gated protocol.
 
@@ -55,7 +55,7 @@ consent-gated protocol.
   hands a prompt (real signals + bounded, secret-stripped session
   summaries — never raw prompt text) to the agent or API key *you*
   choose. If you use a cloud model, that content goes to *your*
-  provider under *your* account — not to nextmillionai. The result is
+  provider under *your* account — not to cruise_ai. The result is
   validated on ingest and never changes a score. Skip it entirely and
   a local heuristic writes the text instead.
 - **The local server is localhost-only.** `report` binds to localhost,
@@ -70,7 +70,7 @@ consent-gated protocol.
 
 ## Where your data lives
 
-Everything is in `~/.nextmillionai/` (override: `$NEXTMILLIONAI_HOME`).
+Everything is in `~/.cruise_ai/` (override: `$NEXTMILLIONAI_HOME`).
 Delete that directory and every trace of the assessment is gone.
 
 This is the promise the closed alternatives broke. If you find any path

@@ -22,7 +22,7 @@ Standing rules, enforced in code and tests:
    session, capped at 8h — labeled as estimated, never sold as tracked
    wall-clock.
 5. **Measured history never regresses.** Every dated session enters the
-   local ledger (`~/.nextmillionai/data/history/`); when a tool prunes
+   local ledger (`~/.cruise_ai/data/history/`); when a tool prunes
    its store, totals (sessions, hours, span, longest session, deep
    sessions, dispatches, agent runtime) are superseded from the ledger
    via `max()`.
@@ -164,7 +164,7 @@ local, only the count feeds scoring (methodology `0.4.4`).
 
 ## Custom tools (no code)
 
-Register any tool in `nextmillionai.config.json`:
+Register any tool in `cruise_ai.config.json`:
 
 ```json
 {"adapters": [{"id": "mytool", "label": "My Tool",
@@ -177,9 +177,9 @@ Register any tool in `nextmillionai.config.json`:
 only. Lives under the `other_tools` consent group.
 
 The same file also carries your identity fields (name, title, …). It is
-read from `~/.nextmillionai/nextmillionai.config.json` first (the durable
+read from `~/.cruise_ai/cruise_ai.config.json` first (the durable
 home, so identity + custom adapters persist across repo clones), falling
-back to `./nextmillionai.config.json` in the current directory.
+back to `./cruise_ai.config.json` in the current directory.
 
 ## When a tool ships a new storage layout
 

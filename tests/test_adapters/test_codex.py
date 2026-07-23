@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from nextmillionai.adapters._base import Session
-from nextmillionai.adapters.codex import CodexAdapter
+from cruise_ai.adapters._base import Session
+from cruise_ai.adapters.codex import CodexAdapter
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 

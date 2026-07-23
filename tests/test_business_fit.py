@@ -8,13 +8,13 @@ fit framing language present.
 
 import json
 
-from nextmillionai.business_fit import (
+from cruise_ai.business_fit import (
     BUSINESS_ZONES,
     build_business_fit,
     compute_map_position,
     compute_zone_affinity,
 )
-from nextmillionai.scoring import compute_positioning
+from cruise_ai.scoring import compute_positioning
 
 
 def arch(id_, score):
@@ -190,7 +190,7 @@ class TestPositioningFootprint:
 
 class TestHonestMapLabels:
     def test_map_axes_match_their_math(self):
-        from nextmillionai.scoring import score_profile
+        from cruise_ai.scoring import score_profile
 
         profile = score_profile({"normalized": {"totalSessions": 20}})
         m = profile["map"]
@@ -245,8 +245,8 @@ class TestLoopEvidence:
     def test_project_orchestration_builder(self):
         from datetime import datetime, timedelta
 
-        from nextmillionai.adapters._base import Session
-        from nextmillionai.aggregator import build_project_orchestration
+        from cruise_ai.adapters._base import Session
+        from cruise_ai.aggregator import build_project_orchestration
 
         t0 = datetime(2026, 6, 1, 10, 0)
         sessions = [

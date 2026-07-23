@@ -1,12 +1,12 @@
 # Adding a tool integration
 
 The end-to-end workflow for wiring a new AI coding tool into
-nextmillionai — adapter, consent, displays, measurement, truth
+cruise_ai — adapter, consent, displays, measurement, truth
 registries, docs, and the tests that hold it all together.
 
 **Why this doc exists:** an adapter that passes its own unit tests can
 still be dead in production. The consent gate in
-`nextmillionai/adapters/_registry.py` skips any adapter whose consent
+`cruise_ai/adapters/_registry.py` skips any adapter whose consent
 group isn't a real consent key — silently. This checklist is ordered so
 each step is verified before the next, and the test gates fail loudly
 between the steps where that silence used to live.
@@ -39,7 +39,7 @@ continue through step 9.
 
 ### 1. The adapter
 
-- **Wider-field:** add a class to `nextmillionai/adapters/local_tools.py`
+- **Wider-field:** add a class to `cruise_ai/adapters/local_tools.py`
   and register it in `get_local_tool_adapters()`. Done — consent
   (`other_tools`), coverage, and history all flow automatically. Update
   the `other_tools` description in `consent.py ALL_SOURCES` +
@@ -47,7 +47,7 @@ continue through step 9.
   `methodology_spec.TOOL_COVERAGE` widerField entry (step 7), docs
   (step 8), and a fixture test in
   `tests/test_adapters/test_local_tools.py`.
-- **First-class:** new module `nextmillionai/adapters/<tool>.py`
+- **First-class:** new module `cruise_ai/adapters/<tool>.py`
   producing `Session` objects (`adapters/_base.py`). Conventions:
   - `Session.tool` is the adapter's `name` — every downstream rollup
     keys on it.
@@ -68,18 +68,18 @@ continue through step 9.
   (copy `test_kiro.py` as the template — synthetic fixture dirs, never
   real ones).
 
-### 2. Path constants in `nextmillionai/scanner.py`
+### 2. Path constants in `cruise_ai/scanner.py`
 
 Path constants live in `scanner.py` (repo convention — see
 `CLAUDE_PROJECTS_DIR`, `CODEX_SESSIONS_DIR`, `KIRO_SESSIONS_DIR`), NOT
 in the adapter module. The adapter late-binds them
-(`import nextmillionai.scanner as scanner_mod` inside `__init__`) so
+(`import cruise_ai.scanner as scanner_mod` inside `__init__`) so
 test monkeypatching reaches even a bare `<Tool>Adapter()`.
 
 Also add a detection block to `scanner.list_tools()` so
-`nextmillionai --tools` shows the tool.
+`cruise_ai --tools` shows the tool.
 
-**Verify:** `python3 -m nextmillionai --tools` lists it.
+**Verify:** `python3 -m cruise_ai --tools` lists it.
 
 ### 3. Register in `adapters/_registry.py`
 
@@ -92,7 +92,7 @@ now **fails** — by design. An adapter whose consent group isn't in
 `consent.ALL_SOURCES` is silently never scanned; the gate stays red
 until step 4 closes the loop.
 
-### 4. Consent in `nextmillionai/consent.py`
+### 4. Consent in `cruise_ai/consent.py`
 
 - Add the key to `ALL_SOURCES` (path summary as the description).
 - Add a `Read:/Derived:/Never:` paragraph to `_DISCLOSURE_BLOCKS`
@@ -107,7 +107,7 @@ users get a **mini-prompt for just the new source** on their next
 interactive run (`_ensure_calibrated`) — never silently enabled, never
 silently persisted off.
 
-**Verify:** completeness gate green; `nextmillionai calibrate` asks the
+**Verify:** completeness gate green; `cruise_ai calibrate` asks the
 new question; with a pre-existing consent file, `assess` asks only the
 new source.
 
@@ -185,15 +185,15 @@ name to `_RAW_METRIC_TOOLS` instead — folding it too would double-count.
 
 ```bash
 python3 -m pytest tests/ -q -p no:cacheprovider --override-ini addopts=
-uv tool run ruff check nextmillionai/ tests/ && uv tool run ruff format --check nextmillionai/ tests/
-uv run --python 3.12 --with mypy --no-project -- python -m mypy nextmillionai --ignore-missing-imports
+uv tool run ruff check cruise_ai/ tests/ && uv tool run ruff format --check cruise_ai/ tests/
+uv run --python 3.12 --with mypy --no-project -- python -m mypy cruise_ai --ignore-missing-imports
 python3 scripts/formula_fingerprint.py   # must be UNCHANGED
 ```
 
 Plus an end-to-end pass with synthetic data in a sandbox `$HOME`:
 `assess --yes` counts the tool's sessions, `--tools`/`sources`/coverage
 show it once (no double-report), the served `/profile` and `/report`
-render, and a grep of `~/.nextmillionai/data/` proves no prompt text,
+render, and a grep of `~/.cruise_ai/data/` proves no prompt text,
 titles, or secrets leaked into the artifacts.
 
 ## Worked example

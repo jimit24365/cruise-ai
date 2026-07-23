@@ -1,4 +1,4 @@
-"""Tests for the nextmillionai scoring engine.
+"""Tests for the cruise_ai scoring engine.
 
 Deterministic tests: known normalized-metric inputs -> expected dimension
 scores, archetype thresholds, title triggers, composite bounds, and weight
@@ -7,8 +7,8 @@ renormalization when dimensions are missing.
 
 from __future__ import annotations
 
-from nextmillionai.schema import TAXONOMY_VERSION
-from nextmillionai.scoring import (
+from cruise_ai.schema import TAXONOMY_VERSION
+from cruise_ai.scoring import (
     _adapt_weights,
     _avg,
     assess_trajectory,
@@ -947,7 +947,7 @@ class TestArchetypeRelativeComposite:
 
     def test_multipliers_bounded(self):
         """All multipliers in the weight table must be in [0.6, 1.4]."""
-        from nextmillionai.scoring import _MODE_WEIGHT_MULTIPLIERS
+        from cruise_ai.scoring import _MODE_WEIGHT_MULTIPLIERS
 
         for mode_id, mults in _MODE_WEIGHT_MULTIPLIERS.items():
             for dim_id, mult in mults.items():

@@ -3,7 +3,7 @@
   "id": "0001",
   "title": "Illustrative example — tighten the active-time idle gap",
   "status": "draft",
-  "authors": ["nextmillionai"],
+  "authors": ["cruise_ai"],
   "opened": "2026-06-18",
   "decided": null,
   "summary": "Worked example of the proposal format (not an active change): shorten the active-time idle gap from 30 to 20 minutes.",
@@ -15,7 +15,7 @@
   "changes": [
     {
       "param": "active_time.idle_gap_minutes",
-      "ref": "nextmillionai/scoring.py — per-event gap-based active-time estimator",
+      "ref": "cruise_ai/scoring.py — per-event gap-based active-time estimator",
       "current": "30",
       "proposed": "20",
       "rationale": "Illustrative only: a tighter gap would count fewer between-event minutes as active. Shown to demonstrate a current → proposed delta, not because the value should change."
@@ -23,7 +23,7 @@
   ],
   "blast_radius": [
     "tests/test_engine_consistency.py — formula fingerprint would change",
-    "nextmillionai/docs/SCORING-METHODOLOGY.md header + DERIVATIONS.md regenerate",
+    "cruise_ai/docs/SCORING-METHODOLOGY.md header + DERIVATIONS.md regenerate",
     "version bump: METHODOLOGY_VERSION (scan cache invalidates, full recompute)"
   ],
   "references": [

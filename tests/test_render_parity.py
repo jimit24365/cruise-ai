@@ -33,13 +33,13 @@ import json
 import re
 from pathlib import Path
 
-from nextmillionai import markdown_export
-from nextmillionai.markdown_export import _GLOSSARY, _collect_numbers, profile_to_markdown
-from nextmillionai.schema import build_shareable_profile
+from cruise_ai import markdown_export
+from cruise_ai.markdown_export import _GLOSSARY, _collect_numbers, profile_to_markdown
+from cruise_ai.schema import build_shareable_profile
 
 ROOT = Path(__file__).resolve().parent.parent
-EXAMPLE = json.loads((ROOT / "nextmillionai" / "examples" / "profile.json").read_text())
-MD_SOURCE = (ROOT / "nextmillionai" / "markdown_export.py").read_text()
+EXAMPLE = json.loads((ROOT / "cruise_ai" / "examples" / "profile.json").read_text())
+MD_SOURCE = (ROOT / "cruise_ai" / "markdown_export.py").read_text()
 
 # Top-level shareable fields deliberately NOT rendered as Markdown prose, each
 # with a reason. Adding a field here is the deliberate "don't surface it"
@@ -137,7 +137,7 @@ def test_curated_additions_actually_appear_in_output():
 # (a field read) apart from `arr.map(...)` (an array method — 68 of those).
 VIEW_JS_FILES = ("profile.js", "report.js", "tabs-shared.js")
 JS_SOURCE = "\n".join(
-    (ROOT / "nextmillionai" / "static" / "js" / f).read_text() for f in VIEW_JS_FILES
+    (ROOT / "cruise_ai" / "static" / "js" / f).read_text() for f in VIEW_JS_FILES
 )
 _JS_ROOTS = ("api", "data", "P", "_P", "_RAW", "_reportData")
 

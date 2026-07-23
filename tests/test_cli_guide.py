@@ -13,7 +13,7 @@ def _run(*args, env_extra=None):
     if env_extra:
         env.update(env_extra)
     return subprocess.run(
-        [sys.executable, "-m", "nextmillionai", *args],
+        [sys.executable, "-m", "cruise_ai", *args],
         capture_output=True,
         text=True,
         env=env,
@@ -30,7 +30,7 @@ def test_guide_renders_full_pipeline_plain():
 
 
 def test_guide_boxes_when_colored():
-    from nextmillionai import cliui
+    from cruise_ai import cliui
 
     real = cliui.color_enabled
     cliui.color_enabled = lambda: True
@@ -47,16 +47,16 @@ def test_guide_boxes_when_colored():
 
 
 def test_intro_plain_fallback():
-    from nextmillionai import cliui
+    from cruise_ai import cliui
 
     out = cliui.intro("assess", "scan + score", "sessions, git")
-    assert "nextmillionai assess" in out
+    assert "cruise_ai assess" in out
     assert "all local — nothing leaves your machine" in out
 
 
 def test_help_epilog_points_at_guide():
     out = _run("--help").stdout
-    assert "nextmillionai guide" in out
+    assert "cruise_ai guide" in out
     assert "calibrate -> assess -> report" in out
 
 
@@ -66,9 +66,9 @@ def test_start_is_the_one_shot_pipeline():
     has a real handler."""
     import inspect
 
-    import nextmillionai.build_profile as bp
-    from nextmillionai import cliui
-    from nextmillionai.build_profile import cmd_start  # noqa: F401  (exists)
+    import cruise_ai.build_profile as bp
+    from cruise_ai import cliui
+    from cruise_ai.build_profile import cmd_start  # noqa: F401  (exists)
 
     src = inspect.getsource(bp.cmd_start)
     assert "cmd_assess(args" in src and "cmd_report(args)" in src

@@ -1,6 +1,6 @@
 """The public mirror must never ship internal docs — or links to them.
 
-`scripts/seed-public.sh` curates the public `nextmillionai/nextmillionai`
+`scripts/seed-public.sh` curates the public `cruise_ai/cruise_ai`
 repo from this private superset by dropping a denylist of internal paths
 (`docs/launch/`, `docs/site/`, `docs/archive/`, the seed tooling) and
 swapping in a public-safe `CURRENT.md`. A static denylist is fragile:
@@ -164,7 +164,7 @@ def test_no_shipped_markdown_links_into_excluded_paths():
 # Personal-machine paths that must never appear in a shipped doc. The owner's
 # GitHub handle (@anshulixyz in CODEOWNERS/CONTRIBUTING) is fine; generic
 # fixture paths (/Users/dev, /home/user) are fine — only the real home leaks.
-PERSONAL_PATH = re.compile(r"/Users/apple|Downloads/nextmillionai|~/Downloads")
+PERSONAL_PATH = re.compile(r"/Users/apple|Downloads/cruise_ai|~/Downloads")
 
 
 def test_no_personal_paths_in_shipped_docs():

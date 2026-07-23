@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from nextmillionai.adapters.kiro import KiroAdapter
+from cruise_ai.adapters.kiro import KiroAdapter
 
 
 @pytest.fixture
@@ -613,13 +613,13 @@ class TestKiroMcpDeclaration:
 
 
 class TestKiroScannerConstants:
-    """Path constants live in nextmillionai.scanner (repo convention) and
+    """Path constants live in cruise_ai.scanner (repo convention) and
     are late-bound, so monkeypatching works even for bare KiroAdapter()."""
 
     def test_bare_adapter_uses_scanner_constants(
         self, kiro_sessions_dir: Path, monkeypatch
     ) -> None:
-        import nextmillionai.scanner as scanner_mod
+        import cruise_ai.scanner as scanner_mod
 
         monkeypatch.setattr(scanner_mod, "KIRO_SESSIONS_DIR", kiro_sessions_dir)
         monkeypatch.setattr(scanner_mod, "KIRO_IDE_DIRS", [])

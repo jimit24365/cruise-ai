@@ -29,8 +29,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SCORING = ROOT / "nextmillionai" / "scoring.py"
-DOC = ROOT / "nextmillionai" / "docs" / "SCORING-METHODOLOGY.md"
+SCORING = ROOT / "cruise_ai" / "scoring.py"
+DOC = ROOT / "cruise_ai" / "docs" / "SCORING-METHODOLOGY.md"
 LINE_RE = re.compile(r"Formula fingerprint: `([0-9a-f]{12})`")
 
 

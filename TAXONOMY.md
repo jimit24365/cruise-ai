@@ -1,6 +1,6 @@
-# nextmillionai — Builder Taxonomy
+# cruise_ai — Builder Taxonomy
 
-> **The living source of truth for how nextmillionai measures AI builders.**
+> **The living source of truth for how cruise_ai measures AI builders.**
 > The scanner and scoring engine implement this document. When the taxonomy
 > changes, this file changes first, then the code, then `schema.py`'s
 > `taxonomy_version` is bumped.
@@ -206,11 +206,11 @@ Engineering (supersedes RAG), Steering Discipline.
 ## Enrichment (optional, opt-in, local-first)
 
 The named decision patterns and narrative require an LLM summarization pass over
-transcript excerpts. nextmillionai keeps this **opt-in and local-first**:
+transcript excerpts. cruise_ai keeps this **opt-in and local-first**:
 
 - Off by default. Heuristic scoring works fully without it.
 - Uses the user's own API key **or** a local model. Excerpts never leave the
-  machine via nextmillionai; nothing is uploaded to us.
+  machine via cruise_ai; nothing is uploaded to us.
 - Output is derived-only (patterns, narrative, growth edge) — never raw prompts
   or code.
 

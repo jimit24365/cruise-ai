@@ -1,6 +1,6 @@
 # Trust & anti-gaming
 
-What makes a nextmillionai report worth reading, what would be required
+What makes a cruise_ai report worth reading, what would be required
 to fake one, and — stated plainly — what a self-hosted profile can and
 cannot prove. No overclaim: every mechanism listed here exists in the
 shipped code, with the module named.
@@ -21,7 +21,7 @@ below), not to a local tool.
 **1. Scores are generated, never authored.** Every score is arithmetic
 over counted local signals against research-anchored bands
 (`scoring.py`; formulas published at `/methodology` and in
-[SCORING-METHODOLOGY.md](../nextmillionai/docs/SCORING-METHODOLOGY.md)).
+[SCORING-METHODOLOGY.md](../cruise_ai/docs/SCORING-METHODOLOGY.md)).
 There is no field where a user types a score. The optional narrative
 (`enrich`) is written by the user's own agent and is ingested into
 narrative fields only — it structurally cannot change a number
@@ -70,7 +70,7 @@ contract (`schema.py`, `export.py`).
 
 ## What a reader should check
 
-On any nextmillionai report: the **confidence** number and its why; the
+On any cruise_ai report: the **confidence** number and its why; the
 **date range and session count**; **Provenance** (sources + fidelity);
 and the **evidence appendix** — every claim with its measured pointer.
 A report with high scores, low confidence, and a thin appendix is

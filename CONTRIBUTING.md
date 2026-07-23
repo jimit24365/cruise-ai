@@ -9,8 +9,8 @@
 ## Setup
 
 ```bash
-git clone https://github.com/nextmillionai/nextmillionai.git
-cd nextmillionai
+git clone https://github.com/cruise_ai/cruise_ai.git
+cd cruise_ai
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
@@ -55,7 +55,7 @@ claude() {
 
 The repo ships worktree settings (`.claude/settings.json` → `worktree`):
 `baseRef: fresh` (branch from `origin/HEAD`), `symlinkDirectories` shares
-`nextmillionai-mcp/node_modules` so worktrees don't re-install it, and
+`cruise_ai-mcp/node_modules` so worktrees don't re-install it, and
 background sessions/subagents are worktree-isolated. Caveat: with
 `symlinkDirectories` set, auto-cleanup can't remove a worktree — prune
 manually with `git worktree remove --force <path>` (or `git worktree
@@ -83,7 +83,7 @@ docs: update architecture diagram
 4. **Run the gates locally** (see below) until all four are green.
 5. **Commit** with a [Conventional Commits](https://www.conventionalcommits.org/)
    message, then **push** to your fork.
-6. **Open the PR** against `nextmillionai/nextmillionai:main`. Fill in the
+6. **Open the PR** against `cruise_ai/cruise_ai:main`. Fill in the
    PR template (what / why / schema impact / tests). Link any issue
    with `Closes #123`.
 7. **Review**: CI runs the four gates; a core owner reviews, and before
@@ -125,7 +125,7 @@ fingerprint is enforced inside pytest; the pre-merge review also runs
 ```bash
 ruff check .
 ruff format --check .
-mypy nextmillionai --ignore-missing-imports
+mypy cruise_ai --ignore-missing-imports
 pytest
 ```
 
@@ -138,13 +138,13 @@ for details.
 ## Proposing a methodology change
 
 The scoring methodology is a versioned contract
-([SCORING-METHODOLOGY.md](nextmillionai/docs/SCORING-METHODOLOGY.md)) — we take
+([SCORING-METHODOLOGY.md](cruise_ai/docs/SCORING-METHODOLOGY.md)) — we take
 changes to it seriously, and we want them. Measuring *how* people build with AI
 is a young field; it should evolve with evidence.
 
 1. Open a thread in **Discussions → Methodology** describing the signal, band, or
    weight you'd change and *why*. Start from the
-   [open questions](nextmillionai/docs/SCORING-METHODOLOGY.md#open-questions) if you
+   [open questions](cruise_ai/docs/SCORING-METHODOLOGY.md#open-questions) if you
    aren't sure where to begin.
 2. **Bring evidence** — a study, a dataset, a reproducible observation, or a good
    worked example. "It feels off" is a fine Discussion, not yet a PR.
@@ -157,7 +157,7 @@ is a young field; it should evolve with evidence.
 Keep proposals **archetype-aware** and **non-ranking** — no model ever assigns a
 score, and we never penalize a builder type for being a different builder type.
 The scoring is calibrated for developers and AI engineers
-([scope](nextmillionai/docs/SCORING-METHODOLOGY.md#who-this-is-calibrated-for));
+([scope](cruise_ai/docs/SCORING-METHODOLOGY.md#who-this-is-calibrated-for));
 proposals to widen that calibration are especially welcome, with the data to back
 them.
 

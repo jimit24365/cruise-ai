@@ -1,18 +1,18 @@
 # Multi-device sync — one profile across machines
 
-`nextmillionai sync` merges the evidence from every machine you build on
+`cruise_ai sync` merges the evidence from every machine you build on
 into ONE profile, using a **private git repo YOU own** as the store —
-your account, your repo, revocable any time. nextmillionai never sees it.
+your account, your repo, revocable any time. cruise_ai never sees it.
 
 ```bash
 # once, on each device (a PRIVATE repo you created):
-nextmillionai sync --repo git@github.com:YOU/nma-sync.git
+cruise_ai sync --repo git@github.com:YOU/nma-sync.git
 
 # afterwards, whenever you want to merge:
-nextmillionai sync            # push this device, pull the others
-nextmillionai assess --rescan # fold the union into your profile
-nextmillionai sync --status   # local state, no network
-nextmillionai sync --revoke   # remove THIS device from the store
+cruise_ai sync            # push this device, pull the others
+cruise_ai assess --rescan # fold the union into your profile
+cruise_ai sync --status   # local state, no network
+cruise_ai sync --revoke   # remove THIS device from the store
 ```
 
 ## What syncs (derived-only — the same class as publish)
@@ -67,4 +67,4 @@ The outbound transport (`git push`/`pull` to your repo) lives in
 `cmd_sync` command, exactly like publish. The merge itself
 (`sync_merge.py`) is pure local arithmetic and is the only part the
 assessment path touches: it reads the local snapshot mirror under
-`~/.nextmillionai/data/sync/devices/`, no network anywhere.
+`~/.cruise_ai/data/sync/devices/`, no network anywhere.

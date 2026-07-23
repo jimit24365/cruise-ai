@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import json
 
-from nextmillionai.scanner import count_mcp_servers
-from nextmillionai.scoring import score_context_command, score_orchestration_range
+from cruise_ai.scanner import count_mcp_servers
+from cruise_ai.scoring import score_context_command, score_orchestration_range
 
 
 def _write(path, servers):

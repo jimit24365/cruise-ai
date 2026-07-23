@@ -5,7 +5,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from nextmillionai.adapters._registry import (
+from cruise_ai.adapters._registry import (
     _CONSENT_KEYS,
     get_git_adapter,
     get_session_adapters,
@@ -51,7 +51,7 @@ class TestConsentRegistryCompleteness:
     first shipped registered but dead."""
 
     def test_every_adapter_consent_group_is_a_consent_key(self):
-        from nextmillionai.consent import ALL_SOURCES
+        from cruise_ai.consent import ALL_SOURCES
 
         for adapter in get_session_adapters():
             group = _CONSENT_KEYS.get(adapter.name, "other_tools")
@@ -62,7 +62,7 @@ class TestConsentRegistryCompleteness:
             )
 
     def test_consent_keys_values_are_all_consent_keys(self):
-        from nextmillionai.consent import ALL_SOURCES
+        from cruise_ai.consent import ALL_SOURCES
 
         unknown = set(_CONSENT_KEYS.values()) - set(ALL_SOURCES)
         assert unknown == set(), f"_CONSENT_KEYS maps to unknown consent keys: {unknown}"
@@ -70,7 +70,7 @@ class TestConsentRegistryCompleteness:
     def test_every_source_has_a_disclosure_block(self):
         """Informed consent: every ALL_SOURCES key must have a printed
         Read/Derived/Never disclosure paragraph."""
-        from nextmillionai.consent import _DISCLOSURE_BLOCKS, ALL_SOURCES
+        from cruise_ai.consent import _DISCLOSURE_BLOCKS, ALL_SOURCES
 
         assert set(_DISCLOSURE_BLOCKS) == set(ALL_SOURCES)
 
@@ -132,10 +132,10 @@ class TestConsentDerivedScan:
         return kiro_dir
 
     def test_consent_derived_scan_includes_kiro(self, tmp_path, monkeypatch):
-        import nextmillionai.scanner as scanner_mod
-        from nextmillionai.consent import prompt_consent
+        import cruise_ai.scanner as scanner_mod
+        from cruise_ai.consent import prompt_consent
 
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         monkeypatch.setattr(scanner_mod, "KIRO_SESSIONS_DIR", self._kiro_fixture(tmp_path))
         monkeypatch.setattr(scanner_mod, "KIRO_IDE_DIRS", [])
 
@@ -157,10 +157,10 @@ class TestConsentDerivedScan:
         assert raw["kiro"]["total_sessions"] == 1
 
     def test_consent_off_suppresses_kiro(self, tmp_path, monkeypatch):
-        import nextmillionai.scanner as scanner_mod
-        from nextmillionai.consent import prompt_consent
+        import cruise_ai.scanner as scanner_mod
+        from cruise_ai.consent import prompt_consent
 
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         monkeypatch.setattr(scanner_mod, "KIRO_SESSIONS_DIR", self._kiro_fixture(tmp_path))
         monkeypatch.setattr(scanner_mod, "KIRO_IDE_DIRS", [])
 
@@ -199,7 +199,7 @@ class TestConsentGating:
 
     def test_enabled_source_scanned(self, tmp_path, monkeypatch):
         """When a source is enabled and detected, its adapter runs."""
-        import nextmillionai.scanner as scanner_mod
+        import cruise_ai.scanner as scanner_mod
 
         projects_dir = tmp_path / ".claude" / "projects"
         proj_dir = projects_dir / "-Users-dev-test"
@@ -222,7 +222,7 @@ class TestConsentGating:
 class TestProjectPathCollection:
     def test_project_paths_from_sessions(self, tmp_path, monkeypatch):
         """run_adapters should collect project paths from sessions."""
-        import nextmillionai.scanner as scanner_mod
+        import cruise_ai.scanner as scanner_mod
 
         projects_dir = tmp_path / ".claude" / "projects"
         proj_dir = projects_dir / "-Users-dev-test"

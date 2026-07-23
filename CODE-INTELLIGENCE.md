@@ -2,8 +2,8 @@
 
 **Status: experimental · opt-in · v0.1.0**
 
-The code-intelligence module (`nextmillionai/code_intel.py`) is the opt-in
-local code scan behind `nextmillionai assess --code`. It reads repository
+The code-intelligence module (`cruise_ai/code_intel.py`) is the opt-in
+local code scan behind `cruise_ai assess --code`. It reads repository
 files **on the user's machine only** and reduces them to metrics. It exists
 to (a) give `positioning.buildDomain` manifest-grade evidence and (b) feed
 the `experimental.codeIntelligence[]` cards in the report's Experimental tab

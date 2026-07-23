@@ -6,8 +6,8 @@ because the marker names never matched the scanner's labels). Where you
 sit is a FOOTPRINT across columns: mass shows wherever the work is.
 """
 
-from nextmillionai.code_intel import classify_build_domain, scan_repo
-from nextmillionai.scoring import compute_positioning
+from cruise_ai.code_intel import classify_build_domain, scan_repo
+from cruise_ai.scoring import compute_positioning
 
 
 def _repo(name, commits=10, frameworks=None, ai_frameworks=None, tools=None):
@@ -219,7 +219,7 @@ def test_scan_repo_raw_http_llm_integration(tmp_path):
 
 def test_workspace_manifests_feed_detection(tmp_path):
     """Monorepos: an LLM SDK in apps/web counts for the repo."""
-    from nextmillionai.scanner import detect_tech_stack
+    from cruise_ai.scanner import detect_tech_stack
 
     repo = tmp_path / "mono"
     (repo / "apps" / "web").mkdir(parents=True)

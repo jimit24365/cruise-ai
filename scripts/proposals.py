@@ -65,7 +65,7 @@ def live_versions() -> dict[str, str]:
     """The current engine version constants, imported live so a proposal's
     declared base can be cross-checked against reality."""
     sys.path.insert(0, str(ROOT))
-    from nextmillionai.schema import (  # noqa: PLC0415 — intentional late import
+    from cruise_ai.schema import (  # noqa: PLC0415 — intentional late import
         METHODOLOGY_VERSION,
         SCHEMA_VERSION,
         TAXONOMY_VERSION,

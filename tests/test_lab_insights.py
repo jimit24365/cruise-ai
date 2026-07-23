@@ -7,8 +7,8 @@ estimation), and wrapped-card stats are not restated.
 
 from datetime import datetime, timedelta
 
-from nextmillionai.adapters._base import Session
-from nextmillionai.aggregator import build_experimental_signals, build_scanned_projects
+from cruise_ai.adapters._base import Session
+from cruise_ai.aggregator import build_experimental_signals, build_scanned_projects
 
 
 def make_sessions(
@@ -169,7 +169,7 @@ class TestProjectSeries:
 
 class TestHarnessSummary:
     def test_harness_totals_from_repos_and_sessions(self):
-        from nextmillionai.aggregator import build_harness_summary
+        from cruise_ai.aggregator import build_harness_summary
 
         git_data = {
             "projects": [
@@ -204,7 +204,7 @@ class TestHarnessSummary:
         assert "20 dispatches" in funnel["detail"]
 
     def test_harness_inventory_card(self):
-        from nextmillionai.aggregator import build_experimental_signals as bes
+        from cruise_ai.aggregator import build_experimental_signals as bes
 
         git_data = {
             "projects": [
@@ -231,7 +231,7 @@ class TestHarnessSummary:
 
 class TestConfidence:
     def test_confidence_varies_with_data(self):
-        from nextmillionai.aggregator import build_confidence
+        from cruise_ai.aggregator import build_confidence
 
         # Thin: one source, tiny sample, every dimension on a small sample.
         thin_dims = {k: {"score": 50, "provisional": True} for k in ("a", "b")}
@@ -254,7 +254,7 @@ class TestConfidence:
         assert sparse["score"] != rich["score"]
 
     def test_mark_dimension_sufficiency_flags_small_samples(self):
-        from nextmillionai.aggregator import mark_dimension_sufficiency
+        from cruise_ai.aggregator import mark_dimension_sufficiency
 
         dims = {
             "build_stability": {"score": 82},  # 7 commits -> provisional
@@ -272,7 +272,7 @@ class TestConfidence:
         assert dims["build_stability"]["score"] == 82
 
     def test_provisional_dimensions_hold_confidence_down(self):
-        from nextmillionai.aggregator import build_confidence
+        from cruise_ai.aggregator import build_confidence
 
         same = dict(active_hours=60, active_days=120)
         base = {f"k{i}": 1 for i in range(46)}
@@ -285,7 +285,7 @@ class TestConfidence:
         )
 
     def test_confidence_never_pinned_at_100(self):
-        from nextmillionai.aggregator import build_confidence
+        from cruise_ai.aggregator import build_confidence
 
         maximal = build_confidence(
             {f"k{i}": 1 for i in range(60)},
@@ -300,7 +300,7 @@ class TestConfidence:
         assert maximal["score"] <= 98
 
     def test_factors_carry_explanations(self):
-        from nextmillionai.aggregator import build_confidence
+        from cruise_ai.aggregator import build_confidence
 
         conf = build_confidence({"a": 1}, ["Claude Code"], 29, 155)
         for factor in ("completeness", "sources", "volume", "window"):

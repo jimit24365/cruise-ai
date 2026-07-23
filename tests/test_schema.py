@@ -1,9 +1,9 @@
-"""Tests for the nextmillionai data-contract schema."""
+"""Tests for the cruise_ai data-contract schema."""
 
 import re
 import warnings
 
-from nextmillionai.schema import (
+from cruise_ai.schema import (
     SCHEMA_VERSION,
     SHAREABLE_PROFILE_FIELDS,
     TAXONOMY_VERSION,
@@ -275,7 +275,7 @@ class TestEndToEndScoreProfile:
 
     def test_score_profile_validates_against_schema(self):
         """score_profile output contains all expected Profile fields."""
-        from nextmillionai.scoring import score_profile
+        from cruise_ai.scoring import score_profile
 
         scan_results = {
             "normalized": {
@@ -342,7 +342,7 @@ class TestEndToEndScoreProfile:
 
     def test_score_profile_shareable_has_no_raw_text(self):
         """Shareable version of a scored profile contains no raw prompt/code text."""
-        from nextmillionai.scoring import score_profile
+        from cruise_ai.scoring import score_profile
 
         scan_results = {
             "normalized": {

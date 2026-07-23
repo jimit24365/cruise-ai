@@ -16,7 +16,7 @@
   },
   "worktree": {
     "baseRef": "fresh",
-    "symlinkDirectories": ["nextmillionai-mcp/node_modules"],
+    "symlinkDirectories": ["cruise_ai-mcp/node_modules"],
     "bgIsolation": "worktree"
   }
 }

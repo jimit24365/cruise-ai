@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from nextmillionai.adapters.cursor import CursorAdapter
+from cruise_ai.adapters.cursor import CursorAdapter
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 

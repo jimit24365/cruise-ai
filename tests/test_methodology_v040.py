@@ -5,8 +5,8 @@ the new signals must be bit-identical to before; insufficient stays
 insufficient. No score moves without a counted signal behind it.
 """
 
-from nextmillionai.schema import SCHEMA_VERSION
-from nextmillionai.scoring import score_dimensions, score_profile
+from cruise_ai.schema import SCHEMA_VERSION
+from cruise_ai.scoring import score_dimensions, score_profile
 
 BASE = {
     "totalSessions": 40,

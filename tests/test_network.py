@@ -11,14 +11,14 @@ from http.server import ThreadingHTTPServer
 
 import pytest
 
-import nextmillionai.paths as paths_mod
-from nextmillionai.network import (
+import cruise_ai.paths as paths_mod
+from cruise_ai.network import (
     build_publish_payload,
     load_publish_state,
     publish,
     unpublish,
 )
-from nextmillionai.network_server import (
+from cruise_ai.network_server import (
     RegistryStore,
     make_handler,
     validate_published_profile,
@@ -27,7 +27,7 @@ from nextmillionai.network_server import (
 
 @pytest.fixture
 def fake_home(tmp_path, monkeypatch):
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path / "home"))
     return tmp_path
 
 

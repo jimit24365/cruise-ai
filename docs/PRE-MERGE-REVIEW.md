@@ -16,7 +16,7 @@ lenses. Reviewers can be humans or agents — what matters is that each
 gets a fresh context, independent of the author.
 
 **Why this exists (the receipts):** the Kiro integration
-([PR #6](https://github.com/nextmillionai/nextmillionai/pull/6)) had all
+([PR #6](https://github.com/cruise_ai/cruise_ai/pull/6)) had all
 four gates green, a full sandbox e2e pass, and a clean privacy grep —
 and the dual review still found, pre-merge: a measured-metric
 *regression* (`modelCount` could decrease when a source was added), a
@@ -69,7 +69,7 @@ Review scope: `git diff {base}..HEAD`. Read every touched file IN FULL where
 the diff alone is ambiguous — a diff hides the invariants around it.
 
 HARD CONSTRAINTS to verify held (do not trust the author's claims — check):
-1. scoring.py untouched: `git diff {base}..HEAD -- nextmillionai/scoring.py`
+1. scoring.py untouched: `git diff {base}..HEAD -- cruise_ai/scoring.py`
    is empty AND `python3 scripts/formula_fingerprint.py` matches main's.
 2. No outbound network in any new code (network.py is the only sanctioned
    outbound module; the privacy CI tests must pass).
@@ -87,15 +87,15 @@ reviewer aimed at nothing finds nothing.}
 Be adversarial: construct concrete failure scenarios (inputs/state → wrong
 output) and try to reproduce them live with small scripts. Check one-way
 doors especially hard: anything written to the durable ledger
-(~/.nextmillionai/data/history/), published, or persisted in a form a later
+(~/.cruise_ai/data/history/), published, or persisted in a form a later
 release cannot correct.
 
 RUN the four gates yourself (CONTRIBUTING.md § Local checks is the
 canonical list; the fingerprint is CI-enforced inside pytest but run it
 directly too — you want the value, not just a pass):
   python3 -m pytest tests/ -q -p no:cacheprovider --override-ini addopts=
-  uv tool run ruff check nextmillionai/ tests/ && uv tool run ruff format --check nextmillionai/ tests/
-  uv run --python 3.12 --with mypy --no-project -- python -m mypy nextmillionai --ignore-missing-imports
+  uv tool run ruff check cruise_ai/ tests/ && uv tool run ruff format --check cruise_ai/ tests/
+  uv run --python 3.12 --with mypy --no-project -- python -m mypy cruise_ai --ignore-missing-imports
   python3 scripts/formula_fingerprint.py
 
 Return: verdict (SHIP / SHIP WITH NITS / BLOCK) + numbered findings, each

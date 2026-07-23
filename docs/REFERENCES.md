@@ -1,6 +1,6 @@
 # References
 
-The formal bibliography behind nextmillionai's scoring. We wrote this
+The formal bibliography behind cruise_ai's scoring. We wrote this
 because a measurement product should be able to show its sources — the
 taxonomy is meant to read as anchored work, not personal opinion. The
 narrative *why* is [`THESIS.md`](../THESIS.md); this is the citation list
@@ -86,7 +86,7 @@ These shaped *how* we measure, not the specific band cutoffs.
 
 ## Evaluation & measurement methodology
 
-nextmillionai is itself a measurement instrument, so its design is
+cruise_ai is itself a measurement instrument, so its design is
 disciplined by the science of evaluation — not as band validation, but as
 the standard we hold our own methodology to (construct validity,
 multi-dimensional scoring over a single number, resistance to gaming).

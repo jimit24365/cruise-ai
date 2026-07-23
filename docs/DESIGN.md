@@ -1,8 +1,8 @@
-# nextmillionai design language
+# cruise_ai design language
 
 The design system behind the profile, the report, and `/methodology`.
 Every token and rule below is pulled from the shipped CSS/JS
-(`nextmillionai/static/`) — if a value here disagrees with the code,
+(`cruise_ai/static/`) — if a value here disagrees with the code,
 the code wins and this doc has a bug. Structure and rigor modeled on
 [Material Design](https://m3.material.io/)'s documentation standard;
 [GitHub Primer](https://primer.style/), [Shopify

@@ -1,6 +1,6 @@
 # Data Collection Disclosure
 
-Everything nextmillionai reads, derives, and never touches.
+Everything cruise_ai reads, derives, and never touches.
 
 ---
 
@@ -67,7 +67,7 @@ never invent sessions and never move a score. Full per-layout detail is in
 
 ## Custom adapters — OPT-IN (user-registered)
 
-If you register a tool in `nextmillionai.config.json`, we read only the paths
+If you register a tool in `cruise_ai.config.json`, we read only the paths
 and glob you declare — file-per-session timestamps (`mtime`) or presence — never
 contents beyond what the declared format implies.
 
@@ -90,7 +90,7 @@ interactive `calibrate`.
 
 The assessment path runs entirely on localhost: nothing is uploaded,
 transmitted, or phoned home, and CI enforces it. The single exception is
-the explicit, opt-in `nextmillionai publish`, which sends only the
+the explicit, opt-in `cruise_ai publish`, which sends only the
 visibility-filtered derived profile described in
 [PRIVACY.md](PRIVACY.md) — and is revocable with `unpublish`. All
-derived data stays in `~/.nextmillionai/data/`.
+derived data stays in `~/.cruise_ai/data/`.

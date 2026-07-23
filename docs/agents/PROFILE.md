@@ -2,7 +2,7 @@
 
 A structured reference for AI agents (and humans) on what the **profile**
 is, what it contains, and how to read it. Source of truth for the JSON
-itself is [`SCHEMA.md`](../../nextmillionai/docs/SCHEMA.md); this is the
+itself is [`SCHEMA.md`](../../cruise_ai/docs/SCHEMA.md); this is the
 surface-level map.
 
 - **What it is:** the credential dashboard — the card you'd show someone.

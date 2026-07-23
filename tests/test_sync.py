@@ -8,7 +8,7 @@ import subprocess
 
 import pytest
 
-from nextmillionai.sync_merge import (
+from cruise_ai.sync_merge import (
     apply_multi_device,
     build_device_snapshot,
     device_identity,
@@ -18,7 +18,7 @@ from nextmillionai.sync_merge import (
 
 
 def _seed_local_data(home, sessions=None, activity=None, repos=None):
-    """Write a minimal ledger + scan_results under NEXTMILLIONAI_HOME."""
+    """Write a minimal ledger + scan_results under CRUISE_AI_HOME."""
     hist = home / "data" / "history"
     hist.mkdir(parents=True, exist_ok=True)
     (hist / "sessions.json").write_text(json.dumps(sessions or {}))
@@ -43,7 +43,7 @@ def _snap(device_id, name, sessions_by_day=None, repos=None, days=None):
 
 
 def test_snapshot_is_derived_only(tmp_path, monkeypatch):
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     _seed_local_data(
         tmp_path,
         sessions={
@@ -77,7 +77,7 @@ def test_snapshot_is_derived_only(tmp_path, monkeypatch):
 
 
 def test_device_identity_is_stable(tmp_path, monkeypatch):
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     a = device_identity()
     b = device_identity()
     assert a["deviceId"] == b["deviceId"]
@@ -122,7 +122,7 @@ def test_merge_is_order_independent():
 
 
 def test_single_device_is_noop(tmp_path, monkeypatch):
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     _seed_local_data(tmp_path)
     own = devices_dir() / "me.json"
     own.write_text(json.dumps(_snap(device_identity()["deviceId"], "laptop")))
@@ -133,7 +133,7 @@ def test_single_device_is_noop(tmp_path, monkeypatch):
 
 
 def test_two_devices_union_without_touching_scores(tmp_path, monkeypatch):
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     _seed_local_data(tmp_path)
     my_id = device_identity()["deviceId"]
     (devices_dir() / f"{my_id}.json").write_text(
@@ -191,10 +191,10 @@ def _git_available():
 
 @pytest.mark.skipif(not _git_available(), reason="git not installed")
 def test_sync_round_trip_and_revoke(tmp_path, monkeypatch):
-    from nextmillionai.network import load_sync_config, sync_revoke, sync_run
+    from cruise_ai.network import load_sync_config, sync_revoke, sync_run
 
     home = tmp_path / "home"
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(home))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(home))
     _seed_local_data(
         home,
         sessions={"claude_code:s1": {"tool": "claude_code", "start": "2026-06-01T10:00:00"}},
@@ -253,10 +253,10 @@ def test_sync_round_trip_and_revoke(tmp_path, monkeypatch):
 
 @pytest.mark.skipif(not _git_available(), reason="git not installed")
 def test_sync_unreachable_remote_is_graceful(tmp_path, monkeypatch):
-    from nextmillionai.network import sync_run
+    from cruise_ai.network import sync_run
 
     home = tmp_path / "home"
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(home))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(home))
     _seed_local_data(home)
 
     with pytest.raises(RuntimeError) as exc:
@@ -266,9 +266,9 @@ def test_sync_unreachable_remote_is_graceful(tmp_path, monkeypatch):
 
 
 def test_sync_unconfigured_is_explicit(tmp_path, monkeypatch):
-    from nextmillionai.network import sync_run
+    from cruise_ai.network import sync_run
 
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
     with pytest.raises(RuntimeError) as exc:
         sync_run()
     assert "No sync repo configured" in str(exc.value)
@@ -276,7 +276,7 @@ def test_sync_unconfigured_is_explicit(tmp_path, monkeypatch):
 
 def test_multidevice_never_in_shareable(tmp_path, monkeypatch):
     """The sync union is private: build_shareable_profile must drop it."""
-    from nextmillionai.schema import build_shareable_profile
+    from cruise_ai.schema import build_shareable_profile
 
     profile = {
         "schema_version": "1.0",

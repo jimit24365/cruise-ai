@@ -11,8 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from nextmillionai.adapters._base import Session
-from nextmillionai.adapters.claude_code import ClaudeCodeAdapter
+from cruise_ai.adapters._base import Session
+from cruise_ai.adapters.claude_code import ClaudeCodeAdapter
 
 FIXTURES = Path(__file__).parent.parent / "fixtures"
 
@@ -137,7 +137,7 @@ def test_subagent_runs_counted(tmp_path):
     session — runs and runtime must be measured, never skipped."""
     import json as _json
 
-    from nextmillionai.adapters.claude_code import ClaudeCodeAdapter
+    from cruise_ai.adapters.claude_code import ClaudeCodeAdapter
 
     proj = tmp_path / "-Users-dev-myproj"
     proj.mkdir(parents=True)
@@ -191,7 +191,7 @@ def test_subagent_runs_counted(tmp_path):
 def test_no_subagents_dir_is_clean(tmp_path):
     import json as _json
 
-    from nextmillionai.adapters.claude_code import ClaudeCodeAdapter
+    from cruise_ai.adapters.claude_code import ClaudeCodeAdapter
 
     proj = tmp_path / "-Users-dev-plain"
     proj.mkdir(parents=True)
@@ -211,7 +211,7 @@ def test_active_time_excludes_idle_gaps(tmp_path):
     inside a session never counts as work."""
     import json as _json
 
-    from nextmillionai.adapters.claude_code import ClaudeCodeAdapter
+    from cruise_ai.adapters.claude_code import ClaudeCodeAdapter
 
     proj = tmp_path / "-Users-dev-gaps"
     proj.mkdir(parents=True)

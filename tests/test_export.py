@@ -10,13 +10,13 @@ import json
 
 import pytest
 
-import nextmillionai.paths as paths_mod
-from nextmillionai.export import export_static, verify_artifact_json
+import cruise_ai.paths as paths_mod
+from cruise_ai.export import export_static, verify_artifact_json
 
 
 @pytest.fixture
 def fake_home(tmp_path, monkeypatch):
-    monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path / "home"))
     return tmp_path
 
 

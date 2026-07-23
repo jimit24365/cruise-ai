@@ -19,17 +19,17 @@ def _read(p):
 
 
 def test_cli_flags_and_tokens_exist():
-    cli_src = _read("nextmillionai/build_profile.py")
+    cli_src = _read("cruise_ai/build_profile.py")
     css = (
-        _read("nextmillionai/static/css/profile.css")
-        + _read("nextmillionai/static/css/report.css")
-        + _read("nextmillionai/static/css/tabs-shared.css")
+        _read("cruise_ai/static/css/profile.css")
+        + _read("cruise_ai/static/css/report.css")
+        + _read("cruise_ai/static/css/tabs-shared.css")
     )
     for doc in DOCS:
         text = _read(doc)
         mentions = set(
             re.findall(r"`(--[a-z0-9-]+)`", text)
-            + re.findall(r"nextmillionai [a-z]+ (--[a-z-]+)", text)
+            + re.findall(r"cruise_ai [a-z]+ (--[a-z-]+)", text)
         )
         for m in mentions:
             assert f'"{m}"' in cli_src or m in css, (
@@ -39,12 +39,12 @@ def test_cli_flags_and_tokens_exist():
 
 def test_design_doc_classes_and_functions_exist():
     css = (
-        _read("nextmillionai/static/css/profile.css")
-        + _read("nextmillionai/static/css/report.css")
-        + _read("nextmillionai/static/css/tabs-shared.css")
+        _read("cruise_ai/static/css/profile.css")
+        + _read("cruise_ai/static/css/report.css")
+        + _read("cruise_ai/static/css/tabs-shared.css")
     )
     js = "".join(
-        _read(f"nextmillionai/static/js/{n}.js")
+        _read(f"cruise_ai/static/js/{n}.js")
         for n in ("profile", "report", "icons", "tabs-shared")
     )
     text = _read("docs/DESIGN.md")
@@ -55,7 +55,7 @@ def test_design_doc_classes_and_functions_exist():
 
 
 def test_design_tokens_match_css_values():
-    css = _read("nextmillionai/static/css/profile.css")
+    css = _read("cruise_ai/static/css/profile.css")
     for tok, val in [
         ("--bg", "#FAF8F3"),
         ("--accent", "#E2542C"),
@@ -80,9 +80,9 @@ def test_internal_links_resolve():
 
 
 def test_example_profile_loads_rich_and_clean():
-    from nextmillionai.schema import SCHEMA_VERSION, build_shareable_profile
+    from cruise_ai.schema import SCHEMA_VERSION, build_shareable_profile
 
-    raw = _read("nextmillionai/examples/profile.json")
+    raw = _read("cruise_ai/examples/profile.json")
     ex = json.loads(raw)
     assert ex["schema_version"] == SCHEMA_VERSION, (
         "bundled example was built by an older engine — regenerate with "
@@ -99,7 +99,7 @@ def test_example_profile_loads_rich_and_clean():
 
 def test_readme_privacy_wording_is_the_two_promises():
     readme = _read("README.md")
-    assert "never reach nextmillionai" in readme
+    assert "never reach cruise_ai" in readme
     assert "computed entirely from local files" in readme
     # no overclaim anywhere
     trust = _read("docs/TRUST.md")
@@ -116,8 +116,8 @@ def test_howitworks_reference_covers_every_command_truthfully():
     argparse has a card, every card names a real subcommand, and every
     flag shown exists in the CLI. A new command without a card (or a
     documented flag that doesn't exist) is a doc bug, same as README."""
-    html = _read("nextmillionai/static/howitworks.html")
-    cli_src = _read("nextmillionai/build_profile.py")
+    html = _read("cruise_ai/static/howitworks.html")
+    cli_src = _read("cruise_ai/build_profile.py")
 
     real_cmds = set(re.findall(r'add_parser\(\s*"(\w+)"', cli_src))
     page_cmds = set(re.findall(r'<div class="cmd" id="c-(\w+)">', html))
@@ -134,7 +134,7 @@ def test_howitworks_reference_covers_every_command_truthfully():
         assert f'"{flag}"' in cli_src, f"how-it-works documents {flag} — not a real flag"
 
     # the pre-hydration fallback must be the invocation that always works
-    assert html.count('class="cliP">python3 -m nextmillionai<') >= 10
+    assert html.count('class="cliP">python3 -m cruise_ai<') >= 10
     # hydrated from the serving machine's real invocation
     assert "/api/cli" in html
 
@@ -157,7 +157,7 @@ def test_hardlines_registry_exists_and_is_wired():
     assert "HARDLINES.md" in _read("CURRENT.md")
     assert "HARDLINES.md" in _read("CLAUDE.md")
     # the bundled example's directory marks it @generated
-    ex_readme = _read("nextmillionai/examples/README.md")
+    ex_readme = _read("cruise_ai/examples/README.md")
     assert "@generated" in ex_readme and "make_example_profile.py" in ex_readme
 
 
@@ -165,14 +165,14 @@ def test_howitworks_features_section_matches_shipped_ui():
     """The 'In the Profile & Report' section documents only features
     that exist in the shipped UI — each card is pinned to the JS/CSS
     that implements it. Search must ship with the page."""
-    html = _read("nextmillionai/static/howitworks.html")
+    html = _read("cruise_ai/static/howitworks.html")
     assert 'id="docSearch"' in html and "function docFilter(" in html
 
     js = "".join(
-        _read(f"nextmillionai/static/js/{n}.js")
+        _read(f"cruise_ai/static/js/{n}.js")
         for n in ("profile", "report", "icons", "tabs-shared")
     )
-    css = _read("nextmillionai/static/css/profile.css")  # noqa: F841 — used by f-live (post-launch)
+    css = _read("cruise_ai/static/css/profile.css")  # noqa: F841 — used by f-live (post-launch)
     impl = {
         # "f-live": ("live-badge", css),  # post-launch — hidden from docs
         "f-flip": ("nmaInitFlip", js),
@@ -202,7 +202,7 @@ def test_every_doc_is_in_the_current_md_index():
         "CHANGELOG.md",  # community/convention files, not working docs
         "CODE_OF_CONDUCT.md",
         "CONTRIBUTING.md",
-        "nextmillionai/examples/README.md",  # @generated marker for the example
+        "cruise_ai/examples/README.md",  # @generated marker for the example
         "scripts/public/CURRENT.public.md",  # public-seed template, not a working doc
         "scripts/public/CHANGELOG.public.md",  # public-seed template, not a working doc
     }

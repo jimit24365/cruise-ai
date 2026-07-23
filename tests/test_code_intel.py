@@ -7,11 +7,11 @@ opt-in gating, and code-scan evidence raising but never lowering buildDomain.
 
 import json
 
-from nextmillionai.adapters.claude_desktop import ClaudeDesktopAdapter
-from nextmillionai.aggregator import build_coverage_report
-from nextmillionai.code_intel import scan_repo, scan_repos
-from nextmillionai.consent import OPT_IN_ONLY_SOURCES, prompt_consent
-from nextmillionai.scoring import compute_positioning
+from cruise_ai.adapters.claude_desktop import ClaudeDesktopAdapter
+from cruise_ai.aggregator import build_coverage_report
+from cruise_ai.code_intel import scan_repo, scan_repos
+from cruise_ai.consent import OPT_IN_ONLY_SOURCES, prompt_consent
+from cruise_ai.scoring import compute_positioning
 
 
 def make_repo(tmp_path, name="myrepo"):
@@ -224,7 +224,7 @@ class TestClaudeDesktopAdapter:
 
 class TestConsentOptIn:
     def test_non_interactive_excludes_experimental_sources(self, tmp_path, monkeypatch):
-        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        monkeypatch.setenv("CRUISE_AI_HOME", str(tmp_path))
         sources = prompt_consent(non_interactive=True)
         assert sources["claude_code"] is True
         assert sources["git"] is True

@@ -1,4 +1,4 @@
-"""Tests for the nextmillionai scanner module.
+"""Tests for the cruise_ai scanner module.
 
 Fixture-based tests using a tiny sample Claude Code JSONL and a small SQLite
 database in tests/fixtures/. Asserts sessions, project paths (from cwd),
@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-import nextmillionai.scanner as scanner_mod
-from nextmillionai.scanner import (
+import cruise_ai.scanner as scanner_mod
+from cruise_ai.scanner import (
     _FILE_TOOL_NAMES,
     _TERMINAL_TOOL_NAMES,
     build_summary,
@@ -50,7 +50,7 @@ def claude_projects(tmp_path, monkeypatch):
     shutil.copy(FIXTURES / "second_session.jsonl", proj_dir / "session_def.jsonl")
 
     # Monkey-patch the scanner's CLAUDE_PROJECTS_DIR constant
-    import nextmillionai.scanner as scanner_mod
+    import cruise_ai.scanner as scanner_mod
 
     monkeypatch.setattr(scanner_mod, "CLAUDE_PROJECTS_DIR", projects_dir)
 
@@ -195,7 +195,7 @@ class TestScanClaudeCode:
 
     def test_returns_none_when_missing(self, tmp_path, monkeypatch):
         """Returns None when the projects dir doesn't exist."""
-        import nextmillionai.scanner as scanner_mod
+        import cruise_ai.scanner as scanner_mod
 
         monkeypatch.setattr(scanner_mod, "CLAUDE_PROJECTS_DIR", tmp_path / "nonexistent")
         assert scan_claude_code() is None

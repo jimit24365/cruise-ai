@@ -17,7 +17,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-_STATIC = Path(__file__).resolve().parent.parent / "nextmillionai" / "static"
+_STATIC = Path(__file__).resolve().parent.parent / "cruise_ai" / "static"
 
 # Base/contextual classes that are page-specific by design — variants of base
 # selectors (``.btn.dark``, ``hr.div``, ``.tag`` / ``.tag.dom``) defined

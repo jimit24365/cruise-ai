@@ -1,7 +1,7 @@
-# nextmillionai — Enrichment Analysis Prompt
+# cruise_ai — Enrichment Analysis Prompt
 
-The exact prompt nextmillionai hands to the **user's own agent** (via the
-`nma_enrichment_request` MCP tool) together with excerpts of their own sessions.
+The exact prompt cruise_ai hands to the **user's own agent** (via the
+`cruise_enrichment_request` MCP tool) together with excerpts of their own sessions.
 The agent returns the six-block JSON, which `enrichment.ingest()` validates and
 stores. Off by default, opt-in, derived-only.
 
@@ -14,7 +14,7 @@ END ---` to the agent.
 ```
 --- PROMPT START ---
 You are analyzing a developer's OWN AI coding sessions to produce their
-nextmillionai builder profile. The developer is running you themselves, on their
+cruise_ai builder profile. The developer is running you themselves, on their
 own machine — this is their data, about their own work. Your job is to read the
 evidence and describe how they build with AI: honestly, specifically, and without
 flattery.
@@ -23,7 +23,7 @@ You will return ONE JSON object and nothing else.
 
 ## What you're given
 
-SIGNALS (already computed by nextmillionai — treat these numbers as ground truth;
+SIGNALS (already computed by cruise_ai — treat these numbers as ground truth;
 do not recompute or contradict them):
 {{SIGNALS}}
   // e.g. totalSessions, dominantWorkMode, dimensionScores, topArchetypes,
@@ -47,7 +47,7 @@ with hashes, and the engine's own dimension evidence):
 
 SCOPE: You produce **narrative text only** — the qualitative layer of the profile.
 You do NOT compute or restate scores, dimensions, archetypes, levels, or stats;
-nextmillionai already computed those locally and hands them to you in SIGNALS as
+cruise_ai already computed those locally and hands them to you in SIGNALS as
 ground truth. Your job is to read the evidence and write the prose + named
 patterns that numbers can't capture. Do not output any scoring.
 

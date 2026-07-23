@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regenerate nextmillionai/examples/profile.json.
+"""Regenerate cruise_ai/examples/profile.json.
 
 The bundled example is produced by the REAL engine over a synthetic
 home — sessions, subagent runs, and git repos are generated, then
@@ -19,7 +19,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-OUT = REPO_ROOT / "nextmillionai" / "examples" / "profile.json"
+OUT = REPO_ROOT / "cruise_ai" / "examples" / "profile.json"
 
 MODELS = ["claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5"]
 
@@ -230,10 +230,10 @@ EXAMPLE_ENRICHMENT = {
 
 
 def main():
-    tmp = Path(tempfile.mkdtemp(prefix="nma-example-"))
+    tmp = Path(tempfile.mkdtemp(prefix="cruise-ai-example-"))
     home = tmp / "home"
     (home / ".claude" / "projects").mkdir(parents=True)
-    nma_home = tmp / "nma"
+    cruise_home = tmp / "cruise-ai"
 
     repos = {
         "lighthouse-app": make_repo(
@@ -337,10 +337,10 @@ def main():
 
     env = dict(os.environ)
     env["HOME"] = str(home)
-    env["NEXTMILLIONAI_HOME"] = str(nma_home)
-    env.pop("NEXTMILLIONAI_PROFILE_PATH", None)
+    env["CRUISE_AI_HOME"] = str(cruise_home)
+    env.pop("CRUISE_AI_PROFILE_PATH", None)
     subprocess.run(
-        [sys.executable, "-m", "nextmillionai", "assess", "--rescan", "--yes"],
+        [sys.executable, "-m", "cruise_ai", "assess", "--rescan", "--yes"],
         check=True,
         env=env,
         cwd=str(REPO_ROOT),
@@ -356,7 +356,7 @@ def main():
     result_file = tmp / "enrich-result.json"
     result_file.write_text(json.dumps(EXAMPLE_ENRICHMENT))
     subprocess.run(
-        [sys.executable, "-m", "nextmillionai", "enrich", "--submit", str(result_file), "--yes"],
+        [sys.executable, "-m", "cruise_ai", "enrich", "--submit", str(result_file), "--yes"],
         check=True,
         env=env,
         cwd=str(REPO_ROOT),
@@ -364,7 +364,7 @@ def main():
         text=True,
     )
 
-    profile = json.loads((nma_home / "data" / "profile.json").read_text())
+    profile = json.loads((cruise_home / "data" / "profile.json").read_text())
     profile.update(
         {
             "name": "Maya Chen",
