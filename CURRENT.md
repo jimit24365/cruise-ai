@@ -9,7 +9,7 @@ sessions. What must never change without sign-off lives in
 
 nextmillionai is a local-first AI coding profile builder — the open
 alternative to Paxel. It scans the user's own AI sessions (Claude Code,
-Cursor, Codex) + git, scores how they build with AI, and renders a
+Cursor, Codex, Kiro) + git, scores how they build with AI, and renders a
 shareable **profile** and a deep **report** from ONE assessment JSON.
 Opt-in only: publish a curated, derived-only, revocable profile to a
 registry. Mission: reverse hiring on proof-based work.
@@ -32,6 +32,7 @@ registry. Mission: reverse hiring on proof-based work.
 | **Always** | `docs/HARDLINES.md` | confirm-first registry: generated artifacts, versioned contracts, privacy boundary |
 | Process | `docs/proposals/` | methodology change proposals (draft→review→accept); `scripts/proposals.py` to create/compare/render. The reviewable path for any hardline-contract change |
 | Contract | `docs/ADAPTERS.md` | tool coverage: every tool, versions/generations, exact reads, fidelity |
+| Process | `docs/ADDING-A-TOOL.md` | contributor workflow: wiring a new tool end to end (adapter → consent → displays → fold → registries → tests) |
 | Roadmap | `docs/DEEP-FIDELITY.md` | plan to raise tools from counts→deep (per-tool path + reusable infra), never faking what a tool doesn't expose |
 | Contract | `docs/SYNC.md` | multi-device merge rule (dedupe by stable IDs, scores never merge) |
 | Feature | `ENRICHMENT-PROMPT.md`, `CODE-INTELLIGENCE.md` | enrichment + `--code` scan |

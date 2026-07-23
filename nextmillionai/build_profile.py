@@ -64,15 +64,9 @@ def run_scan(project_filter=None, enabled_sources=None, collection_config=None, 
     from nextmillionai.schema import SCHEMA_VERSION
 
     if enabled_sources is None:
-        enabled_sources = {
-            "claude_code": True,
-            "cursor": True,
-            "codex": True,
-            "git": True,
-            "other_tools": True,
-            "local_models": True,
-            "claude_desktop": False,
-        }
+        from nextmillionai.consent import default_enabled_sources
+
+        enabled_sources = default_enabled_sources()
 
     pf = None
     if project_filter:
@@ -80,6 +74,13 @@ def run_scan(project_filter=None, enabled_sources=None, collection_config=None, 
 
     # Run adapters — returns Session objects + raw data dicts
     sessions, raw_data, git_data = run_adapters(pf, enabled_sources, collection_config)
+
+    # Adapters that mark orchestration via child sessions (kiro) get their
+    # parents credited with task dispatches BEFORE anything consumes
+    # tool_calls_by_type (harness, ledger, signal matrix).
+    from nextmillionai.aggregator import attribute_subagent_dispatches, fold_session_metrics
+
+    attribute_subagent_dispatches(sessions)
 
     # Extract per-tool raw data for backward compatibility
     claude_data = raw_data.get("claude_code")
@@ -95,6 +96,11 @@ def run_scan(project_filter=None, enabled_sources=None, collection_config=None, 
         desktop_data=raw_data.get("claude_desktop"),
         cursor_consented=bool((enabled_sources or {}).get("cursor")),
     )
+
+    # Fold session-derived signals from every OTHER deep session source
+    # (kiro, codex, deep wider-field) into the same measured metrics —
+    # compute_normalized only reads the claude/cursor raw dicts.
+    fold_session_metrics(normalized, sessions, claude_data, cursor_data)
 
     # Cross-surface breadth: distinct tools with at least one PARSED
     # session — usage evidence for Context Command (v0.4.0), never mere
@@ -269,11 +275,15 @@ def run_scan(project_filter=None, enabled_sources=None, collection_config=None, 
     # Coverage: what exists here that wasn't collected + the knob to widen
     detected = {a.name: a.detect() for a in get_session_adapters()}
     detected["git"] = bool(git_data) or enabled_sources.get("git", False)
-    # Group-level rollups for the two new consent groups
-    detected["other_tools"] = any(v for k, v in detected.items() if k not in _core_keys | {"git"})
+    # Group-level rollups for the two new consent groups. Kiro has its own
+    # consent key + coverage row (its payload merely LIVES under otherTools),
+    # so it must not light the other_tools rollup or satisfy its row.
+    detected["other_tools"] = any(
+        v for k, v in detected.items() if k not in _core_keys | {"git", "kiro"}
+    )
     detected["local_models"] = _local_models_present is not None
     coverage_raw = dict(raw_data)
-    coverage_raw["other_tools"] = other_tools or None
+    coverage_raw["other_tools"] = {k: v for k, v in other_tools.items() if k != "kiro"} or None
     coverage_raw["local_models"] = local_models
     coverage = build_coverage_report(
         enabled_sources,
@@ -379,6 +389,17 @@ def show_preview():
     if codex:
         print("  Codex CLI:")
         print(f"    Sessions: {codex.get('total_sessions', 0)}")
+        print()
+
+    kiro = (data.get("otherTools") or {}).get("kiro")
+    if kiro:
+        print("  Kiro:")
+        print(f"    Sessions: {kiro.get('total_sessions', 0)}")
+        print(
+            f"    Messages: {kiro.get('total_user_msgs', 0) + kiro.get('total_assistant_msgs', 0)}"
+        )
+        if kiro.get("subagent_sessions"):
+            print(f"    Subagent sessions: {kiro.get('subagent_sessions', 0)}")
         print()
 
     git = data.get("git")
@@ -554,6 +575,42 @@ def _ensure_calibrated(non_interactive: bool = False) -> dict[str, bool]:
         config = prompt_collection_scope(non_interactive=non_interactive)
         save_collection_config(config)
     else:
+        # Sources added to ALL_SOURCES since the user calibrated are absent
+        # from the saved consent — never silently on, never silently lost.
+        from nextmillionai.consent import ALL_SOURCES, prompt_new_sources
+
+        saved = consented_sources(consent)
+        missing = [k for k in ALL_SOURCES if k not in saved]
+        # A non-TTY stdin (cron, CI, piped) can never answer a prompt —
+        # treat it like --yes: new sources stay off, no EOFError.
+        can_prompt = not non_interactive and sys.stdin.isatty()
+        if missing and can_prompt:
+            sources = prompt_new_sources(missing, saved)
+            save_consent(sources)
+            consent = load_consent()
+            if any(sources.get(k) for k in missing):
+                # The cached scan predates this consent scope — drop it so
+                # the newly-granted source is scanned NOW, not after cache
+                # expiry (the user just said yes; the result must show it).
+                from nextmillionai.paths import scan_results_path
+
+                scan_results_path().unlink(missing_ok=True)
+        elif missing:
+            # Non-interactive with an existing consent: new sources stay
+            # OFF for this run and are deliberately NOT persisted — writing
+            # False here would disarm the mini-prompt on the next real run.
+            from nextmillionai.paths import cli_invocation
+
+            print(
+                f"  New data source(s) available: {', '.join(missing)} — not"
+                f" scanned until you consent. Run"
+                f" `{cli_invocation()} assess` without --yes to answer just"
+                f" the new question, or `{cli_invocation()} calibrate` to"
+                f" review all sources."
+            )
+            consent = dict(consent)
+            consent["sources"] = {**saved, **{k: False for k in missing}}
+
         # Ensure collection config exists (may be missing from older installs)
         if load_collection_config() is None:
             from nextmillionai.consent import default_collection_config
@@ -602,6 +659,12 @@ def cmd_calibrate(args) -> None:
     added = sorted(k for k, v in sources.items() if v and not before.get(k, False))
     removed = sorted(k for k, v in sources.items() if not v and before.get(k, False))
     if before and (added or removed):
+        if added:
+            # A widened scope can never be served by the cached scan —
+            # same rule as the new-source mini-prompt in _ensure_calibrated.
+            from nextmillionai.paths import scan_results_path
+
+            scan_results_path().unlink(missing_ok=True)
         change = []
         if added:
             change.append("added: " + ", ".join(added))
@@ -990,6 +1053,7 @@ def cmd_assess(args, *, _show_intro: bool = True) -> None:
             "claude_code": "Claude Code",
             "cursor_ide": "Cursor",
             "codex_cli": "Codex CLI",
+            "kiro": "Kiro",
             "aider": "Aider",
             "cline": "Cline",
             "continue": "Continue.dev",
@@ -1036,6 +1100,7 @@ def cmd_assess(args, *, _show_intro: bool = True) -> None:
         "claude_code": "Claude Code",
         "cursor_ide": "Cursor IDE",
         "codex_cli": "Codex CLI",
+        "kiro": "Kiro",
         "aider": "Aider",
         "cline": "Cline",
         "continue": "Continue.dev",
@@ -1997,16 +2062,9 @@ def cmd_sources(args) -> None:
     print("  " + "=" * 42)
     print()
 
-    # Map adapter names to consent groups — every wider-field tool shares
-    # the "other_tools" group (mirrors _registry.run_adapters), so looking
-    # up consent by adapter.name would wrongly report consented tools as
-    # disabled.
-    _consent_keys = {
-        "claude_code": "claude_code",
-        "cursor": "cursor",
-        "codex": "codex",
-        "claude_desktop": "claude_desktop",
-    }
+    # Adapter name → consent group, shared with the scan path so this
+    # display can never drift from what run_adapters actually gates on.
+    from nextmillionai.adapters._registry import _CONSENT_KEYS as _consent_keys
 
     # Session adapters
     for adapter in get_session_adapters():
@@ -2051,6 +2109,18 @@ def cmd_sources(args) -> None:
                 print(f"    Transcripts: {convos.get('totalSessions', 0)}")
             elif adapter.name == "codex":
                 print(f"    Sessions:   {raw.get('total_sessions', 0)}")
+                earliest = raw.get("earliest", "")
+                latest = raw.get("latest", "")
+                if earliest and latest:
+                    print(f"    Date range: {earliest[:10]} to {latest[:10]}")
+            elif adapter.name == "kiro":
+                print(f"    Sessions:   {raw.get('total_sessions', 0)}")
+                cli_n = raw.get("cli_sessions", 0)
+                ide_n = raw.get("ide_sessions", 0)
+                if cli_n or ide_n:
+                    print(f"    CLI / IDE:  {cli_n} / {ide_n}")
+                if raw.get("subagent_sessions"):
+                    print(f"    Subagents:  {raw.get('subagent_sessions', 0)}")
                 earliest = raw.get("earliest", "")
                 latest = raw.get("latest", "")
                 if earliest and latest:

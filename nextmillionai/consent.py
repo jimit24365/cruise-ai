@@ -22,6 +22,7 @@ ALL_SOURCES = {
     "claude_code": "Claude Code (~/.claude/projects/)",
     "cursor": "Cursor IDE (~/.cursor/ + its app storage: composer session timestamps)",
     "codex": "Codex CLI (~/.codex/sessions/)",
+    "kiro": "Kiro (~/.kiro/sessions/cli/ + Kiro IDE app storage)",
     "git": "Git (commit history + dependency names)",
     "other_tools": (
         "Other AI tools' local logs (VS Code: Copilot Chat / Cline / Cody, "
@@ -82,8 +83,81 @@ def consented_sources(consent: dict) -> dict[str, bool]:
     return dict(consent.get("sources", {}))
 
 
-def print_disclosure() -> None:
-    """Print an abbreviated data-collection summary to stdout."""
+# Per-source disclosure text, keyed by ALL_SOURCES key so a subset can be
+# printed (e.g. when a new source is added after the user already calibrated).
+_DISCLOSURE_BLOCKS: dict[str, list[str]] = {
+    "claude_code": [
+        "Claude Code",
+        "  Read:    Session metadata from ~/.claude/projects/",
+        "  Derived: Session counts, tool ratios, model usage",
+        "  Never:   Raw prompts, responses, code, secrets",
+    ],
+    "cursor": [
+        "Cursor IDE",
+        "  Read:    AI tracking DB, plan file names, transcript sizes,",
+        "           composer session timestamps from Cursor's own",
+        "           state.vscdb (read-only; all storage generations)",
+        "  Derived: AI code counts, survival rate, composer ratios,",
+        "           session counts + hours + dates",
+        "  Never:   Code content, diffs, conversation bodies, prompts",
+    ],
+    "codex": [
+        "Codex CLI",
+        "  Read:    Session JSONL from ~/.codex/sessions/ — roles, models,",
+        "           tool-call names, timestamps, prompt word counts",
+        "  Derived: Session counts + hours, models, tool usage,",
+        "           prompt-length distribution",
+        "  Never:   Prompt text, responses, code, tool payloads",
+    ],
+    "kiro": [
+        "Kiro (CLI + IDE)",
+        "  Read:    Session metadata + transcript counts from",
+        "           ~/.kiro/sessions/cli/ and Kiro IDE app storage",
+        "           (tool names, timestamps; raw prompts reduced to",
+        "           word counts in-stream, text never kept)",
+        "  Derived: Session counts + hours, tool usage, subagent",
+        "           orchestration, prompt word counts, models (IDE)",
+        "  Never:   Prompt text, responses, code, secrets, titles",
+    ],
+    "git": [
+        "Git",
+        "  Read:    Commit log (oneline), dependency names",
+        "  Derived: Commit counts, languages, frameworks",
+        "  Never:   Diffs, file contents, source code, credentials",
+    ],
+    "other_tools": [
+        "Other AI tools — VS Code (Copilot Chat / Cline / Cody),",
+        "Continue, Aider, OpenCode, Windsurf, Zed, Antigravity, JetBrains AI, custom adapters",
+        "  Read:    Each tool's own local logs/storage (VS Code",
+        "           globalStorage/workspaceStorage, ~/.continue, repo",
+        "           .aider history, Zed conversations, ...)",
+        "  Derived: Session counts + timestamps where the tool exposes",
+        "           them; file counts/presence otherwise — fidelity is",
+        "           declared per tool in Provenance, never invented",
+        "  Never:   Prompts, responses, code, secrets",
+    ],
+    "local_models": [
+        "Local model runtimes (Ollama, LM Studio, llama.cpp)",
+        "  Read:    Model manifests/caches + usage counters the runtime",
+        "           itself writes (e.g. ~/.ollama/history line count)",
+        "  Derived: Installed model names, prompt/chat counts",
+        "  Never:   Prompt or chat content",
+    ],
+    "claude_desktop": [
+        "Claude Desktop (experimental, low-fidelity, opt-in)",
+        "  Read:    Install presence, MCP server names from config",
+        "  Derived: Integration breadth signal (experimental only)",
+        "  Never:   Conversations (not stored locally), scores unaffected",
+    ],
+}
+
+
+def print_disclosure(only: list[str] | None = None) -> None:
+    """Print an abbreviated data-collection summary to stdout.
+
+    *only*: restrict the per-source blocks to these ALL_SOURCES keys
+    (used when prompting for sources added after the user calibrated).
+    """
     print()
     print("  DATA COLLECTION DISCLOSURE")
     print("  " + "=" * 42)
@@ -92,53 +166,80 @@ def print_disclosure() -> None:
     print("  to build your coding profile. Here is what")
     print("  each source accesses:")
     print()
-    print("  Claude Code")
-    print("    Read:    Session metadata from ~/.claude/projects/")
-    print("    Derived: Session counts, tool ratios, model usage")
-    print("    Never:   Raw prompts, responses, code, secrets")
-    print()
-    print("  Cursor IDE")
-    print("    Read:    AI tracking DB, plan file names, transcript sizes,")
-    print("             composer session timestamps from Cursor's own")
-    print("             state.vscdb (read-only; all storage generations)")
-    print("    Derived: AI code counts, survival rate, composer ratios,")
-    print("             session counts + hours + dates")
-    print("    Never:   Code content, diffs, conversation bodies, prompts")
-    print()
-    print("  Codex CLI")
-    print("    Read:    Session file count from ~/.codex/sessions/")
-    print("    Derived: Session count")
-    print("    Never:   Session content, prompts, responses")
-    print()
-    print("  Git")
-    print("    Read:    Commit log (oneline), dependency names")
-    print("    Derived: Commit counts, languages, frameworks")
-    print("    Never:   Diffs, file contents, source code, credentials")
-    print()
-    print("  Other AI tools — VS Code (Copilot Chat / Cline / Cody),")
-    print("  Continue, Aider, OpenCode, Windsurf, Zed, Antigravity, JetBrains AI, custom adapters")
-    print("    Read:    Each tool's own local logs/storage (VS Code")
-    print("             globalStorage/workspaceStorage, ~/.continue, repo")
-    print("             .aider history, Zed conversations, ...)")
-    print("    Derived: Session counts + timestamps where the tool exposes")
-    print("             them; file counts/presence otherwise — fidelity is")
-    print("             declared per tool in Provenance, never invented")
-    print("    Never:   Prompts, responses, code, secrets")
-    print()
-    print("  Local model runtimes (Ollama, LM Studio, llama.cpp)")
-    print("    Read:    Model manifests/caches + usage counters the runtime")
-    print("             itself writes (e.g. ~/.ollama/history line count)")
-    print("    Derived: Installed model names, prompt/chat counts")
-    print("    Never:   Prompt or chat content")
-    print()
-    print("  Claude Desktop (experimental, low-fidelity, opt-in)")
-    print("    Read:    Install presence, MCP server names from config")
-    print("    Derived: Integration breadth signal (experimental only)")
-    print("    Never:   Conversations (not stored locally), scores unaffected")
-    print()
+    for key, lines in _DISCLOSURE_BLOCKS.items():
+        if only is not None and key not in only:
+            continue
+        for line in lines:
+            print(f"  {line}")
+        print()
     print("  All data stays on your machine. Nothing is uploaded.")
     print("  Full details: DATA_COLLECTION.md")
     print()
+
+
+def _ask_source(key: str, description: str, existing: dict[str, bool]) -> bool:
+    """Ask one y/n consent question for a source, honoring saved answers.
+
+    Defaults to the saved answer when one exists; otherwise yes for
+    standard sources and no for opt-in-only ones.
+    """
+    opt_in_only = key in OPT_IN_ONLY_SOURCES
+    has_saved = key in existing
+    default_yes = existing[key] if has_saved else not opt_in_only
+    hint = "[Y/n]" if default_yes else "[y/N]"
+    current = f" (currently {'on' if existing[key] else 'off'})" if has_saved else ""
+    while True:
+        answer = input(f"  Allow scanning {description}?{current} {hint} ").strip().lower()
+        if answer in ("y", "yes") or (answer == "" and default_yes):
+            return True
+        elif answer in ("n", "no") or (answer == "" and not default_yes):
+            return False
+        else:
+            print("    Please enter y or n.")
+
+
+def default_enabled_sources() -> dict[str, bool]:
+    """Default source toggles when no consent exists: every standard
+    source on, opt-in-only sources off.
+
+    The single source of truth for scan defaults — ``run_adapters`` and
+    ``run_scan`` derive their fallback dicts from here so a new source
+    added to ALL_SOURCES can never silently miss a default. (A drifted
+    hand-written copy of this dict is exactly how the Kiro adapter
+    shipped consent-gated off everywhere.)
+    """
+    return {key: key not in OPT_IN_ONLY_SOURCES for key in ALL_SOURCES}
+
+
+def prompt_new_sources(missing: list[str], existing: dict[str, bool]) -> dict[str, bool]:
+    """Mini consent prompt for sources added since the user last calibrated.
+
+    Prints the disclosure for JUST those sources, asks each one (default
+    yes unless opt-in-only), and returns the FULL merged sources dict.
+    Existing answers are never re-asked or changed.
+    """
+    print()
+    plural = len(missing) > 1
+    print("  NEW DATA SOURCE" + ("S" if plural else ""))
+    print("  A scanner was added since you last calibrated. Your")
+    if plural:
+        print("  existing choices are unchanged; only the new sources")
+        print("  below need an answer.")
+    else:
+        print("  existing choices are unchanged; only the new source")
+        print("  below needs an answer.")
+    print_disclosure(only=missing)
+    sources = dict(existing)
+    for key in missing:
+        sources[key] = _ask_source(key, ALL_SOURCES[key], existing)
+    enabled = [k for k in missing if sources[k]]
+    print()
+    if enabled:
+        print(f"  Consent saved. Newly enabled: {', '.join(enabled)}")
+    else:
+        print("  Consent saved. New source" + ("s" if plural else "") + " left off.")
+    print()
+    return sources
 
 
 def prompt_consent(non_interactive: bool = False) -> dict[str, bool]:
@@ -169,21 +270,7 @@ def prompt_consent(non_interactive: bool = False) -> dict[str, bool]:
 
     sources: dict[str, bool] = {}
     for key, description in ALL_SOURCES.items():
-        opt_in_only = key in OPT_IN_ONLY_SOURCES
-        has_saved = key in existing
-        default_yes = existing[key] if has_saved else not opt_in_only
-        hint = "[Y/n]" if default_yes else "[y/N]"
-        current = f" (currently {'on' if existing[key] else 'off'})" if has_saved else ""
-        while True:
-            answer = input(f"  Allow scanning {description}?{current} {hint} ").strip().lower()
-            if answer in ("y", "yes") or (answer == "" and default_yes):
-                sources[key] = True
-                break
-            elif answer in ("n", "no") or (answer == "" and not default_yes):
-                sources[key] = False
-                break
-            else:
-                print("    Please enter y or n.")
+        sources[key] = _ask_source(key, description, existing)
 
     enabled = [k for k, v in sources.items() if v]
     print()

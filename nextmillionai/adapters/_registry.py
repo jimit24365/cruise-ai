@@ -14,6 +14,21 @@ from nextmillionai.adapters.claude_desktop import ClaudeDesktopAdapter
 from nextmillionai.adapters.codex import CodexAdapter
 from nextmillionai.adapters.cursor import CursorAdapter
 from nextmillionai.adapters.git import GitAdapter
+from nextmillionai.adapters.kiro import KiroAdapter
+
+# Adapter name → consent key. Everything outside the first-class tools
+# shares the "other_tools" group — one calibrate question, not eight
+# (same privacy class: local own-tool logs). Every value here MUST be a
+# key in ``consent.ALL_SOURCES`` (enforced by tests) — an unknown key
+# silently gates the adapter off, which is how the Kiro adapter first
+# shipped dead.
+_CONSENT_KEYS = {
+    "claude_code": "claude_code",
+    "cursor": "cursor",
+    "codex": "codex",
+    "kiro": "kiro",
+    "claude_desktop": "claude_desktop",
+}
 
 
 def get_session_adapters() -> list[Adapter]:
@@ -38,6 +53,10 @@ def get_session_adapters() -> list[Adapter]:
             app_user_dir=scanner_mod.CURSOR_APP_USER_DIR,
         ),
         CodexAdapter(sessions_dir=scanner_mod.CODEX_SESSIONS_DIR),
+        KiroAdapter(
+            sessions_dir=scanner_mod.KIRO_SESSIONS_DIR,
+            ide_dirs=scanner_mod.KIRO_IDE_DIRS,
+        ),
         # Experimental, low-fidelity, opt-in — default consent is OFF
         ClaudeDesktopAdapter(),
     ]
@@ -80,16 +99,9 @@ def run_adapters(
         - git_data: result from GitAdapter.scan_projects()
     """
     if enabled_sources is None:
-        enabled_sources = {
-            "claude_code": True,
-            "cursor": True,
-            "codex": True,
-            "git": True,
-            "other_tools": True,
-            "local_models": True,
-            # Experimental + low-fidelity: never enabled silently
-            "claude_desktop": False,
-        }
+        from nextmillionai.consent import default_enabled_sources
+
+        enabled_sources = default_enabled_sources()
 
     if collection_config is None:
         collection_config = {}
@@ -97,18 +109,8 @@ def run_adapters(
     all_sessions: list[Session] = []
     raw_data: dict[str, dict | None] = {}
 
-    # Map adapter names to consent keys. Everything outside the three
-    # first-class tools shares the "other_tools" group — one calibrate
-    # question, not eight (same privacy class: local own-tool logs).
-    _consent_keys = {
-        "claude_code": "claude_code",
-        "cursor": "cursor",
-        "codex": "codex",
-        "claude_desktop": "claude_desktop",
-    }
-
     for adapter in get_session_adapters():
-        consent_key = _consent_keys.get(adapter.name, "other_tools")
+        consent_key = _CONSENT_KEYS.get(adapter.name, "other_tools")
         if not enabled_sources.get(consent_key, False):
             raw_data[adapter.name] = None
             continue

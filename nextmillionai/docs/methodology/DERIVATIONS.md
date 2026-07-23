@@ -85,7 +85,7 @@ default flagged for hoisting + validation).
 
 **Why.** Higher leverage is fit, not better — staying at prompting is correct for tightly-coupled work. The thresholds are reasoned defaults marking qualitative shifts in how much structure carries the agents.
 
-**Basis / caveat.** Subagent/parallel evidence is Claude Code only.
+**Basis / caveat.** Subagent/parallel evidence from Claude Code (Task calls + run files) and Kiro (subagent child sessions).
 
 ### Build domain (map X) — indirect · measured
 
@@ -131,11 +131,11 @@ default flagged for hoisting + validation).
 
 ### Subagents dispatched — direct · measured
 
-**How it is derived.** Count of Task-tool dispatches per session, accumulated in the local ledger.
+**How it is derived.** Count of Task-tool dispatches (or subagent child sessions linked by parent_session_id) per session, accumulated in the local ledger.
 
 **Why.** A direct count of agents you sent off to work — the clearest loop-design signal.
 
-**Basis / caveat.** Claude Code only.
+**Basis / caveat.** Claude Code (Task calls + run files) and Kiro (subagent child sessions).
 
 ### Your session time — indirect · estimate
 
@@ -143,7 +143,7 @@ default flagged for hoisting + validation).
 
 **Why.** Active, engaged time is the meaningful unit — not wall-clock — so idle gaps are removed where measurable. The 8h span cap and 30-min idle threshold are reasoned defaults grounded in deep-work / flow research.
 
-**Basis / caveat.** True active time for Claude Code/Codex; open-session span (8h cap) for Cursor.
+**Basis / caveat.** True active time for Claude Code/Codex; open-session span (8h cap) for Cursor and Kiro. Subagent child sessions are agent runtime, never session time.
 
 **Research.** Newport (2016) — Deep Work — Sustained, uninterrupted focus is the real unit of output — behind the deep/marathon session metrics and the gap-based active-time estimator.
 
@@ -171,7 +171,7 @@ default flagged for hoisting + validation).
 
 **Why.** A signal of direction style, not quality.
 
-**Basis / caveat.** Claude Code/Codex only; Cursor prompt bodies are never read.
+**Basis / caveat.** Parsed-transcript tools — Claude Code, Codex, Kiro; Cursor prompt bodies are never read.
 
 
 ## AI collaboration

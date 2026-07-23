@@ -24,7 +24,18 @@ Everything nextmillionai reads, derives, and never touches.
 
 | What is read | Derived signals | Never touched |
 |---|---|---|
-| `~/.codex/sessions/` -- file count only | Session count | Session content, prompts, responses |
+| `~/.codex/sessions/*.jsonl` (flat + date-nested layouts) -- message roles/kinds, model names, tool-call names, timestamps, prompt word counts (text reduced to counts in-stream) | Session counts, hours, dates, models, tool usage, prompt-length distribution | Prompt text, response text, code blocks, tool input/output payloads |
+
+## Kiro
+
+| What is read | Derived signals | Never touched |
+|---|---|---|
+| **CLI:** `~/.kiro/sessions/cli/*.json` -- session_id, cwd (project path), created_at, updated_at, parent_session_id, session_created_reason, agent_name from session_state | Session count, hours (timestamp span capped at 8h), project paths, subagent dispatch count, agent name diversity | Title text (summarizes task — not read), permissions, full session_state beyond agent_name |
+| **CLI:** `~/.kiro/sessions/cli/*.jsonl` -- message kind counts (Prompt, AssistantMessage, ToolResults), tool names from `toolUse` blocks within AssistantMessage content | User/assistant message counts, tool call counts by name (shell, read, write, grep, jira, confluence, etc.), MCP tool diversity | Prompt text content, assistant response text, code blocks, tool input/output payloads |
+| **CLI:** `~/.kiro/sessions/cli/*.history` -- line count + word count per line | Prompt word counts (distribution of prompt lengths) | Actual prompt text (split into words only for counting — text never stored or transmitted) |
+| **IDE:** `~/Library/Application Support/Kiro/User/globalStorage/kiro.kiroagent/sessions/sessions.json` -- sessionId, dateCreated (ms timestamp), workspaceDirectory | Session count, project paths, session start timestamps | Session title, full session index metadata beyond listed fields |
+| **IDE:** `~/Library/Application Support/Kiro/User/globalStorage/kiro.kiroagent/sessions/<uuid>.json` -- sessionId, history[].message.role (user/assistant), history[].message user content (reduced to word counts in-stream, text never kept), history[].promptLogs[].modelTitle, autonomyMode, sessionType, workspaceDirectory | User/assistant message counts, prompt word counts (from user message content word count), model names, autonomy mode, session type | Prompt text content, assistant response text, completion payloads, full promptLogs beyond modelTitle |
+| **IDE:** `~/Library/Application Support/Kiro/User/globalStorage/kiro.kiroagent/workspace-sessions/<b64-path>/` -- same structure as sessions/ above | Same as IDE sessions above (workspace-scoped) | Same as IDE sessions above |
 
 ## Git
 

@@ -148,7 +148,7 @@ rather than a fabricated number.
 
 | Tier | Tools |
 |---|---|
-| First-class | Claude Code, Cursor (full composer history, all storage generations), Codex CLI, git |
+| First-class | Claude Code, Cursor (full composer history, all storage generations), Codex CLI, Kiro (CLI + IDE, deep fidelity), git |
 | Wider field | VS Code (Copilot Chat / Cline / Cody), Continue.dev, Aider, OpenCode, Windsurf, Zed AI, Antigravity, JetBrains AI |
 | Local models | Ollama, LM Studio, llama.cpp (GGUF caches) |
 

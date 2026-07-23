@@ -64,6 +64,7 @@ the install/distribution plan, and the post-launch roadmap. This folder is
 | Doc | For |
 |---|---|
 | [`../CONTRIBUTING.md`](../CONTRIBUTING.md) | Setup, how to raise a PR, the four gates. |
+| [`ADDING-A-TOOL.md`](ADDING-A-TOOL.md) | Wiring a new tool end to end: adapter, consent, displays, measurement, registries, tests. |
 | [`../CODE_OF_CONDUCT.md`](../CODE_OF_CONDUCT.md) · [`../CHANGELOG.md`](../CHANGELOG.md) | Conduct, release notes. |
 
 ## Marketing assets

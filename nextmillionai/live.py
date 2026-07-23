@@ -49,6 +49,7 @@ def discover_watch_paths() -> list:
         ("claude_code", home / ".claude" / "projects"),
         ("cursor_ide", home / ".cursor"),
         ("codex_cli", home / ".codex" / "sessions"),
+        ("kiro", home / ".kiro" / "sessions" / "cli"),
     ]
     paths = [(sid, p) for sid, p in candidates if p.is_dir()]
 

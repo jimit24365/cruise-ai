@@ -60,6 +60,16 @@ Standing rules, enforced in code and tests:
 | Read | JSONL: roles, timestamps, models, tool/function calls, prompt word counts |
 | Derived | sessions, hours, span, models, per-day activity |
 
+### Kiro — `deep`
+
+| | |
+|---|---|
+| Paths | **CLI:** `~/.kiro/sessions/cli/` (all OSes). **IDE:** `~/Library/Application Support/Kiro/User/globalStorage/kiro.kiroagent/` (macOS), `%APPDATA%/Kiro/User/globalStorage/kiro.kiroagent/` (Windows), `~/.config/Kiro/User/globalStorage/kiro.kiroagent/` (Linux). |
+| Generations | **CLI (Gen 1)**: `<uuid>.json` (metadata) + `<uuid>.jsonl` (transcript) + `<uuid>.history` (raw prompts). Subagent sessions linked via `parent_session_id` field in metadata. **IDE (Gen 2)**: `sessions/sessions.json` (index with dateCreated timestamps) + `sessions/<uuid>.json` (session data with history[]). Also `workspace-sessions/<b64-encoded-path>/` with same structure. |
+| Read | **CLI** — JSON metadata: session_id, cwd, created_at, updated_at, parent_session_id, session_created_reason, agent_name. JSONL transcript: message counts by kind (Prompt, AssistantMessage, ToolResults), tool names from `toolUse` blocks. History: prompt word counts only (text reduced to counts — never stored). **IDE** — Index: sessionId, dateCreated, workspaceDirectory. Session JSON: sessionId, history[].message.role, history[].promptLogs[].modelTitle, autonomyMode, sessionType. User message content reduced to word counts only. |
+| Derived | sessions, hours, span, prompts, tool calls by type (CLI only), agent name (CLI only), subagent dispatches (CLI parent_session_id chains), MCP tool diversity (CLI tool names, e.g. jira, confluence, gitlab), model names (IDE), autonomy mode (IDE), session type (IDE), per-day activity |
+| Notes | **CLI**: Kiro stores subagent sessions as separate files with `session_created_reason: "subagent"` and a `parent_session_id` linking to the orchestrating session — this is direct evidence of multi-agent orchestration. Agent names (e.g. `java-agent`, `jira-agent`) are extracted from `session_state.agent_name`. **IDE**: Does NOT expose tool-call names (completions stored as rendered strings). Timestamps come from `sessions.json` index (`dateCreated` in ms). Sessions are deduped with CLI by session_id. |
+
 ### git — `deep`
 
 | | |

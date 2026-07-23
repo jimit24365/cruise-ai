@@ -17,7 +17,13 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from nextmillionai.methodology_spec import PROVENANCE, SECTION_LABELS, build_spec
+# Always render THIS repo's registry — running the script directly puts
+# scripts/ (not the repo root) on sys.path, and a pip-installed copy of
+# the package elsewhere would silently win the import and render a stale
+# registry as a convincing no-op.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from nextmillionai.methodology_spec import PROVENANCE, SECTION_LABELS, build_spec  # noqa: E402
 
 OUT = (
     Path(__file__).resolve().parent.parent

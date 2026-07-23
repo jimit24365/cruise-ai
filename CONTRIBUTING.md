@@ -145,8 +145,15 @@ them.
 
 ## Adding a tool adapter
 
-The most-wanted contribution. The adapter contract, fidelity rules
-(deep / counts / presence — declared honestly, never invented), and a
-no-code custom-adapter config are documented in
-[docs/ADAPTERS.md](docs/ADAPTERS.md). Fixture-based tests live in
-`tests/test_adapters/test_local_tools.py` — copy one as a template.
+The most-wanted contribution. **Start with
+[docs/ADDING-A-TOOL.md](docs/ADDING-A-TOOL.md)** — the end-to-end wiring
+checklist (adapter → consent → displays → measurement → registries →
+tests). An adapter that skips the consent wiring passes its own unit
+tests but is silently never scanned in production; the checklist's test
+gates make that failure loud.
+
+The adapter *contract* — fidelity rules (deep / counts / presence —
+declared honestly, never invented) and a no-code custom-adapter config —
+is documented in [docs/ADAPTERS.md](docs/ADAPTERS.md). Fixture-based
+tests live in `tests/test_adapters/` — copy `test_kiro.py` (first-class)
+or one from `test_local_tools.py` (wider-field) as a template.

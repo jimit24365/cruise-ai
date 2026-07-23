@@ -48,6 +48,7 @@ def test_prompt_consent_yes_flag(tmp_path, monkeypatch):
     assert "claude_code" in sources
     assert "cursor" in sources
     assert "codex" in sources
+    assert "kiro" in sources
     assert "git" in sources
     assert "other_tools" in sources
     assert "local_models" in sources
@@ -101,6 +102,147 @@ def test_load_consent_returns_none_when_missing(tmp_path, monkeypatch):
     """load_consent returns None when no consent file exists."""
     monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
     assert load_consent() is None
+
+
+def test_default_enabled_sources_matches_all_sources(tmp_path, monkeypatch):
+    """default_enabled_sources() covers EVERY consent key: standard on,
+    opt-in-only off. The single source of truth for scan defaults — a
+    hand-written copy drifting from ALL_SOURCES is how kiro shipped dead."""
+    from nextmillionai.consent import ALL_SOURCES, OPT_IN_ONLY_SOURCES, default_enabled_sources
+
+    defaults = default_enabled_sources()
+    assert set(defaults) == set(ALL_SOURCES)
+    for key, value in defaults.items():
+        assert value is (key not in OPT_IN_ONLY_SOURCES)
+
+
+class TestNewSourceReprompt:
+    """Sources added to ALL_SOURCES after the user calibrated: asked once
+    interactively, never silently enabled, never silently persisted off."""
+
+    def _seed_consent_without_kiro(self):
+        save_consent(
+            {
+                "claude_code": True,
+                "cursor": True,
+                "codex": True,
+                "git": True,
+                "other_tools": True,
+                "local_models": True,
+                "claude_desktop": False,
+            }
+        )
+
+    def test_interactive_prompts_only_new_sources(self, tmp_path, monkeypatch):
+        from nextmillionai.build_profile import _ensure_calibrated
+
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        self._seed_consent_without_kiro()
+
+        prompts = []
+
+        def fake_input(prompt):
+            prompts.append(prompt)
+            return "y"
+
+        monkeypatch.setattr("builtins.input", fake_input)
+        monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+        enabled = _ensure_calibrated(non_interactive=False)
+
+        assert enabled["kiro"] is True
+        # ONLY the new source was asked
+        assert len(prompts) == 1
+        assert "Kiro" in prompts[0]
+        # and the answer is persisted
+        assert load_consent()["sources"]["kiro"] is True
+
+    def test_newly_enabled_source_invalidates_scan_cache(self, tmp_path, monkeypatch):
+        """Saying yes to a new source must take effect NOW — a scan cached
+        under the old consent scope can never serve the widened one."""
+        from nextmillionai.build_profile import _ensure_calibrated
+        from nextmillionai.paths import scan_results_path
+
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        self._seed_consent_without_kiro()
+        scan_results_path().parent.mkdir(parents=True, exist_ok=True)
+        scan_results_path().write_text("{}")
+
+        monkeypatch.setattr("builtins.input", lambda prompt: "y")
+        monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+        _ensure_calibrated(non_interactive=False)
+        assert not scan_results_path().exists()
+
+    def test_declined_new_source_keeps_scan_cache(self, tmp_path, monkeypatch):
+        """Answering no changes nothing scannable — the cache stays."""
+        from nextmillionai.build_profile import _ensure_calibrated
+        from nextmillionai.paths import scan_results_path
+
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        self._seed_consent_without_kiro()
+        scan_results_path().parent.mkdir(parents=True, exist_ok=True)
+        scan_results_path().write_text("{}")
+
+        monkeypatch.setattr("builtins.input", lambda prompt: "n")
+        monkeypatch.setattr("sys.stdin.isatty", lambda: True)
+        _ensure_calibrated(non_interactive=False)
+        assert scan_results_path().exists()
+
+    def test_non_tty_never_prompts(self, tmp_path, monkeypatch):
+        """cron/CI without --yes: stdin isn't a TTY — behaves like --yes
+        (off, unpersisted, notice) instead of crashing on input()."""
+        from nextmillionai.build_profile import _ensure_calibrated
+
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        self._seed_consent_without_kiro()
+        monkeypatch.setattr("sys.stdin.isatty", lambda: False)
+
+        def no_input(prompt):  # pragma: no cover - would fail the test
+            raise AssertionError("non-TTY run must never prompt")
+
+        monkeypatch.setattr("builtins.input", no_input)
+        enabled = _ensure_calibrated(non_interactive=False)
+        assert enabled["kiro"] is False
+        assert "kiro" not in load_consent()["sources"]
+
+    def test_non_interactive_stays_off_and_unpersisted(self, tmp_path, monkeypatch):
+        from nextmillionai.build_profile import _ensure_calibrated
+
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        self._seed_consent_without_kiro()
+
+        def no_input(prompt):  # pragma: no cover - would fail the test
+            raise AssertionError("non-interactive run must never prompt")
+
+        monkeypatch.setattr("builtins.input", no_input)
+        enabled = _ensure_calibrated(non_interactive=True)
+
+        # off for this run…
+        assert enabled["kiro"] is False
+        # …and NOT written to disk, so the next interactive run still asks
+        assert "kiro" not in load_consent()["sources"]
+
+    def test_saved_answer_is_sticky(self, tmp_path, monkeypatch):
+        from nextmillionai.build_profile import _ensure_calibrated
+
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        sources = {
+            "claude_code": True,
+            "cursor": True,
+            "codex": True,
+            "kiro": False,  # user already said no
+            "git": True,
+            "other_tools": True,
+            "local_models": True,
+            "claude_desktop": False,
+        }
+        save_consent(sources)
+
+        def no_input(prompt):  # pragma: no cover - would fail the test
+            raise AssertionError("an answered source must never re-prompt")
+
+        monkeypatch.setattr("builtins.input", no_input)
+        enabled = _ensure_calibrated(non_interactive=False)
+        assert enabled["kiro"] is False
 
 
 def test_no_outbound_network_calls():
