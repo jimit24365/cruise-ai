@@ -620,6 +620,246 @@ def _ensure_calibrated(non_interactive: bool = False) -> dict[str, bool]:
     return consented_sources(consent or {})
 
 
+def cmd_recommend(args) -> None:
+    """Show personalized recommendations from usage patterns."""
+    import json as _json
+    from cruise_ai.paths import scan_results_path, profile_path
+    from cruise_ai.recommendations.engine import recommend, CONFIDENCE_THRESHOLD
+
+    min_conf = getattr(args, "min_confidence", 60)
+    filter_cat = getattr(args, "category", None)
+    as_json = getattr(args, "json", False)
+
+    # Load sessions from scan results
+    sessions: list = []
+    profile: dict = {}
+    scan_results: dict = {}
+
+    sr_path = scan_results_path()
+    if sr_path.exists():
+        try:
+            scan_results = _json.loads(sr_path.read_text())
+        except Exception:
+            pass
+
+    pf_path = profile_path()
+    if pf_path.exists():
+        try:
+            profile = _json.loads(pf_path.read_text())
+        except Exception:
+            pass
+
+    # Get raw sessions from adapters (if available)
+    try:
+        from cruise_ai.scanner import run_adapters
+        from cruise_ai.consent import load_consent
+        from cruise_ai.adapters._registry import default_enabled_sources
+        enabled = load_consent()
+        sessions, _, _ = run_adapters(None, enabled, None)
+    except Exception:
+        sessions = []
+
+    if not sessions and not profile:
+        print("\n  No data found. Run `cruise-ai assess` first.\n")
+        return
+
+    recs = recommend(sessions, profile, scan_results)
+
+    # Filter by category
+    if filter_cat:
+        recs = [r for r in recs if r.category == filter_cat]
+
+    # Filter by confidence
+    recs = [r for r in recs if r.confidence >= min_conf]
+
+    if as_json:
+        import dataclasses
+        print(_json.dumps([dataclasses.asdict(r) for r in recs], indent=2))
+        return
+
+    if not recs:
+        print("\n  No recommendations found. Try running `cruise-ai assess` first.\n")
+        return
+
+    print(f"\n  ── cruise-ai recommendations ({len(recs)} found) ──\n")
+    priority_icons = {"high": "🔴", "medium": "🟡", "low": "🟢"}
+
+    for i, rec in enumerate(recs, 1):
+        icon = priority_icons.get(rec.priority, "⚪")
+        category_label = rec.category.replace("_", " ").title()
+        print(f"  {icon} [{i}] {rec.headline}")
+        print(f"       Category: {category_label} | Confidence: {rec.confidence}%")
+        print(f"       {rec.detail}")
+        if rec.savings_estimate:
+            tokens = rec.savings_estimate.get("tokens", 0)
+            cost = rec.savings_estimate.get("cost_usd", 0)
+            if tokens:
+                print(f"       💾 Est. savings: {tokens:,} tokens/period")
+            if cost:
+                print(f"       💰 Est. cost saved: ${cost:.2f}")
+        print()
+
+    print(f"  Run `cruise-ai teach` to learn how to act on any recommendation.")
+    print()
+
+
+def cmd_dashboard(args) -> None:
+    """Show AI usage analytics dashboard."""
+    import json as _json
+    from cruise_ai.paths import scan_results_path, profile_path
+    from cruise_ai.recommendations.analytics import dashboard
+
+    as_json = getattr(args, "json", False)
+
+    sessions: list = []
+    profile: dict = {}
+
+    pf_path = profile_path()
+    if pf_path.exists():
+        try:
+            profile = _json.loads(pf_path.read_text())
+        except Exception:
+            pass
+
+    try:
+        from cruise_ai.scanner import run_adapters
+        from cruise_ai.consent import load_consent
+        enabled = load_consent()
+        sessions, _, _ = run_adapters(None, enabled, None)
+    except Exception:
+        sessions = []
+
+    if not sessions and not profile:
+        print("\n  No data found. Run `cruise-ai assess` first.\n")
+        return
+
+    data = dashboard(sessions, profile)
+
+    if as_json:
+        print(_json.dumps(data, indent=2))
+        return
+
+    u = data["usage"]
+    cost = data["cost"]
+    models = data["models"]
+    projects = data["projects"]
+    tools = data["tools"]
+
+    print("\n  ── cruise-ai dashboard ──\n")
+    print(f"  📊 Usage")
+    print(f"     Sessions:       {u['total_sessions']:>8,}")
+    print(f"     Prompts:        {u['total_prompts']:>8,}")
+    print(f"     Responses:      {u['total_responses']:>8,}")
+    print(f"     Tokens (est.):  {u['total_tokens_estimated']:>8,}")
+    print(f"     Avg prompt len: {u['avg_prompt_words']:>8} words")
+    print()
+    print(f"  💰 Cost Estimate")
+    print(f"     Total: ~${cost['total_estimated_cost_usd']:.2f}")
+    if cost.get("by_model"):
+        for model, cost_val in sorted(cost["by_model"].items(), key=lambda x: -x[1])[:3]:
+            print(f"     {model}: ~${cost_val:.2f}")
+    print()
+    if models:
+        print(f"  🤖 Models")
+        for model, count in sorted(models.items(), key=lambda x: -x[1])[:5]:
+            print(f"     {model}: {count} sessions")
+        print()
+    if tools:
+        print(f"  🔧 AI Tools")
+        for tool, count in sorted(tools.items(), key=lambda x: -x[1])[:5]:
+            print(f"     {tool}: {count} sessions")
+        print()
+    if projects:
+        print(f"  📁 Top Projects")
+        for proj, count in sorted(projects.items(), key=lambda x: -x[1])[:5]:
+            print(f"     {proj}: {count} sessions")
+        print()
+
+
+def cmd_teach(args) -> None:
+    """Show step-by-step tutorials for AI productivity patterns."""
+    topic = getattr(args, "topic", None)
+
+    tutorials = {
+        "plan_mode": (
+            "Plan Mode\n"
+            "─────────\n"
+            "Ask the AI to outline steps before executing.\n\n"
+            "Usage:\n"
+            "  Kiro:         /plan  or 'Plan first:'\n"
+            "  Claude Code:  'Think step by step' or 'Plan before acting'\n"
+            "  Cursor:       'Outline the approach first'\n\n"
+            "When to use:\n"
+            "  ✓ Multi-file refactors    ✓ Architecture changes\n"
+            "  ✓ Complex features        ✓ When you want to review first\n\n"
+            "Result: Fewer correction cycles, fewer wasted tokens."
+        ),
+        "subagents": (
+            "Subagent Delegation\n"
+            "───────────────────\n"
+            "Run independent tasks in parallel.\n\n"
+            "Usage:\n"
+            "  Kiro:         subagent tool or pipeline stages\n"
+            "  Claude Code:  Task / dispatch tool\n\n"
+            "Good delegation targets:\n"
+            "  ✓ Writing tests    ✓ Updating docs    ✓ Running linters\n"
+            "  ✓ Generating fixtures   ✓ Security review\n\n"
+            "Key: delegate tasks that don't need your input."
+        ),
+        "context_engineering": (
+            "Context Engineering\n"
+            "───────────────────\n"
+            "Make the AI load your context automatically.\n\n"
+            "Files by tool:\n"
+            "  Kiro:         .kiro/steering/*.md\n"
+            "  Kiro Skills:  .kiro/skills/*/SKILL.md\n"
+            "  Claude Code:  CLAUDE.md\n"
+            "  Cursor:       .cursorrules\n"
+            "  Any:          AGENTS.md\n\n"
+            "What to include:\n"
+            "  ✓ Architecture decisions    ✓ Coding standards\n"
+            "  ✓ Key file locations        ✓ Domain terminology\n"
+            "  ✓ Test patterns             ✓ Project-specific patterns"
+        ),
+        "skills": (
+            "Kiro Skills\n"
+            "───────────\n"
+            "Reusable instruction sets that encode workflows.\n\n"
+            "Structure: .kiro/skills/<name>/SKILL.md\n\n"
+            "A Skill file contains:\n"
+            "  - When to use (triggers)\n"
+            "  - Step-by-step instructions\n"
+            "  - Tool usage patterns\n"
+            "  - Output expectations\n\n"
+            "Generate one: `cruise-ai recommend` → look for 'create_skill' actions."
+        ),
+    }
+
+    if not topic:
+        print("\n  ── cruise-ai teach ──\n")
+        print("  Available topics:\n")
+        for t in tutorials:
+            print(f"    cruise-ai teach {t}")
+        print()
+        print("  Or run `cruise-ai recommend` to get personalized suggestions.")
+        print()
+        return
+
+    if topic not in tutorials:
+        from difflib import get_close_matches
+        close = get_close_matches(topic, tutorials.keys(), n=1, cutoff=0.5)
+        if close:
+            print(f"\n  Unknown topic '{topic}'. Did you mean '{close[0]}'?\n")
+        else:
+            print(f"\n  Unknown topic '{topic}'. Run `cruise-ai teach` to see available topics.\n")
+        return
+
+    print(f"\n  ── cruise-ai teach: {topic} ──\n")
+    for line in tutorials[topic].split("\n"):
+        print(f"  {line}")
+    print()
+
+
 def cmd_calibrate(args) -> None:
     """Onboarding: privacy disclosure, per-source consent, collection scope."""
     from cruise_ai import cliui
@@ -2366,6 +2606,53 @@ def main():
         "--yes", "-y", action="store_true", help="Skip the first-time confirmation prompt"
     )
 
+    # ── recommend ───────────────────────────────────────────────────────
+    recommend_p = subparsers.add_parser(
+        "recommend",
+        help="Get personalized recommendations based on your AI usage patterns",
+    )
+    recommend_p.add_argument(
+        "--category",
+        type=str,
+        default=None,
+        choices=["analytics", "token_optimization", "skills", "project_memory", "learning"],
+        help="Filter recommendations by category",
+    )
+    recommend_p.add_argument(
+        "--json",
+        action="store_true",
+        help="Output as JSON",
+    )
+    recommend_p.add_argument(
+        "--min-confidence",
+        type=int,
+        default=60,
+        help="Minimum confidence threshold (default: 60)",
+    )
+
+    # ── dashboard ───────────────────────────────────────────────────────
+    dashboard_p = subparsers.add_parser(
+        "dashboard",
+        help="Show AI usage analytics dashboard",
+    )
+    dashboard_p.add_argument(
+        "--json",
+        action="store_true",
+        help="Output as JSON",
+    )
+
+    # ── teach ────────────────────────────────────────────────────────────
+    teach_p = subparsers.add_parser(
+        "teach",
+        help="Get step-by-step tutorials for AI productivity patterns",
+    )
+    teach_p.add_argument(
+        "topic",
+        nargs="?",
+        default=None,
+        help="Topic to learn (e.g. plan_mode, subagents, context_engineering, skills)",
+    )
+
     network = subparsers.add_parser(
         "network",
         help="Network utilities: serve a self-hosted registry, check status",
@@ -2428,6 +2715,9 @@ def main():
         "reset",
         "network",
         "sync",
+        "recommend",
+        "dashboard",
+        "teach",
     ]
     argv = sys.argv[1:]
     first = next((a for a in argv if not a.startswith("-")), None)
@@ -2466,6 +2756,12 @@ def main():
         cmd_network(args)
     elif args.command == "sync":
         cmd_sync(args)
+    elif args.command == "recommend":
+        cmd_recommend(args)
+    elif args.command == "dashboard":
+        cmd_dashboard(args)
+    elif args.command == "teach":
+        cmd_teach(args)
     elif args.command == "guide":
         from cruise_ai import cliui
 
