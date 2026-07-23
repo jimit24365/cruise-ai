@@ -173,6 +173,18 @@
       </div>`;
     }
 
+    // Kiro (first-class; payload lives under otherTools)
+    const kr = data.otherTools && data.otherTools.kiro;
+    if (kr) {
+      html += `<div class="section">
+        <h2>Kiro</h2>
+        <div class="meta-row"><span class="meta-key">Sessions</span><span class="meta-val">${kr.total_sessions || 0}</span></div>
+        <div class="meta-row"><span class="meta-key">CLI / IDE</span><span class="meta-val">${kr.cli_sessions || 0} / ${kr.ide_sessions || 0}</span></div>
+        <div class="meta-row"><span class="meta-key">Messages</span><span class="meta-val">${(kr.total_user_msgs || 0) + (kr.total_assistant_msgs || 0)}</span></div>
+        <div class="meta-row"><span class="meta-key">Subagent sessions</span><span class="meta-val">${kr.subagent_sessions || 0}</span></div>
+      </div>`;
+    }
+
     // Git
     const git = data.git;
     if (git && git.projects) {

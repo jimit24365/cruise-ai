@@ -49,19 +49,12 @@ def test_every_entry_is_well_formed():
             assert t["tier"] in ("deep", "counts", "presence"), f"bad tier: {t}"
 
 
-def test_raw_declared_fidelity_matches_documented_tier(tmp_path):
-    """First-class adapters that self-declare fidelity in raw_data must
-    match their documented TOOL_COVERAGE tier — the wider-field check
-    above never covered first-class adapters, so a docs/code tier drift
-    there was silent (provenance would even downgrade an undeclared one
-    to 'counts' while the docs said 'deep')."""
+def _seeded_kiro_adapter(tmp_path):
+    """A KiroAdapter over a minimal synthetic store (never a real ~/.kiro)."""
     import json
 
     from nextmillionai.adapters.kiro import KiroAdapter
 
-    declared = {t["id"]: t["tier"] for grp in TOOL_COVERAGE.values() for t in grp}
-
-    # Kiro: scan a minimal synthetic store and compare the raw declaration.
     kiro_dir = tmp_path / "cli"
     kiro_dir.mkdir()
     sid = "fidelity-test-0000-0000-000000000001"
@@ -85,14 +78,50 @@ def test_raw_declared_fidelity_matches_documented_tier(tmp_path):
             }
         )
     )
-    adapter = KiroAdapter(sessions_dir=kiro_dir, ide_dirs=[])
-    adapter.scan()
-    raw = adapter.raw_data()
-    assert raw is not None and raw.get("fidelity"), (
-        "kiro raw_data must self-declare fidelity — provenance downgrades an "
-        "undeclared payload to 'counts'"
-    )
-    assert raw["fidelity"] == declared["kiro"], (
-        f"kiro: raw fidelity '{raw['fidelity']}' != TOOL_COVERAGE tier "
-        f"'{declared['kiro']}' — fix the drift."
-    )
+    return KiroAdapter(sessions_dir=kiro_dir, ide_dirs=[])
+
+
+# First-class adapters whose raw_data self-declares fidelity, with a
+# factory building each over a synthetic store. When a new first-class
+# adapter self-declares fidelity, ADD IT HERE — otherwise its docs/code
+# tier drift is silent (the wider-field check above never covers
+# first-class adapters, and provenance downgrades an undeclared payload
+# to 'counts' while the docs may say 'deep').
+_SELF_DECLARING_FIRST_CLASS = {
+    "kiro": _seeded_kiro_adapter,
+}
+
+
+def test_raw_declared_fidelity_matches_documented_tier(tmp_path):
+    declared = {t["id"]: t["tier"] for grp in TOOL_COVERAGE.values() for t in grp}
+    for name, factory in _SELF_DECLARING_FIRST_CLASS.items():
+        adapter = factory(tmp_path)
+        adapter.scan()
+        raw = adapter.raw_data()
+        assert raw is not None and raw.get("fidelity"), (
+            f"{name}: raw_data must self-declare fidelity — provenance "
+            "downgrades an undeclared payload to 'counts'"
+        )
+        assert raw["fidelity"] == declared[name], (
+            f"{name}: raw fidelity '{raw['fidelity']}' != TOOL_COVERAGE tier "
+            f"'{declared[name]}' — fix the drift."
+        )
+
+
+def test_first_class_tools_named_in_served_scope():
+    """The served /methodology scope copy must name every first-class
+    session tool — a stale 'Claude Code, Cursor, and Codex' string there
+    contradicts the coverage table two sections away (exactly what
+    happened when Kiro landed)."""
+    from nextmillionai.methodology_spec import SCOPE
+
+    first_class = [t["label"] for t in TOOL_COVERAGE.get("firstClass", [])]
+    body = SCOPE["body"]
+    for label in first_class:
+        if label.lower() == "git":
+            continue  # git is covered by "your git history" phrasing
+        assert label in body, (
+            f"first-class tool '{label}' missing from the served scope copy "
+            f"(methodology_spec.SCOPE body) — the /methodology page would "
+            f"under-state coverage."
+        )

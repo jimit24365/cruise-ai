@@ -41,7 +41,7 @@ MODE_ORDER = [
 
 # Complete data-source coverage, by fidelity tier (deep / counts / presence).
 # Faithful to docs/ADAPTERS.md (the canonical contract). The engine reads far
-# more than the three first-class tools; a guard (tests/test_tool_coverage.py)
+# more than the first-class tools; a guard (tests/test_tool_coverage.py)
 # asserts every adapter the registry instantiates is listed here AND that each
 # declared tier matches the adapter's own fidelity — so the methodology can
 # never under-state, or mis-tier, what the engine actually reads.
@@ -74,7 +74,8 @@ TOOL_COVERAGE: dict[str, list[dict]] = {
             "reads": "CLI JSON metadata + JSONL transcripts + history files: "
             "sessions, timestamps, tool calls by type, prompt word counts, "
             "subagent orchestration (parent_session_id), agent names; "
-            "IDE session JSON: sessions, timestamps, autonomy mode",
+            "IDE session JSON: sessions, timestamps, message counts, "
+            "prompt word counts, models, autonomy mode",
         },
         {
             "id": "git",
@@ -340,7 +341,7 @@ SCOPE = {
     "title": "Who this is calibrated for",
     "body": "These scores are calibrated for people who build software with AI — "
     "software developers and AI engineers. Every signal is read from your AI coding "
-    "tools — Claude Code, Cursor, and Codex first-class, plus a wider field of editors, "
+    "tools — Claude Code, Cursor, Codex, and Kiro first-class, plus a wider field of editors, "
     "CLIs, and local model runtimes — and your git history, and every band is anchored "
     "to research on software developers.",
     "notYet": "If you build with AI in other ways — no-code tools, design, product, "

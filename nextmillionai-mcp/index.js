@@ -211,7 +211,7 @@ Runs non-interactively with maximal defaults (all standard sources, all repos, a
 
 server.tool(
   'nma_assess',
-  `Scan local AI coding sessions (Claude Code, Cursor, Codex first-class, plus a wider field of editors, CLIs, and local model runtimes) + git and score the profile: six dimensions, archetypes, work modes, positioning, wrapped stats. Entirely local — no upload. Returns a structured summary plus the coverage report (what wasn't collected and the knob to widen it).`,
+  `Scan local AI coding sessions (Claude Code, Cursor, Codex, Kiro first-class, plus a wider field of editors, CLIs, and local model runtimes) + git and score the profile: six dimensions, archetypes, work modes, positioning, wrapped stats. Entirely local — no upload. Returns a structured summary plus the coverage report (what wasn't collected and the knob to widen it).`,
   {
     rescan: z.boolean().optional().describe('Force a fresh scan, ignoring cache.'),
     code: z.boolean().optional().describe('Opt-in local code scan: repo files reduced to metrics only (never stored, never sent).'),

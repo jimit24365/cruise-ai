@@ -1,11 +1,19 @@
-# Pre-merge dual review — required before any push or merge
+# Pre-merge dual review — required before anything ships
 
-Every change that ships — to `main` or to any shared branch — goes
-through **two independent reviews before it is pushed**: one engineering
-lens, one product lens. Findings are fixed and **each fix is pinned by a
-regression test** before anything leaves the machine. The four gates are
-necessary but not sufficient; they prove the code runs, not that it is
-right.
+Every change that ships — a merge into `main`, or any push to `main` or
+a shared branch — goes through **two independent reviews first**: one
+engineering lens, one product lens. Findings are fixed and **each fix is
+pinned by a regression test** before anything leaves the machine.
+Iteration pushes to your own fork branch are exempt while you work; the
+review happens before the work ships. The four gates are necessary but
+not sufficient; they prove the code runs, not that it is right.
+
+**Who runs it:** the person shipping. For an external PR, the merging
+maintainer runs both reviews on the integrated branch before merge
+(contributors are welcome to run them pre-PR, but it isn't required of
+them). The core owner's GitHub review may serve as one of the two
+lenses. Reviewers can be humans or agents — what matters is that each
+gets a fresh context, independent of the author.
 
 **Why this exists (the receipts):** the Kiro integration
 ([PR #6](https://github.com/nextmillionai/nextmillionai/pull/6)) had all
@@ -24,8 +32,7 @@ All of them would have shipped.
    sandbox `$HOME` (never real data). Don't spend reviewers on code you
    haven't verified yourself.
 2. **Run BOTH reviews, independently.** Fresh context each — a reviewer
-   who watched the code being written inherits its assumptions. Human or
-   agent; what matters is independence and the adversarial stance.
+   who watched the code being written inherits its assumptions.
 3. **Verdicts are `SHIP` / `SHIP WITH NITS` / `BLOCK`.** Any blocker or
    major finding stops the push. Fix it, add a regression test that
    pins the fix, re-run the gates. Nits are judgment calls — fix or
@@ -38,9 +45,12 @@ All of them would have shipped.
    fixed, what was consciously not fixed. Reviews that found nothing are
    suspicious — say what was probed.
 
-Exception: pure-docs typo fixes and generated-artifact regens may ship
-on gates alone. If the change touches product source, tests, consent
-copy, or any contract doc, it gets the full treatment.
+**Exception (narrow and exhaustive):** a change is exempt only if it
+touches nothing but Markdown prose fixing typos, links, or formatting,
+or regenerates an `@generated` artifact with no source change. Everything
+else — product source, tests, scripts, CI config, static assets, consent
+copy, substantive doc rewrites, contract docs — gets the full treatment.
+When in doubt, it isn't exempt.
 
 ## Prompt 1 — the engineering review
 
@@ -80,7 +90,9 @@ doors especially hard: anything written to the durable ledger
 (~/.nextmillionai/data/history/), published, or persisted in a form a later
 release cannot correct.
 
-RUN the four gates yourself:
+RUN the four gates yourself (CONTRIBUTING.md § Local checks is the
+canonical list; the fingerprint is CI-enforced inside pytest but run it
+directly too — you want the value, not just a pass):
   python3 -m pytest tests/ -q -p no:cacheprovider --override-ini addopts=
   uv tool run ruff check nextmillionai/ tests/ && uv tool run ruff format --check nextmillionai/ tests/
   uv run --python 3.12 --with mypy --no-project -- python -m mypy nextmillionai --ignore-missing-imports
@@ -104,6 +116,11 @@ unmeasurable is insufficient, never estimated, and unmeasured input never
 moves a measured number; (4) one assessment JSON renders both views.
 
 CONTEXT: {what the branch does, from the user's point of view.}
+
+Review scope: `git diff {base}..HEAD`, plus every SERVED surface those
+files feed (/profile, /report, /methodology, /how-it-works, /preview,
+the MCP tool descriptions) — the diff shows what changed; the served
+surfaces show what users are now told.
 
 Review from the product side — read the actual files, don't assume:
 1. CONSENT & DISCLOSURE: does every consent/disclosure string match what

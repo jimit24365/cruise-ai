@@ -86,9 +86,12 @@ docs: update architecture diagram
 6. **Open the PR** against `nextmillionai/nextmillionai:main`. Fill in the
    PR template (what / why / schema impact / tests). Link any issue
    with `Closes #123`.
-7. **Review**: CI runs the four gates; a core owner reviews. Address
-   feedback by pushing more commits to the same branch. Merges are
-   **squash** — your local commit history can stay messy.
+7. **Review**: CI runs the four gates; a core owner reviews, and before
+   merge the maintainer runs the dual pre-merge review
+   ([docs/PRE-MERGE-REVIEW.md](docs/PRE-MERGE-REVIEW.md)) on the
+   integrated branch. Address feedback by pushing more commits to the
+   same branch. Merges are **squash** — your local commit history can
+   stay messy.
 
 First time? The `good first issue` and `adapters` labels are the
 easiest entry points, and a new tool adapter is the most-wanted
@@ -96,19 +99,28 @@ contribution.
 
 ## Pull requests
 
-- No direct pushes to `main`.
-- Every PR requires green CI and at least 1 review.
-- Use squash merge.
-- **Before any push or merge, run the dual pre-merge review** —
+- No direct pushes to `main` for contributors. Maintainers integrating
+  external work or shipping process/docs may push dual-reviewed commits
+  directly; everything else goes through a PR.
+- Every PR requires green CI **plus the dual pre-merge review** —
   [docs/PRE-MERGE-REVIEW.md](docs/PRE-MERGE-REVIEW.md): one engineering
   review + one product review, independent of the author, with every
-  blocker/major finding fixed and pinned by a regression test first. The
-  four gates prove the code runs; the reviews are what catch metric
-  regressions, one-way doors, and docs that contradict shipped behavior.
+  blocker/major finding fixed and pinned by a regression test before
+  merge. The core owner's GitHub review may serve as one of the two
+  lenses. For external PRs, the merging maintainer runs both reviews on
+  the integrated branch before merge; contributors are welcome (not
+  required) to run them pre-PR.
+- The review applies **before merging — and before any push to `main` or
+  a shared branch**. Iteration pushes to your own fork branch don't need
+  it. Narrow docs-only exception — see the doc.
+- Use squash merge (exception: preserving an external contributor's
+  commit authorship may warrant a merge commit — maintainer's call).
 
 ## Local checks
 
-Run these before opening a PR — the same four gates CI runs:
+Run these before opening a PR — the same four gates CI runs (the formula
+fingerprint is enforced inside pytest; the pre-merge review also runs
+`python3 scripts/formula_fingerprint.py` directly as its own check):
 
 ```bash
 ruff check .

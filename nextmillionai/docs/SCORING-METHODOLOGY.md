@@ -2,7 +2,7 @@
 
 How nextmillionai measures how you build with AI. Every score, archetype, work
 mode, title, and **positioning** is derived from observable signals in **your local
-AI coding sessions and git history** — Claude Code, Cursor, and Codex first-class,
+AI coding sessions and git history** — Claude Code, Cursor, Codex, and Kiro first-class,
 plus a wider field of editors, CLIs, and local model runtimes (full list in §1) —
 never from resumes, self-reported skills, social profiles, or any uploaded data. The scoring
 engine implements [`TAXONOMY.md`](../../TAXONOMY.md); when the taxonomy changes, this
@@ -175,7 +175,7 @@ model switched off.
 
 ## 1. Data collection
 
-We read far more than the three first-class tools. Every adapter declares a
+We read far more than the first-class tools. Every adapter declares a
 **fidelity tier** — `deep` (real session boundaries + timestamps parsed),
 `counts` (countable artifacts, no parseable sessions), or `presence` (install
 detectable, usage marked *insufficient*). Counts/presence sources never invent
@@ -187,7 +187,7 @@ sessions and never move a score. The canonical, per-layout contract is
 | Claude Code (`~/.claude/projects/`) | deep | JSONL transcripts + subagent runs | messages, roles, models, tool-call names, timestamps, real `cwd`, plan mode, dispatches |
 | Cursor (`~/.cursor/`) | deep | `ai-code-tracking.db`, plans, composer history (all storage generations) | AI/human/composer lines, AI%, modes, plans |
 | Codex (`~/.codex/sessions/`) | deep | session files | messages, models, tool calls, timestamps |
-| Kiro (`~/.kiro/sessions/cli/` + IDE app storage) | deep | CLI session JSON/JSONL + prompt word counts; IDE session JSON | messages, tool calls, subagent links, word counts, models (IDE) |
+| Kiro (`~/.kiro/sessions/cli/` + IDE app storage) | deep | CLI session JSON/JSONL + `.history` prompt files (word counts only); IDE session JSON | messages, tool calls (CLI), subagent links, word counts, timestamps, models (IDE) |
 | Git (discovered repos) | deep | log + config files | commits, branches, languages/frameworks |
 | Wider field — Aider, Cline, Continue.dev, Copilot Chat, Zed AI, OpenCode | deep | each tool's own local session files | sessions, message counts, timestamps, models |
 | Wider field — Windsurf, Cody, Antigravity | counts | store/trajectory file counts + last activity | presence + activity (sessions *insufficient*) |
