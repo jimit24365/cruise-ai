@@ -52,6 +52,7 @@ def _detect_tool_patterns(sessions: list[Any]) -> list[Recommendation]:
                 f"A Skill file would standardize how these are used and reduce setup prompts."
             ),
             action_type="create_skill",
+            trust_level="heuristic",
             confidence=72,
             evidence=f"{len(frequent_tools)} tools used in >60% of {total_sessions} sessions",
             priority="medium",
@@ -88,6 +89,7 @@ def _detect_tool_patterns(sessions: list[Any]) -> list[Recommendation]:
                     f"A combined Skill could streamline this workflow."
                 ),
                 action_type="create_skill",
+            trust_level="heuristic",
                 confidence=68,
                 evidence=f"{together_count}/{min_individual} sessions use both {t1} and {t2}",
                 priority="medium",
@@ -127,6 +129,7 @@ def _detect_underutilized_tools(sessions: list[Any]) -> list[Recommendation]:
                 f"For discovering which files to look at, glob is faster (one call vs many greps)."
             ),
             action_type="adopt_tool",
+            trust_level="observed",
             confidence=65,
             evidence=f"{grep_count} grep/search calls, 0 glob/find_files calls",
             priority="low",
@@ -148,6 +151,7 @@ def _detect_underutilized_tools(sessions: list[Any]) -> list[Recommendation]:
                 f"can run in parallel via subagents while you focus on the core work."
             ),
             action_type="try_subagent_dispatch",
+            trust_level="heuristic",
             confidence=68,
             evidence=f"0 subagent dispatches, {avg_user_msgs:.0f} avg turns/session over {total_sessions} sessions",
             priority="medium",

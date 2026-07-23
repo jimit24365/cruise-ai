@@ -860,6 +860,49 @@ def cmd_teach(args) -> None:
     print()
 
 
+def cmd_feedback(args) -> None:
+    """Record or view feedback on recommendations."""
+    import json as _json
+    from cruise_ai.recommendations.feedback import record_feedback, get_feedback_summary
+
+    if getattr(args, "summary", False):
+        summary = get_feedback_summary()
+        if summary["total"] == 0:
+            print("\n  No feedback recorded yet.")
+            print("  Use `cruise-ai feedback acted --action-type <type>` after acting on a recommendation.\n")
+            return
+
+        print(f"\n  ── cruise-ai feedback summary ({summary['total']} entries) ──\n")
+        print("  By response:")
+        for resp, count in summary["by_response"].items():
+            print(f"    {resp}: {count}")
+        print("\n  By category:")
+        for cat, responses in summary["by_category"].items():
+            print(f"    {cat}: {responses}")
+        print()
+        return
+
+    response = getattr(args, "response", None)
+    action_type = getattr(args, "action_type", None)
+
+    if not response:
+        print("\n  Usage:")
+        print("    cruise-ai feedback acted --action-type compress_prompts")
+        print("    cruise-ai feedback dismissed --action-type model_routing")
+        print("    cruise-ai feedback --summary")
+        print()
+        return
+
+    if not action_type:
+        print("\n  Please specify --action-type (the recommendation you're providing feedback on).")
+        print("  Run `cruise-ai recommend --json` to see action_types.\n")
+        return
+
+    entry = record_feedback(action_type=action_type, category="", response=response)
+    print(f"\n  ✓ Feedback recorded: {response} → {action_type}")
+    print(f"    This will adjust future recommendation confidence.\n")
+
+
 def cmd_calibrate(args) -> None:
     """Onboarding: privacy disclosure, per-source consent, collection scope."""
     from cruise_ai import cliui
@@ -2653,6 +2696,28 @@ def main():
         help="Topic to learn (e.g. plan_mode, subagents, context_engineering, skills)",
     )
 
+    # ── feedback ─────────────────────────────────────────────────────────
+    feedback_p = subparsers.add_parser(
+        "feedback",
+        help="Provide feedback on recommendations (helps improve accuracy)",
+    )
+    feedback_p.add_argument(
+        "response",
+        nargs="?",
+        choices=["acted", "dismissed", "useful", "not_useful"],
+        help="Feedback type",
+    )
+    feedback_p.add_argument(
+        "--action-type",
+        type=str,
+        help="The action_type of the recommendation",
+    )
+    feedback_p.add_argument(
+        "--summary",
+        action="store_true",
+        help="Show feedback summary",
+    )
+
     network = subparsers.add_parser(
         "network",
         help="Network utilities: serve a self-hosted registry, check status",
@@ -2718,6 +2783,7 @@ def main():
         "recommend",
         "dashboard",
         "teach",
+        "feedback",
     ]
     argv = sys.argv[1:]
     first = next((a for a in argv if not a.startswith("-")), None)
@@ -2762,6 +2828,8 @@ def main():
         cmd_dashboard(args)
     elif args.command == "teach":
         cmd_teach(args)
+    elif args.command == "feedback":
+        cmd_feedback(args)
     elif args.command == "guide":
         from cruise_ai import cliui
 

@@ -165,6 +165,7 @@ def detect(
                 f"Run `cruise-ai dashboard` for the full breakdown."
             ),
             action_type="view_dashboard",
+            trust_level="heuristic",
             confidence=90,
             evidence=f"{stats['total_sessions']} sessions, {stats['total_user_msgs']} prompts analyzed",
             priority="medium",
@@ -197,6 +198,7 @@ def detect(
                         f"For routine tasks (formatting, simple edits), a cheaper model would suffice."
                     ),
                     action_type="model_routing",
+                    trust_level="observed",
                     confidence=75,
                     evidence=f"{expensive_pct:.0f}% of {sum(stats['models'].values())} sessions use premium models",
                     priority="medium",
@@ -226,6 +228,7 @@ def detect(
                 headline=f"{weekend_days}/{total_days} active days are weekends — high engagement",
                 detail="You're actively using AI tools on weekends, suggesting either high engagement or work-life balance opportunity.",
                 action_type="view_timeline",
+                trust_level="heuristic",
                 confidence=70,
                 evidence=f"{weekend_days} weekend days out of {total_days} total active days",
                 priority="low",

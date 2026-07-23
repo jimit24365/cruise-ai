@@ -51,6 +51,24 @@ def recommend(
         except Exception:
             continue  # never crash on a single detector failure
 
+    # Apply feedback-based adjustments
+    try:
+        from cruise_ai.recommendations.feedback import (
+            get_dismissed_action_types,
+            confidence_adjustment,
+        )
+        dismissed = get_dismissed_action_types()
+        for rec in all_recs:
+            # Suppress dismissed recommendations
+            if rec.action_type in dismissed:
+                rec.confidence = 0  # will be filtered by gate
+            else:
+                # Adjust confidence based on historical feedback
+                adj = confidence_adjustment(rec.action_type)
+                rec.confidence = max(0, min(100, rec.confidence + adj))
+    except Exception:
+        pass  # feedback system failure should never block recommendations
+
     # Confidence gate
     all_recs = [r for r in all_recs if r.confidence >= CONFIDENCE_THRESHOLD]
 

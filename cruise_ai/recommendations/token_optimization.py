@@ -52,6 +52,7 @@ def _detect_long_prompts(sessions: list[Any]) -> list[Recommendation]:
                 f"Consider: steering docs for repeated context, or prompt compression."
             ),
             action_type="compress_prompts",
+            trust_level="observed",
             confidence=80 if long_pct > 30 else 65,
             evidence=f"{long_count}/{total_prompts} prompts > {LONG_PROMPT_WORDS} words",
             priority="high" if long_pct > 40 else "medium",
@@ -74,6 +75,7 @@ def _detect_long_prompts(sessions: list[Any]) -> list[Recommendation]:
                 f"AND uses fewer total tokens (the AI doesn't have to re-read context each time)."
             ),
             action_type="split_prompts",
+            trust_level="heuristic",
             confidence=72,
             evidence=f"{very_long_count} prompts > {VERY_LONG_PROMPT_WORDS} words",
             priority="medium",
@@ -131,6 +133,7 @@ def _detect_duplicate_context(sessions: list[Any]) -> list[Recommendation]:
                     f"file would provide this automatically."
                 ),
                 action_type="create_steering_doc",
+                trust_level="heuristic",
                 confidence=70 if dominant_pct > 60 else 62,
                 evidence=f"{dominant_count}/{len(first_prompt_lengths)} sessions cluster at {dominant_bucket}-{dominant_bucket+50} word first prompts",
                 priority="high" if total_wasted > 50_000 else "medium",
@@ -188,6 +191,7 @@ def _detect_model_opportunity(sessions: list[Any], profile: dict) -> list[Recomm
                 f"well on sonnet/haiku/flash-tier models at 80-95% lower cost."
             ),
             action_type="model_routing",
+            trust_level="observed",
             confidence=75,
             evidence=f"{expensive_count}/{total} sessions use premium-tier models",
             priority="medium",
@@ -212,6 +216,7 @@ def _detect_model_opportunity(sessions: list[Any], profile: dict) -> list[Recomm
                 f"response time and cost without sacrificing quality."
             ),
             action_type="model_routing",
+            trust_level="observed",
             confidence=65,
             evidence=f"100% of {total} sessions use a single model",
             priority="low",

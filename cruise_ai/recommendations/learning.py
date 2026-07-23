@@ -33,6 +33,7 @@ def _detect_learning_opportunities(sessions: list[Any], profile: dict) -> list[R
                 f"multi-turn correction loops. Especially valuable for multi-file changes."
             ),
             action_type="teach_plan_mode",
+            trust_level="observed",
             confidence=70,
             evidence=f"Plan mode at {plan_pct:.1f}% over {total_sessions} sessions",
             priority="medium",
@@ -67,6 +68,7 @@ def _detect_learning_opportunities(sessions: list[Any], profile: dict) -> list[R
                     f"independent tasks (tests, docs, formatting) while you work on the main task."
                 ),
                 action_type="teach_subagents",
+            trust_level="heuristic",
                 confidence=68,
                 evidence=f"0 subagent dispatches, {avg_turns:.0f} avg turns across {total_sessions} sessions",
                 priority="medium",
@@ -98,6 +100,7 @@ def _detect_learning_opportunities(sessions: list[Any], profile: dict) -> list[R
                 f"(steering docs, rules files, pinned context), much of this becomes automatic."
             ),
             action_type="teach_context_engineering",
+            trust_level="observed",
             confidence=65,
             evidence=f"Avg {avg_prompt_words} words/prompt over {total_sessions} sessions",
             priority="medium",

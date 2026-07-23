@@ -20,6 +20,7 @@ class Recommendation:
     teach_text: str = ""  # explanation for teach mode
     auto_action: str = ""  # what auto mode would do
     savings_estimate: dict[str, Any] = field(default_factory=dict)  # tokens, time, cost
+    trust_level: str = "heuristic"  # validated, observed, heuristic, experimental
 
 
 # Minimum confidence to emit a recommendation

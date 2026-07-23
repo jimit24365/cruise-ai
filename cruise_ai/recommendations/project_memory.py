@@ -66,6 +66,7 @@ def _detect_project_concentration(sessions: list[Any]) -> list[Recommendation]:
                     f"would eliminate this repetition."
                 ),
                 action_type="create_project_memory",
+                trust_level="observed",
                 confidence=75 if session_count >= 12 else 65,
                 evidence=f"{session_count} sessions, avg first prompt {avg_first_prompt:.0f} words in project '{proj}'",
                 priority="high" if repeated_tokens > 30_000 else "medium",
@@ -116,6 +117,7 @@ def _detect_cross_session_patterns(sessions: list[Any]) -> list[Recommendation]:
                 f"A workspace template or shared steering doc would standardize this setup."
             ),
             action_type="create_workspace_template",
+            trust_level="heuristic",
             confidence=65,
             evidence=f"{count}/{len(tool_sets)} sessions share the tool set [{tools_str}]",
             priority="low",
