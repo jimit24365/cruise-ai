@@ -103,9 +103,11 @@ _DISCLOSURE_BLOCKS: dict[str, list[str]] = {
     ],
     "codex": [
         "Codex CLI",
-        "  Read:    Session file count from ~/.codex/sessions/",
-        "  Derived: Session count",
-        "  Never:   Session content, prompts, responses",
+        "  Read:    Session JSONL from ~/.codex/sessions/ — roles, models,",
+        "           tool-call names, timestamps, prompt word counts",
+        "  Derived: Session counts + hours, models, tool usage,",
+        "           prompt-length distribution",
+        "  Never:   Prompt text, responses, code, tool payloads",
     ],
     "kiro": [
         "Kiro (CLI + IDE)",

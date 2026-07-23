@@ -24,7 +24,7 @@ Everything nextmillionai reads, derives, and never touches.
 
 | What is read | Derived signals | Never touched |
 |---|---|---|
-| `~/.codex/sessions/` -- file count only | Session count | Session content, prompts, responses |
+| `~/.codex/sessions/*.jsonl` (flat + date-nested layouts) -- message roles/kinds, model names, tool-call names, timestamps, prompt word counts (text reduced to counts in-stream) | Session counts, hours, dates, models, tool usage, prompt-length distribution | Prompt text, response text, code blocks, tool input/output payloads |
 
 ## Kiro
 
