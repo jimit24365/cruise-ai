@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Kiro (CLI + IDE) as a first-class source** — its own consent question,
+  deep fidelity: sessions, tool usage, prompt word counts, models (IDE),
+  and subagent orchestration via parent/child session links. Contributed
+  by @jimit24365 (adapter) with full pipeline integration.
+- **New-source consent flow.** Sources added after you calibrated are
+  asked once, individually, on your next interactive run — never enabled
+  silently, and a newly-granted source is scanned immediately (the stale
+  scan cache is dropped).
+- **`docs/ADDING-A-TOOL.md`** — the end-to-end contributor workflow for
+  tool integrations, plus test gates that fail loudly when an adapter's
+  consent wiring is incomplete.
+
+### Changed
+
+- **Measured inputs widened (no formula changes; fingerprint unchanged).**
+  Deep session sources beyond Claude Code/Cursor — Codex, Kiro, and deep
+  wider-field tools — now feed the session-derived metrics they were
+  already declared under in the signal registry (avg prompt words,
+  prompts/turns per session, terminal commands, MCP calls, model and tool
+  counts). Numbers can shift on upgrade for profiles with such sessions;
+  Claude Code/Cursor-only profiles are bit-identical.
+- Codex disclosure corrected: the adapter has parsed session JSONL
+  (roles, models, tool names, word counts) since it was deepened — the
+  docs previously understated this as "file count only".
+
 ## [1.0.0] - 2026-06-24
 
 First public release. nextmillionai is a local-first AI coding profile

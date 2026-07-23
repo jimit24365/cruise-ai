@@ -475,7 +475,8 @@ METRICS: list[dict] = [
         "reasoning": "Higher leverage is fit, not better — staying at prompting is correct "
         "for tightly-coupled work. The thresholds are reasoned defaults marking qualitative "
         "shifts in how much structure carries the agents.",
-        "basis": "Subagent/parallel evidence is Claude Code only.",
+        "basis": "Subagent/parallel evidence from Claude Code (Task calls + run files) "
+        "and Kiro (subagent child sessions).",
     },
     {
         "id": "build_domain",
@@ -586,10 +587,11 @@ METRICS: list[dict] = [
         "section": "your_numbers",
         "type": "direct",
         "provenance": "measured",
-        "derivation": "Count of Task-tool dispatches per session, accumulated in the local ledger.",
+        "derivation": "Count of Task-tool dispatches (or subagent child sessions linked by "
+        "parent_session_id) per session, accumulated in the local ledger.",
         "reasoning": "A direct count of agents you sent off to work — the clearest "
         "loop-design signal.",
-        "basis": "Claude Code only.",
+        "basis": "Claude Code (Task calls + run files) and Kiro (subagent child sessions).",
     },
     {
         "id": "totalActiveHours",
@@ -602,7 +604,8 @@ METRICS: list[dict] = [
         "reasoning": "Active, engaged time is the meaningful unit — not wall-clock — so idle "
         "gaps are removed where measurable. The 8h span cap and 30-min idle threshold are "
         "reasoned defaults grounded in deep-work / flow research.",
-        "basis": "True active time for Claude Code/Codex; open-session span (8h cap) for Cursor.",
+        "basis": "True active time for Claude Code/Codex; open-session span (8h cap) for "
+        "Cursor and Kiro. Subagent child sessions are agent runtime, never session time.",
         "citations": ["newport", "flow"],
     },
     {
@@ -635,7 +638,8 @@ METRICS: list[dict] = [
         "provenance": "measured",
         "derivation": "Mean word count over parsed prompts.",
         "reasoning": "A signal of direction style, not quality.",
-        "basis": "Claude Code/Codex only; Cursor prompt bodies are never read.",
+        "basis": "Parsed-transcript tools — Claude Code, Codex, Kiro; Cursor prompt "
+        "bodies are never read.",
     },
     # ── AI collaboration ──
     {

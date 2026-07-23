@@ -113,7 +113,8 @@ _DISCLOSURE_BLOCKS: dict[str, list[str]] = {
         "Kiro (CLI + IDE)",
         "  Read:    Session metadata + transcript counts from",
         "           ~/.kiro/sessions/cli/ and Kiro IDE app storage",
-        "           (tool names, timestamps, prompt word counts)",
+        "           (tool names, timestamps; raw prompts reduced to",
+        "           word counts in-stream, text never kept)",
         "  Derived: Session counts + hours, tool usage, subagent",
         "           orchestration, prompt word counts, models (IDE)",
         "  Never:   Prompt text, responses, code, secrets, titles",
@@ -218,11 +219,15 @@ def prompt_new_sources(missing: list[str], existing: dict[str, bool]) -> dict[st
     Existing answers are never re-asked or changed.
     """
     print()
-    plural = "S" if len(missing) > 1 else ""
-    print(f"  NEW DATA SOURCE{plural}")
+    plural = len(missing) > 1
+    print("  NEW DATA SOURCE" + ("S" if plural else ""))
     print("  A scanner was added since you last calibrated. Your")
-    print("  existing choices are unchanged; only the new source" + plural.lower() + " below")
-    print("  need an answer.")
+    if plural:
+        print("  existing choices are unchanged; only the new sources")
+        print("  below need an answer.")
+    else:
+        print("  existing choices are unchanged; only the new source")
+        print("  below needs an answer.")
     print_disclosure(only=missing)
     sources = dict(existing)
     for key in missing:
@@ -232,7 +237,7 @@ def prompt_new_sources(missing: list[str], existing: dict[str, bool]) -> dict[st
     if enabled:
         print(f"  Consent saved. Newly enabled: {', '.join(enabled)}")
     else:
-        print("  Consent saved. New source" + (plural.lower() or "") + " left off.")
+        print("  Consent saved. New source" + ("s" if plural else "") + " left off.")
     print()
     return sources
 

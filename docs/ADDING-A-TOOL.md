@@ -150,6 +150,11 @@ name to `_RAW_METRIC_TOOLS` instead — folding it too would double-count.
   **This is a hardline** (`docs/HARDLINES.md` §2 — inputs are a field's
   definition): get the owner's explicit confirmation first and say so in
   the commit message.
+- `methodology_spec.py`: if a metric's tool scope changed, update its
+  `basis` (and `derivation`) strings in METRICS too — **that registry,
+  not signal_registry, is what renders on the served `/methodology`
+  page**. A stale "Claude Code only" basis there contradicts the shipped
+  measurement two sections away from the tool-coverage table.
 - Regenerate: `python3 scripts/render_methodology_registry.py` and
   commit `DERIVATIONS.md` if it changed. Gate:
   `tests/test_methodology_doc.py`.

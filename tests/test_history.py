@@ -282,3 +282,78 @@ def test_parallel_from_overlapping_subagent_runs():
     # Per-project footprint pools the parent session WITH its runs:
     # the orchestrating session + 3 subagents = 4 agents working there
     assert orch["perProject"]["/p"]["maxParallel"] == 4
+
+
+class TestSubagentChildLedger:
+    """Subagent CHILD sessions (kiro-style orchestration) are agent
+    runtime in the ledger — never the user's own sessions or hours."""
+
+    def _child(self, sid: str, minutes: int):
+        from datetime import datetime, timedelta, timezone
+
+        from nextmillionai.adapters._base import Session
+
+        start = datetime(2026, 7, 1, 10, 0, tzinfo=timezone.utc)
+        return Session(
+            tool="kiro",
+            session_id=sid,
+            started_at=start,
+            ended_at=start + timedelta(minutes=minutes),
+            user_msgs=1,
+            assistant_msgs=1,
+            extras={"is_subagent": True, "parent_session_id": "parent-1"},
+        )
+
+    def _parent(self, minutes: int = 60):
+        from datetime import datetime, timedelta, timezone
+
+        from nextmillionai.adapters._base import Session
+
+        start = datetime(2026, 7, 1, 9, 0, tzinfo=timezone.utc)
+        return Session(
+            tool="kiro",
+            session_id="parent-1",
+            started_at=start,
+            ended_at=start + timedelta(minutes=minutes),
+            user_msgs=5,
+            assistant_msgs=5,
+        )
+
+    def test_children_book_as_agent_runtime_not_sessions(self, tmp_path, monkeypatch):
+        from nextmillionai.history import ledger_totals, update_session_ledger
+
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        ledger = update_session_ledger(
+            [self._parent(60), self._child("c1", 30), self._child("c2", 45)]
+        )
+        totals = ledger_totals(ledger)
+
+        assert totals["sessions"] == 1  # the parent only
+        assert totals["estimatedHours"] == 1.0  # 60 min, children excluded
+        assert totals["agentRuns"] == 2
+        assert totals["agentHours"] == round(75 / 60.0, 1)
+
+    def test_subagent_flag_survives_remerge(self, tmp_path, monkeypatch):
+        """A later rescan must never demote a recorded child to a user
+        session (the flag is one-way, like every ledger max-guard)."""
+        from nextmillionai.history import ledger_totals, update_session_ledger
+
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        update_session_ledger([self._child("c1", 30)])
+        # Re-merge the same session WITHOUT the extras (pruned metadata)
+        from datetime import datetime, timedelta, timezone
+
+        from nextmillionai.adapters._base import Session
+
+        start = datetime(2026, 7, 1, 10, 0, tzinfo=timezone.utc)
+        bare = Session(
+            tool="kiro",
+            session_id="c1",
+            started_at=start,
+            ended_at=start + timedelta(minutes=30),
+            user_msgs=1,
+        )
+        ledger = update_session_ledger([bare])
+        totals = ledger_totals(ledger)
+        assert totals["sessions"] == 0
+        assert totals["agentRuns"] == 1

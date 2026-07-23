@@ -828,3 +828,64 @@ class TestAttributeSubagentDispatches:
         claude = Session(tool="claude_code", session_id="c1", tool_calls_by_type={"task": 3})
         attribute_subagent_dispatches([claude])
         assert claude.tool_calls_by_type["task"] == 3
+
+
+class TestFoldReviewFixes:
+    """Regressions pinned by the pre-merge dual review."""
+
+    def test_model_count_includes_cursor_by_model(self):
+        """The raw-side rebuild must include cursor ai_code.byModel —
+        adding a kiro source must never DECREASE modelCount."""
+        from nextmillionai.aggregator import fold_session_metrics
+
+        cursor_raw = {"ai_code": {"byModel": {"gpt-4.1": 5, "claude-3.7-sonnet": 3}}}
+        normalized = {"modelCount": 2}
+        kiro = _kiro_session("k1", user_msgs=1, word_counts=[5], models=["Claude Sonnet 4"])
+        fold_session_metrics(normalized, [kiro], None, cursor_raw)
+        assert normalized["modelCount"] == 3  # 2 cursor labels + 1 kiro label
+
+    def test_no_word_count_sessions_never_dilute_avg_prompt_words(self):
+        """A deep tool exposing message counts but no prompt text (Cline,
+        Continue, ...) must not drag avgPromptWords down — unmeasured
+        never moves measured."""
+        from nextmillionai.aggregator import fold_session_metrics
+
+        claude_raw = {
+            "sessions": [{"userMessages": 4, "userWordCount": 60}],
+            "models_used": {},
+        }
+        normalized = {"avgPromptWords": 15}
+        cline = Session(tool="cline", session_id="c1", user_msgs=20)  # no word counts
+        fold_session_metrics(normalized, [cline], claude_raw, None)
+        assert normalized["avgPromptWords"] == 15  # 60/4, undiluted
+
+    def test_synthetic_task_credit_is_not_a_tool_measure(self):
+        """attribute_subagent_dispatches injects a 'task' key; that alone
+        must not claim a measured terminalCommandCount=0 for a source
+        that exposes no tool names (kiro IDE)."""
+        from nextmillionai.aggregator import (
+            attribute_subagent_dispatches,
+            fold_session_metrics,
+        )
+
+        parent = _kiro_session("k1", user_msgs=2, word_counts=[5, 5], extras={"source": "ide"})
+        child = _kiro_session(
+            "k2", extras={"is_subagent": True, "parent_session_id": "k1", "source": "ide"}
+        )
+        sessions = [parent, child]
+        attribute_subagent_dispatches(sessions)
+        assert parent.tool_calls_by_type == {"task": 1}
+
+        normalized: dict = {}
+        fold_session_metrics(normalized, sessions, None, None)
+        assert "terminalCommandCount" not in normalized
+
+    def test_parent_lookup_is_tool_scoped(self):
+        """A cross-tool session-id collision must never credit another
+        tool's session with a dispatch."""
+        from nextmillionai.aggregator import attribute_subagent_dispatches
+
+        claude_twin = Session(tool="claude_code", session_id="same-id")
+        child = _kiro_session("k2", extras={"is_subagent": True, "parent_session_id": "same-id"})
+        attribute_subagent_dispatches([claude_twin, child])
+        assert "task" not in claude_twin.tool_calls_by_type  # kiro parent absent → no credit

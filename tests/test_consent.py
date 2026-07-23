@@ -146,6 +146,7 @@ class TestNewSourceReprompt:
             return "y"
 
         monkeypatch.setattr("builtins.input", fake_input)
+        monkeypatch.setattr("sys.stdin.isatty", lambda: True)
         enabled = _ensure_calibrated(non_interactive=False)
 
         assert enabled["kiro"] is True
@@ -167,6 +168,7 @@ class TestNewSourceReprompt:
         scan_results_path().write_text("{}")
 
         monkeypatch.setattr("builtins.input", lambda prompt: "y")
+        monkeypatch.setattr("sys.stdin.isatty", lambda: True)
         _ensure_calibrated(non_interactive=False)
         assert not scan_results_path().exists()
 
@@ -181,8 +183,26 @@ class TestNewSourceReprompt:
         scan_results_path().write_text("{}")
 
         monkeypatch.setattr("builtins.input", lambda prompt: "n")
+        monkeypatch.setattr("sys.stdin.isatty", lambda: True)
         _ensure_calibrated(non_interactive=False)
         assert scan_results_path().exists()
+
+    def test_non_tty_never_prompts(self, tmp_path, monkeypatch):
+        """cron/CI without --yes: stdin isn't a TTY — behaves like --yes
+        (off, unpersisted, notice) instead of crashing on input()."""
+        from nextmillionai.build_profile import _ensure_calibrated
+
+        monkeypatch.setenv("NEXTMILLIONAI_HOME", str(tmp_path))
+        self._seed_consent_without_kiro()
+        monkeypatch.setattr("sys.stdin.isatty", lambda: False)
+
+        def no_input(prompt):  # pragma: no cover - would fail the test
+            raise AssertionError("non-TTY run must never prompt")
+
+        monkeypatch.setattr("builtins.input", no_input)
+        enabled = _ensure_calibrated(non_interactive=False)
+        assert enabled["kiro"] is False
+        assert "kiro" not in load_consent()["sources"]
 
     def test_non_interactive_stays_off_and_unpersisted(self, tmp_path, monkeypatch):
         from nextmillionai.build_profile import _ensure_calibrated

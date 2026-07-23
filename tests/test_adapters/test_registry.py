@@ -140,7 +140,15 @@ class TestConsentDerivedScan:
         monkeypatch.setattr(scanner_mod, "KIRO_IDE_DIRS", [])
 
         enabled = prompt_consent(non_interactive=True)
-        enabled["git"] = False  # keep the test off the real filesystem
+        # The property under test is the consent-derived dict carrying
+        # kiro=True and run_adapters honoring it. Every OTHER source is
+        # forced off so the test never reads the developer's real stores
+        # (~/.claude, ~/.cursor, ~/.codex, git — conftest only guards
+        # cursor app storage and kiro).
+        assert enabled["kiro"] is True
+        for key in enabled:
+            if key != "kiro":
+                enabled[key] = False
         sessions, raw, _ = run_adapters(enabled_sources=enabled)
 
         kiro_sessions = [s for s in sessions if s.tool == "kiro"]
@@ -157,8 +165,9 @@ class TestConsentDerivedScan:
         monkeypatch.setattr(scanner_mod, "KIRO_IDE_DIRS", [])
 
         enabled = prompt_consent(non_interactive=True)
-        enabled["kiro"] = False
-        enabled["git"] = False
+        # All sources off (incl. kiro): nothing may touch real stores.
+        for key in enabled:
+            enabled[key] = False
         sessions, raw, _ = run_adapters(enabled_sources=enabled)
 
         assert [s for s in sessions if s.tool == "kiro"] == []

@@ -100,7 +100,7 @@ DERIVED: dict = {
         "Claude Code only — other tools don't expose plan mode (stated on card)",
     ),
     "avgPromptsPerSession": _d(
-        ["claude_code.sessions", "codex.sessions", "kiro.sessions"],
+        ["claude_code.sessions", "codex.sessions", "kiro.sessions", "other_tools.sessions"],
         "mean parsed user prompts per session",
         "parsed-transcript tools only; Cursor bodies never read",
     ),

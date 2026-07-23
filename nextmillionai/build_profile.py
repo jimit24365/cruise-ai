@@ -581,7 +581,10 @@ def _ensure_calibrated(non_interactive: bool = False) -> dict[str, bool]:
 
         saved = consented_sources(consent)
         missing = [k for k in ALL_SOURCES if k not in saved]
-        if missing and not non_interactive:
+        # A non-TTY stdin (cron, CI, piped) can never answer a prompt —
+        # treat it like --yes: new sources stay off, no EOFError.
+        can_prompt = not non_interactive and sys.stdin.isatty()
+        if missing and can_prompt:
             sources = prompt_new_sources(missing, saved)
             save_consent(sources)
             consent = load_consent()
@@ -593,15 +596,17 @@ def _ensure_calibrated(non_interactive: bool = False) -> dict[str, bool]:
 
                 scan_results_path().unlink(missing_ok=True)
         elif missing:
-            # --yes with an existing consent: new sources stay OFF for this
-            # run and are deliberately NOT persisted — writing False here
-            # would disarm the interactive mini-prompt on the next real run.
+            # Non-interactive with an existing consent: new sources stay
+            # OFF for this run and are deliberately NOT persisted — writing
+            # False here would disarm the mini-prompt on the next real run.
             from nextmillionai.paths import cli_invocation
 
             print(
                 f"  New data source(s) available: {', '.join(missing)} — not"
                 f" scanned until you consent. Run"
-                f" `{cli_invocation()} calibrate` to enable."
+                f" `{cli_invocation()} assess` without --yes to answer just"
+                f" the new question, or `{cli_invocation()} calibrate` to"
+                f" review all sources."
             )
             consent = dict(consent)
             consent["sources"] = {**saved, **{k: False for k in missing}}
@@ -654,6 +659,12 @@ def cmd_calibrate(args) -> None:
     added = sorted(k for k, v in sources.items() if v and not before.get(k, False))
     removed = sorted(k for k, v in sources.items() if not v and before.get(k, False))
     if before and (added or removed):
+        if added:
+            # A widened scope can never be served by the cached scan —
+            # same rule as the new-source mini-prompt in _ensure_calibrated.
+            from nextmillionai.paths import scan_results_path
+
+            scan_results_path().unlink(missing_ok=True)
         change = []
         if added:
             change.append("added: " + ", ".join(added))

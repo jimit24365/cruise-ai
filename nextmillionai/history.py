@@ -69,6 +69,10 @@ def update_session_ledger(sessions: list[Session]) -> dict:
             "end": s.ended_at.isoformat() if s.ended_at else None,
             "task": (s.tool_calls_by_type or {}).get("task", 0),
             "userMsgs": s.user_msgs,
+            # Subagent CHILD session (kiro-style orchestration): agent
+            # runtime, never the user's own session — ledger_totals books
+            # it under agentRuns/agentHours, not sessions/hours.
+            "subagent": bool(extras.get("is_subagent")),
             # Subagent runtime (measured from agent-*.jsonl transcripts)
             "agentRuns": extras.get("subagentRuns", 0) or 0,
             "agentMin": extras.get("agentMinutes", 0) or 0,
@@ -83,6 +87,7 @@ def update_session_ledger(sessions: list[Session]) -> dict:
         }
         # Never let a re-scan of a pruned/empty store erase measured work
         old = ledger.get(key, {})
+        entry["subagent"] = entry["subagent"] or bool(old.get("subagent"))
         entry["task"] = max(entry["task"], old.get("task", 0) or 0)
         entry["agentRuns"] = max(entry["agentRuns"], old.get("agentRuns", 0) or 0)
         entry["agentMin"] = max(entry["agentMin"], old.get("agentMin", 0) or 0)
@@ -192,7 +197,6 @@ def ledger_totals(ledger: dict) -> dict:
     latest: str | None = None
 
     for entry in ledger.values():
-        sessions += 1
         start, end = entry.get("start"), entry.get("end")
         if start:
             if earliest is None or start < earliest:
@@ -215,6 +219,14 @@ def ledger_totals(ledger: dict) -> dict:
                 dur = min(max((b - a).total_seconds() / 60.0, 0), 480)
             except (ValueError, TypeError):
                 dur = 0
+        if entry.get("subagent"):
+            # A subagent CHILD session is agent runtime the parent
+            # dispatched — never the user's own session or hours (same
+            # separation as Claude Code's agentRuns/agentMin).
+            agent_runs += 1
+            agent_minutes += dur
+            continue
+        sessions += 1
         if dur:
             minutes += dur
             longest_min = max(longest_min, dur)

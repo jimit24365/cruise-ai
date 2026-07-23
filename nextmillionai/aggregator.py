@@ -1418,7 +1418,6 @@ def fold_session_metrics(
     cl_words = sum(s.get("userWordCount", 0) for s in cl_sessions)
 
     fold_user = sum(s.user_msgs for s in human)
-    fold_words = sum(sum(s.prompt_word_counts) for s in human)
 
     # avgTurnsPerTask / avgPromptsPerSession: same inputs as the base
     # (user messages over sessions), claude raw + fold sessions combined.
@@ -1427,9 +1426,15 @@ def fold_session_metrics(
         normalized["avgTurnsPerTask"] = merged_turns
         normalized["avgPromptsPerSession"] = merged_turns
 
-    # avgPromptWords: total prompt words over total user messages.
-    if cl_user + fold_user > 0 and cl_words + fold_words > 0:
-        normalized["avgPromptWords"] = round((cl_words + fold_words) / (cl_user + fold_user))
+    # avgPromptWords: total prompt words over total user messages —
+    # counting ONLY sessions that measured word counts. A deep tool that
+    # exposes message counts but not prompt text (Cline, Continue, ...)
+    # must never dilute the denominator: unmeasured never moves measured.
+    word_sessions = [s for s in human if s.prompt_word_counts]
+    words_user = sum(s.user_msgs for s in word_sessions)
+    fold_words = sum(sum(s.prompt_word_counts) for s in word_sessions)
+    if cl_user + words_user > 0 and cl_words + fold_words > 0:
+        normalized["avgPromptWords"] = round((cl_words + fold_words) / (cl_user + words_user))
 
     # terminalCommandCount: additive; a measured zero only lands when the
     # source actually exposes tool-call names (never estimated).
@@ -1439,7 +1444,12 @@ def fold_session_metrics(
         for name, c in (s.tool_calls_by_type or {}).items()
         if name.lower() in _TERMINAL_TOOL_NAMES
     )
-    has_tool_measures = any(s.tool_calls_by_type for s in fold)
+    # "measured" means the SOURCE exposed tool names — the synthetic
+    # "task" credit injected by attribute_subagent_dispatches doesn't
+    # qualify (a kiro IDE parent still exposes no tool names).
+    has_tool_measures = any(
+        any(name != "task" for name in s.tool_calls_by_type) for s in fold if s.tool_calls_by_type
+    )
     if "terminalCommandCount" in normalized:
         normalized["terminalCommandCount"] += fold_terminal
     elif has_tool_measures:
@@ -1450,8 +1460,10 @@ def fold_session_metrics(
     normalized["mcpToolCalls"] = normalized.get("mcpToolCalls", 0) + fold_mcp
 
     # modelCount: rebuild the raw-side name set (same reads as the base:
-    # claude models_used keys + cursor conversation models), union fold.
+    # claude models_used keys + cursor ai_code.byModel + cursor
+    # conversation models — scanner.py compute_normalized), union fold.
     raw_models: set[str] = set((claude_data or {}).get("models_used") or {})
+    raw_models.update(((cursor_data or {}).get("ai_code") or {}).get("byModel") or {})
     convos = (cursor_data or {}).get("conversations") or {}
     raw_models.update(convos.get("models") or {})
     fold_models = {m for s in fold for m in s.models if m}
@@ -1486,17 +1498,21 @@ def attribute_subagent_dispatches(sessions: list[Session]) -> None:
     from one place. ``max()`` guards a future adapter that records both a
     dispatch tool call and child sessions. A pruned/missing parent is
     skipped: no parent measured, no invented dispatch (the children still
-    count as sessions).
+    enter the ledger as agent runtime).
     """
-    by_id = {s.session_id: s for s in sessions if s.session_id}
-    children: dict[str, int] = {}
+    # Keyed by (tool, id): parent/child links only resolve within the
+    # same tool — a cross-tool session-id collision must never credit a
+    # different tool's session.
+    by_id = {(s.tool, s.session_id): s for s in sessions if s.session_id}
+    children: dict[tuple, int] = {}
     for s in sessions:
         if s.extras.get("is_subagent"):
             pid = s.extras.get("parent_session_id")
             if isinstance(pid, str) and pid:
-                children[pid] = children.get(pid, 0) + 1
-    for pid, count in children.items():
-        parent = by_id.get(pid)
+                key = (s.tool, pid)
+                children[key] = children.get(key, 0) + 1
+    for key, count in children.items():
+        parent = by_id.get(key)
         if parent is not None:
             tc = parent.tool_calls_by_type
             tc["task"] = max(tc.get("task", 0), count)
