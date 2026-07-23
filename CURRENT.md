@@ -33,6 +33,7 @@ registry. Mission: reverse hiring on proof-based work.
 | Process | `docs/proposals/` | methodology change proposals (draft→review→accept); `scripts/proposals.py` to create/compare/render. The reviewable path for any hardline-contract change |
 | Contract | `docs/ADAPTERS.md` | tool coverage: every tool, versions/generations, exact reads, fidelity |
 | Process | `docs/ADDING-A-TOOL.md` | contributor workflow: wiring a new tool end to end (adapter → consent → displays → fold → registries → tests) |
+| Process | `docs/PRE-MERGE-REVIEW.md` | required dual review (engineering + product prompts) before any push/merge; findings fixed + regression-tested first |
 | Roadmap | `docs/DEEP-FIDELITY.md` | plan to raise tools from counts→deep (per-tool path + reusable infra), never faking what a tool doesn't expose |
 | Contract | `docs/SYNC.md` | multi-device merge rule (dedupe by stable IDs, scores never merge) |
 | Feature | `ENRICHMENT-PROMPT.md`, `CODE-INTELLIGENCE.md` | enrichment + `--code` scan |

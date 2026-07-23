@@ -99,6 +99,12 @@ contribution.
 - No direct pushes to `main`.
 - Every PR requires green CI and at least 1 review.
 - Use squash merge.
+- **Before any push or merge, run the dual pre-merge review** —
+  [docs/PRE-MERGE-REVIEW.md](docs/PRE-MERGE-REVIEW.md): one engineering
+  review + one product review, independent of the author, with every
+  blocker/major finding fixed and pinned by a regression test first. The
+  four gates prove the code runs; the reviews are what catch metric
+  regressions, one-way doors, and docs that contradict shipped behavior.
 
 ## Local checks
 

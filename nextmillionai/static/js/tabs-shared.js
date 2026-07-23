@@ -275,7 +275,7 @@ function renderTimeline(data){
   });
   var months=Object.keys(byMonth).sort().slice(-12);
   var maxU=Math.max.apply(null,months.map(function(m){return byMonth[m].sessions+byMonth[m].commits;}).concat([1]));
-  var toolLabels={claude_code:'Claude Code',cursor:'Cursor',codex:'Codex',aider:'Aider',cline:'Cline','continue':'Continue',copilot_chat:'Copilot',zed_ai:'Zed',antigravity:'Antigravity',opencode:'OpenCode',git:'git'};
+  var toolLabels={claude_code:'Claude Code',cursor:'Cursor',codex:'Codex',kiro:'Kiro',aider:'Aider',cline:'Cline','continue':'Continue',copilot_chat:'Copilot',zed_ai:'Zed',antigravity:'Antigravity',opencode:'OpenCode',git:'git'};
 
   var h='<div class="tl-strip">';
   months.forEach(function(m){

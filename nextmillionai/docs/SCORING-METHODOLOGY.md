@@ -187,6 +187,7 @@ sessions and never move a score. The canonical, per-layout contract is
 | Claude Code (`~/.claude/projects/`) | deep | JSONL transcripts + subagent runs | messages, roles, models, tool-call names, timestamps, real `cwd`, plan mode, dispatches |
 | Cursor (`~/.cursor/`) | deep | `ai-code-tracking.db`, plans, composer history (all storage generations) | AI/human/composer lines, AI%, modes, plans |
 | Codex (`~/.codex/sessions/`) | deep | session files | messages, models, tool calls, timestamps |
+| Kiro (`~/.kiro/sessions/cli/` + IDE app storage) | deep | CLI session JSON/JSONL + prompt word counts; IDE session JSON | messages, tool calls, subagent links, word counts, models (IDE) |
 | Git (discovered repos) | deep | log + config files | commits, branches, languages/frameworks |
 | Wider field — Aider, Cline, Continue.dev, Copilot Chat, Zed AI, OpenCode | deep | each tool's own local session files | sessions, message counts, timestamps, models |
 | Wider field — Windsurf, Cody, Antigravity | counts | store/trajectory file counts + last activity | presence + activity (sessions *insufficient*) |

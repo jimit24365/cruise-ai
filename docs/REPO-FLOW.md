@@ -10,7 +10,7 @@ chart in [SCORING-METHODOLOGY.md](../nextmillionai/docs/SCORING-METHODOLOGY.md#s
 ```mermaid
 flowchart TD
     subgraph local["YOUR MACHINE — no network in this path"]
-        S["AI coding sessions<br/>Claude Code · Cursor · Codex<br/>+ wider field (Aider, Cline, Continue,<br/>Copilot, OpenCode, Zed, Antigravity, …) + local runtimes"]
+        S["AI coding sessions<br/>Claude Code · Cursor · Codex · Kiro<br/>+ wider field (Aider, Cline, Continue,<br/>Copilot, OpenCode, Zed, Antigravity, …) + local runtimes"]
         G["git repos<br/>(commit log + manifests)"]
         A["adapters/*<br/>one per tool · fidelity declared"]
         SC["scanner.py + build_profile.run_scan<br/>normalized metrics"]
