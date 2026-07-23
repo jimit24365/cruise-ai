@@ -30,30 +30,6 @@ from pathlib import Path
 from nextmillionai.adapters._base import Session
 from nextmillionai.scanner import safe_read_text
 
-# Default paths — overridable via constructor for testing
-KIRO_SESSIONS_DIR = Path.home() / ".kiro" / "sessions" / "cli"
-
-# Kiro IDE stores sessions in Application Support (VS Code-family pattern)
-_KIRO_IDE_DIRS: list[Path] = []
-if sys.platform == "darwin":
-    _KIRO_IDE_DIRS.append(
-        Path.home()
-        / "Library"
-        / "Application Support"
-        / "Kiro"
-        / "User"
-        / "globalStorage"
-        / "kiro.kiroagent"
-    )
-elif sys.platform == "win32":
-    _appdata = os.environ.get("APPDATA", "")
-    if _appdata:
-        _KIRO_IDE_DIRS.append(Path(_appdata) / "Kiro" / "User" / "globalStorage" / "kiro.kiroagent")
-else:  # Linux
-    _KIRO_IDE_DIRS.append(
-        Path.home() / ".config" / "Kiro" / "User" / "globalStorage" / "kiro.kiroagent"
-    )
-
 
 def _log(msg: str) -> None:
     if os.environ.get("NEXTMILLIONAI_VERBOSE"):
@@ -86,8 +62,12 @@ class KiroAdapter:
         sessions_dir: Path | None = None,
         ide_dirs: list[Path] | None = None,
     ) -> None:
-        self._sessions_dir = sessions_dir or KIRO_SESSIONS_DIR
-        self._ide_dirs = ide_dirs if ide_dirs is not None else _KIRO_IDE_DIRS
+        # Late-bind the scanner path constants so test monkeypatching of
+        # nextmillionai.scanner.KIRO_* propagates even to bare KiroAdapter().
+        import nextmillionai.scanner as scanner_mod
+
+        self._sessions_dir = sessions_dir or scanner_mod.KIRO_SESSIONS_DIR
+        self._ide_dirs = ide_dirs if ide_dirs is not None else scanner_mod.KIRO_IDE_DIRS
         self._sessions: list[Session] = []
         self._raw: dict | None = None
 
@@ -146,6 +126,8 @@ class KiroAdapter:
 
         self._sessions = sessions
         self._raw = {
+            "label": "Kiro",
+            "fidelity": "deep",
             "total_sessions": parsed_count,
             "parsed_sessions": parsed_count,
             "cli_sessions": len(cli_sessions),

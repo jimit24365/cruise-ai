@@ -1349,6 +1349,7 @@ _SOURCE_LABELS = {
     "claude_code": "Claude Code",
     "cursor": "Cursor IDE",
     "codex": "Codex CLI",
+    "kiro": "Kiro",
     "git": "git",
     "other_tools": (
         "Other AI tools (VS Code Copilot/Cline/Cody, Continue, Aider, Windsurf, Zed, JetBrains)"

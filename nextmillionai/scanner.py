@@ -43,6 +43,27 @@ CURSOR_APP_USER_DIR = next(
     (p for p in _CURSOR_APP_CANDIDATES if p.is_dir()), _CURSOR_APP_CANDIDATES[0]
 )
 CODEX_SESSIONS_DIR = HOME / ".codex" / "sessions"
+KIRO_SESSIONS_DIR = HOME / ".kiro" / "sessions" / "cli"
+
+# Kiro IDE app storage (VS Code-family pattern) — platform-dependent.
+if sys.platform == "darwin":
+    KIRO_IDE_DIRS = [
+        HOME
+        / "Library"
+        / "Application Support"
+        / "Kiro"
+        / "User"
+        / "globalStorage"
+        / "kiro.kiroagent"
+    ]
+elif sys.platform == "win32":
+    KIRO_IDE_DIRS = (
+        [Path(os.environ["APPDATA"]) / "Kiro" / "User" / "globalStorage" / "kiro.kiroagent"]
+        if os.environ.get("APPDATA")
+        else []
+    )
+else:  # Linux
+    KIRO_IDE_DIRS = [HOME / ".config" / "Kiro" / "User" / "globalStorage" / "kiro.kiroagent"]
 
 # Framework detection maps (mirrored from history-scanner.js)
 JS_FRAMEWORK_MAP = {
@@ -1514,6 +1535,23 @@ def list_tools() -> None:
         print(f"    Sessions: {len(sessions)}")
     else:
         print(f"\n  Codex CLI: not found ({CODEX_SESSIONS_DIR})")
+
+    # Kiro (CLI + IDE)
+    kiro_ide_found = [d for d in KIRO_IDE_DIRS if d.exists()]
+    if KIRO_SESSIONS_DIR.exists() or kiro_ide_found:
+        print("\n  Kiro")
+        if KIRO_SESSIONS_DIR.exists():
+            kiro_sessions = [
+                f
+                for f in KIRO_SESSIONS_DIR.iterdir()
+                if f.suffix == ".json" and not f.name.endswith(".lock")
+            ]
+            print(f"    CLI Path:     {KIRO_SESSIONS_DIR}")
+            print(f"    CLI Sessions: {len(kiro_sessions)}")
+        for d in kiro_ide_found:
+            print(f"    IDE Storage:  {d}")
+    else:
+        print(f"\n  Kiro: not found ({KIRO_SESSIONS_DIR})")
 
     # Git projects
     projects = discover_project_paths()

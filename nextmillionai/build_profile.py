@@ -64,15 +64,9 @@ def run_scan(project_filter=None, enabled_sources=None, collection_config=None, 
     from nextmillionai.schema import SCHEMA_VERSION
 
     if enabled_sources is None:
-        enabled_sources = {
-            "claude_code": True,
-            "cursor": True,
-            "codex": True,
-            "git": True,
-            "other_tools": True,
-            "local_models": True,
-            "claude_desktop": False,
-        }
+        from nextmillionai.consent import default_enabled_sources
+
+        enabled_sources = default_enabled_sources()
 
     pf = None
     if project_filter:
@@ -269,11 +263,15 @@ def run_scan(project_filter=None, enabled_sources=None, collection_config=None, 
     # Coverage: what exists here that wasn't collected + the knob to widen
     detected = {a.name: a.detect() for a in get_session_adapters()}
     detected["git"] = bool(git_data) or enabled_sources.get("git", False)
-    # Group-level rollups for the two new consent groups
-    detected["other_tools"] = any(v for k, v in detected.items() if k not in _core_keys | {"git"})
+    # Group-level rollups for the two new consent groups. Kiro has its own
+    # consent key + coverage row (its payload merely LIVES under otherTools),
+    # so it must not light the other_tools rollup or satisfy its row.
+    detected["other_tools"] = any(
+        v for k, v in detected.items() if k not in _core_keys | {"git", "kiro"}
+    )
     detected["local_models"] = _local_models_present is not None
     coverage_raw = dict(raw_data)
-    coverage_raw["other_tools"] = other_tools or None
+    coverage_raw["other_tools"] = {k: v for k, v in other_tools.items() if k != "kiro"} or None
     coverage_raw["local_models"] = local_models
     coverage = build_coverage_report(
         enabled_sources,
@@ -379,6 +377,17 @@ def show_preview():
     if codex:
         print("  Codex CLI:")
         print(f"    Sessions: {codex.get('total_sessions', 0)}")
+        print()
+
+    kiro = (data.get("otherTools") or {}).get("kiro")
+    if kiro:
+        print("  Kiro:")
+        print(f"    Sessions: {kiro.get('total_sessions', 0)}")
+        print(
+            f"    Messages: {kiro.get('total_user_msgs', 0) + kiro.get('total_assistant_msgs', 0)}"
+        )
+        if kiro.get("subagent_sessions"):
+            print(f"    Subagent sessions: {kiro.get('subagent_sessions', 0)}")
         print()
 
     git = data.get("git")
@@ -554,6 +563,30 @@ def _ensure_calibrated(non_interactive: bool = False) -> dict[str, bool]:
         config = prompt_collection_scope(non_interactive=non_interactive)
         save_collection_config(config)
     else:
+        # Sources added to ALL_SOURCES since the user calibrated are absent
+        # from the saved consent — never silently on, never silently lost.
+        from nextmillionai.consent import ALL_SOURCES, prompt_new_sources
+
+        saved = consented_sources(consent)
+        missing = [k for k in ALL_SOURCES if k not in saved]
+        if missing and not non_interactive:
+            sources = prompt_new_sources(missing, saved)
+            save_consent(sources)
+            consent = load_consent()
+        elif missing:
+            # --yes with an existing consent: new sources stay OFF for this
+            # run and are deliberately NOT persisted — writing False here
+            # would disarm the interactive mini-prompt on the next real run.
+            from nextmillionai.paths import cli_invocation
+
+            print(
+                f"  New data source(s) available: {', '.join(missing)} — not"
+                f" scanned until you consent. Run"
+                f" `{cli_invocation()} calibrate` to enable."
+            )
+            consent = dict(consent)
+            consent["sources"] = {**saved, **{k: False for k in missing}}
+
         # Ensure collection config exists (may be missing from older installs)
         if load_collection_config() is None:
             from nextmillionai.consent import default_collection_config
@@ -990,6 +1023,7 @@ def cmd_assess(args, *, _show_intro: bool = True) -> None:
             "claude_code": "Claude Code",
             "cursor_ide": "Cursor",
             "codex_cli": "Codex CLI",
+            "kiro": "Kiro",
             "aider": "Aider",
             "cline": "Cline",
             "continue": "Continue.dev",
@@ -1036,6 +1070,7 @@ def cmd_assess(args, *, _show_intro: bool = True) -> None:
         "claude_code": "Claude Code",
         "cursor_ide": "Cursor IDE",
         "codex_cli": "Codex CLI",
+        "kiro": "Kiro",
         "aider": "Aider",
         "cline": "Cline",
         "continue": "Continue.dev",
@@ -1997,16 +2032,9 @@ def cmd_sources(args) -> None:
     print("  " + "=" * 42)
     print()
 
-    # Map adapter names to consent groups — every wider-field tool shares
-    # the "other_tools" group (mirrors _registry.run_adapters), so looking
-    # up consent by adapter.name would wrongly report consented tools as
-    # disabled.
-    _consent_keys = {
-        "claude_code": "claude_code",
-        "cursor": "cursor",
-        "codex": "codex",
-        "claude_desktop": "claude_desktop",
-    }
+    # Adapter name → consent group, shared with the scan path so this
+    # display can never drift from what run_adapters actually gates on.
+    from nextmillionai.adapters._registry import _CONSENT_KEYS as _consent_keys
 
     # Session adapters
     for adapter in get_session_adapters():
@@ -2051,6 +2079,18 @@ def cmd_sources(args) -> None:
                 print(f"    Transcripts: {convos.get('totalSessions', 0)}")
             elif adapter.name == "codex":
                 print(f"    Sessions:   {raw.get('total_sessions', 0)}")
+                earliest = raw.get("earliest", "")
+                latest = raw.get("latest", "")
+                if earliest and latest:
+                    print(f"    Date range: {earliest[:10]} to {latest[:10]}")
+            elif adapter.name == "kiro":
+                print(f"    Sessions:   {raw.get('total_sessions', 0)}")
+                cli_n = raw.get("cli_sessions", 0)
+                ide_n = raw.get("ide_sessions", 0)
+                if cli_n or ide_n:
+                    print(f"    CLI / IDE:  {cli_n} / {ide_n}")
+                if raw.get("subagent_sessions"):
+                    print(f"    Subagents:  {raw.get('subagent_sessions', 0)}")
                 earliest = raw.get("earliest", "")
                 latest = raw.get("latest", "")
                 if earliest and latest:
