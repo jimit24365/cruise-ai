@@ -109,7 +109,7 @@ function hideExplain(){
 
 function ctxAskAgent(btn){
   var label=btn.getAttribute('data-label');
-  var text='Using the cruise_ai MCP tools (nma_get_profile, nma_get_report): '
+  var text='Using the cruise_ai MCP tools (cruise_get_profile, cruise_get_report): '
     +'explain my "'+label+'" — exactly which of my local signals produced it, the formula '
     +'behind it, and what single next signal would change it. Honest, no flattery.';
   (navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject())

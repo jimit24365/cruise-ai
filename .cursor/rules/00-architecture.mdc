@@ -6,7 +6,7 @@ globs: ["**/*"]
 # Architecture
 
 Five modules: **core** (scoring.py, schema.py, docs/), **scan** (scanner.py),
-**serve** (hub.py, build_profile.py), **face** (static/**), **bridge** (nextmillionai-mcp/**).
+**serve** (hub.py, build_profile.py), **face** (static/**), **bridge** (cruise-ai-mcp/**).
 
 Dependency direction: `scan -> core -> serve -> face`, with `bridge` alongside `core`.
 

@@ -741,8 +741,8 @@ function flashBtn(btn,msg){
 
 
 function agentPrompt(kind,label){
-  return 'Using the cruise_ai MCP tools (nma_get_profile, nma_get_report, '
-    +'nma_growth_edge): explain my "'+label+'" '+kind+' — what it measures, which of my '
+  return 'Using the cruise_ai MCP tools (cruise_get_profile, cruise_get_report, '
+    +'cruise_growth_edge): explain my "'+label+'" '+kind+' — what it measures, which of my '
     +'local signals produced it, and what single next signal would move it. '
     +'Be honest, no flattery; my data is local.';
 }
@@ -791,7 +791,7 @@ function avatarUpload(input){
   if(!file)return;
   var reader=new FileReader();
   reader.onload=function(){
-    try{localStorage.setItem('nma_avatar',reader.result);}catch(e){}
+    try{localStorage.setItem('cruise_avatar',reader.result);}catch(e){}
     renderAvatar(window._P||{});
     // Persist to server so it survives across browsers/ports
     if(window._servedMode){
@@ -805,7 +805,7 @@ function avatarUpload(input){
 function renderAvatar(P){
   var el=document.getElementById('pfAv');if(!el)return;
   var img=null;
-  try{img=localStorage.getItem('nma_avatar');}catch(e){}
+  try{img=localStorage.getItem('cruise_avatar');}catch(e){}
   if(img){
     el.innerHTML='<img src="'+img+'" alt="">';
     el.classList.add('has-img');
@@ -814,7 +814,7 @@ function renderAvatar(P){
     window._avatarChecked=true;
     fetch('/api/avatar').then(function(r){return r.ok?r.json():null;}).then(function(d){
       if(d&&d.avatar){
-        try{localStorage.setItem('nma_avatar',d.avatar);}catch(e){}
+        try{localStorage.setItem('cruise_avatar',d.avatar);}catch(e){}
         el.innerHTML='<img src="'+d.avatar+'" alt="">';
         el.classList.add('has-img');
       }

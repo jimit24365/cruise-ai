@@ -3,7 +3,7 @@ data/
 /profile.md
 
 # Identity config (contains personal info)
-nextmillionai.config.json
+cruise-ai.config.json
 
 # Repomix
 repomix-output.*
