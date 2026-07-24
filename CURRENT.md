@@ -26,6 +26,7 @@ registry. Mission: reverse hiring on proof-based work.
 | Contract | `BUILDER-MODEL.md`, `TAXONOMY.md` | positioning enum, archetypes/kinds |
 | Contract | `docs/BUSINESS-FIT-MAP.md` | fit-map formulas + naming policy |
 | Map | `docs/README.md` | flat docs map — what every doc is for, by topic |
+| Map | `docs/HOW-IT-WORKS.md` | full pipeline walkthrough: consent → scan → normalize → score → serve (with mermaid diagrams) |
 | Map | `docs/REPO-FLOW.md` | repo chart & flow (mermaid): scan → score → serve → share |
 | Map | `docs/agents/PROFILE.md`, `docs/agents/REPORT.md` | agent-readable specs for each surface |
 | Contract | `docs/REFERENCES.md` | formal bibliography behind the scoring (with THESIS) |

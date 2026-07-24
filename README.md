@@ -245,7 +245,7 @@ docs/                     ADAPTERS, SYNC, TRUST, DESIGN
 tests/                    640+ tests incl. privacy guards + engine invariants
 ```
 
-Map of everything: [ARCHITECTURE.md](ARCHITECTURE.md) · [CURRENT.md](CURRENT.md).
+Map of everything: [ARCHITECTURE.md](ARCHITECTURE.md) · [CURRENT.md](CURRENT.md) · [How It Works (full pipeline)](docs/HOW-IT-WORKS.md).
 
 ## Docs
 
