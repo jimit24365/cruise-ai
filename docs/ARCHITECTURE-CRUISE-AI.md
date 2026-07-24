@@ -489,3 +489,31 @@ cruise-ai today is **Level 1** (static rules) with **Level 2-4 infrastructure al
 5. **Adapt delivery** (right recommendation, right time, right format)
 
 Each level is independently valuable and builds on the previous. No level requires an LLM. All computation stays local.
+
+---
+
+## Part 7: UI Technology Decision (Locked)
+
+**Decision: HTMX + Alpine.js + Chart.js**
+
+| Component | Role | Size |
+|-----------|------|------|
+| **HTMX** | Partial page updates, fetch + swap HTML fragments | 14KB |
+| **Alpine.js** | Lightweight reactivity (expand/collapse, buttons, state) | 15KB |
+| **Chart.js** | Usage charts, cost pie charts, timeline graphs | 62KB |
+| **Existing CSS** | Styling (matches current profile/report pages) | 0 |
+
+**Why NOT Next.js:**
+- Local-only tool (no SEO, no SSR needed)
+- Python backend (hub.py) — no Node.js server
+- Zero build step required
+- 90KB total vs 200MB+ node_modules
+
+**Pattern:**
+```
+hub.py (Python) → serves JSON at /api/*
+                → serves HTML pages with HTMX + Alpine.js + Chart.js
+                → zero build, vendored in static/vendor/
+```
+
+Files will live in: `cruise_ai/static/vendor/{htmx.min.js, alpine.min.js, chart.min.js}`
