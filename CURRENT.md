@@ -46,6 +46,8 @@ registry. Mission: reverse hiring on proof-based work.
 | Product | `docs/solutions/README.md`, `docs/solutions/01-recommendation-engine.md`, `docs/solutions/02-token-optimization.md`, `docs/solutions/03-analytics-dashboard.md`, `docs/solutions/04-skill-engine.md`, `docs/solutions/05-project-memory.md`, `docs/solutions/06-learning-engine.md` | per-feature solution docs (problem, solution, mermaid, usage) |
 | Contract | `docs/TRUST-MODEL.md` | threshold reasoning, trust levels, known limitations, validation roadmap |
 | Contract | `docs/CALIBRATION.md` | community calibration framework, precision/recall targets |
+| Process | `TODO.md` | prioritized task backlog (UI integration, P1-P2 features, infrastructure) |
+| Process | `.kiro/steering/cruise-ai-context.md` | project steering file for session continuity |
 | Product | `docs/TRUST.md` | anti-gaming: what a report proves, what it doesn't, what we won't do |
 | Product | `docs/DESIGN.md` | in-app UI design language: real tokens/components from the shipped product (profile/report) |
 
