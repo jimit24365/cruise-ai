@@ -1,5 +1,7 @@
 # Architecture
 
+> For a detailed walkthrough of the full pipeline (consent → scan → normalize → score → serve), see **[docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md)**.
+
 ## Module map
 
 | Module | Paths | Purpose |
