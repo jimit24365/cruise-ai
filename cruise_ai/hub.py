@@ -308,11 +308,20 @@ class ProfileHandler(http.server.BaseHTTPRequestHandler):
 
             profile = load_profile()
             try:
+                from cruise_ai.paths import scan_results_path as _srp
+                import json as _json
+
+                sr_path = _srp()
+                scan_results = _json.loads(sr_path.read_text()) if sr_path.is_file() else {}
+            except Exception:
+                scan_results = {}
+
+            try:
                 sessions = self._load_sessions_for_api(profile)
             except Exception:
                 sessions = []
 
-            self.send_json(_dashboard(sessions, profile))
+            self.send_json(_dashboard(sessions, profile, scan_results))
 
         elif path == "/api/feedback/summary":
             from cruise_ai.recommendations.feedback import get_feedback_summary

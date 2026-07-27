@@ -261,12 +261,102 @@ def detect(
     return recs
 
 
-def dashboard(sessions: list[Any], profile: dict[str, Any]) -> dict[str, Any]:
+def dashboard(
+    sessions: list[Any],
+    profile: dict[str, Any],
+    scan_results: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Generate the full dashboard data structure for display.
 
     Returns a dict with keys: usage, cost, timeline, models, projects.
+    Falls back to scan_results['normalized'] when sessions are empty.
     """
     stats = _compute_usage_stats(sessions, profile)
+
+    # If sessions produced no data, populate from normalized scan signals
+    if stats["total_sessions"] == 0 and scan_results:
+        norm = scan_results.get("normalized", {})
+        if norm:
+            total_sessions = norm.get("totalSessions", 0)
+            avg_words = norm.get("avgPromptWords", 0)
+            avg_prompts = norm.get("avgPromptsPerSession", 0)
+            total_prompts = int(total_sessions * avg_prompts)
+            total_prompt_words = int(total_prompts * avg_words)
+            total_prompt_tokens = _estimate_tokens_from_words(total_prompt_words)
+            # Responses are typically 3-4x prompt size
+            estimated_response_tokens = _estimate_tokens_from_words(
+                int(total_prompts * avg_words * 4)
+            )
+
+            # Models from scan_results
+            models_data = scan_results.get("models", {})
+            model_counts: dict[str, int] = {}
+            if isinstance(models_data, dict):
+                # Handle nested {"byModel": {"Agent": 232}, "primaryModel": "X"}
+                by_model = models_data.get("byModel", None)
+                if isinstance(by_model, dict):
+                    model_counts = {m: int(c) for m, c in by_model.items()}
+                else:
+                    # Flat dict: {model_name: count}
+                    for m, info in models_data.items():
+                        if m in ("byModel", "primaryModel"):
+                            continue
+                        if isinstance(info, dict):
+                            model_counts[m] = info.get("sessions", info.get("count", 1))
+                        elif isinstance(info, (int, float)):
+                            model_counts[m] = int(info)
+            elif isinstance(models_data, list):
+                for m in models_data:
+                    name = m.get("name", m) if isinstance(m, dict) else str(m)
+                    model_counts[name] = model_counts.get(name, 0) + 1
+            # Fallback from profile
+            if not model_counts:
+                models_summary = profile.get("modelsSummary", {}).get("byModel", {})
+                model_counts = {m: int(c) for m, c in models_summary.items()}
+
+            # Tools from scan
+            tool_counts: dict[str, int] = {}
+            tools_detected = scan_results.get("tools_detected", [])
+            for t in tools_detected:
+                tool_counts[t] = total_sessions // max(len(tools_detected), 1)
+
+            # Projects from scan
+            project_counts: dict[str, int] = {}
+            projects_data = scan_results.get("projects", {})
+            if isinstance(projects_data, dict):
+                for p, info in list(projects_data.items())[:20]:
+                    if isinstance(info, dict):
+                        project_counts[p] = info.get("sessions", 1)
+                    else:
+                        project_counts[p] = 1
+            elif isinstance(projects_data, list):
+                for p in projects_data[:20]:
+                    name = p.get("name", p) if isinstance(p, dict) else str(p)
+                    project_counts[name] = 1
+
+            # Daily from activityByDay
+            daily: dict[str, dict] = {}
+            activity = scan_results.get("activityByDay", {})
+            if isinstance(activity, dict):
+                for day, count in list(activity.items())[:90]:
+                    c = count if isinstance(count, int) else 1
+                    daily[day] = {"sessions": c, "prompts": int(c * avg_prompts), "minutes": 0}
+
+            stats = {
+                "total_sessions": total_sessions,
+                "total_user_msgs": total_prompts,
+                "total_assistant_msgs": total_prompts,
+                "total_prompt_tokens": total_prompt_tokens,
+                "estimated_response_tokens": estimated_response_tokens,
+                "total_tokens": total_prompt_tokens + estimated_response_tokens,
+                "models": model_counts,
+                "tools": tool_counts,
+                "projects": project_counts,
+                "daily": daily,
+                "avg_prompt_words": avg_words,
+                "all_prompt_words": [],
+            }
+
     cost = _compute_cost(stats)
 
     return {
