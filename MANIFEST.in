@@ -1,0 +1,9 @@
+include LICENSE
+include README.md
+include CHANGELOG.md
+include CODE_OF_CONDUCT.md
+include CONTRIBUTING.md
+
+recursive-include cruise_ai/static *
+recursive-include cruise_ai/docs *
+recursive-include cruise_ai/examples *

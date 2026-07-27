@@ -15,6 +15,15 @@ from cruise_ai.recommendations import token_optimization as _token
 from cruise_ai.recommendations import skills as _skills
 from cruise_ai.recommendations import project_memory as _memory
 from cruise_ai.recommendations import learning as _learning
+from cruise_ai.recommendations import mcp_discovery as _mcp
+from cruise_ai.recommendations import hooks as _hooks
+from cruise_ai.recommendations import personalization as _personalization
+from cruise_ai.recommendations import health_score as _health
+from cruise_ai.recommendations import architecture_memory as _architecture
+from cruise_ai.recommendations import eval_harness as _eval_harness
+from cruise_ai.recommendations import reports as _reports
+from cruise_ai.recommendations import team_guidelines as _team_guidelines
+from cruise_ai.recommendations import learning_path as _learning_path
 
 
 def recommend(
@@ -44,6 +53,15 @@ def recommend(
         _skills.detect,
         _memory.detect,
         _learning.detect,
+        _personalization.detect,
+        _mcp.detect,
+        _hooks.detect,
+        _eval_harness.detect,
+        _health.detect,
+        _architecture.detect,
+        _learning_path.detect,
+        _reports.detect,
+        _team_guidelines.detect,
     ]:
         try:
             recs = detector(sessions, profile, scan_results)

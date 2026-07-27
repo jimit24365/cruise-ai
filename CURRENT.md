@@ -48,6 +48,8 @@ registry. Mission: reverse hiring on proof-based work.
 | Contract | `docs/CALIBRATION.md` | community calibration framework, precision/recall targets |
 | Process | `TODO.md` | prioritized task backlog (UI integration, P1-P2 features, infrastructure) |
 | Process | `.kiro/steering/cruise-ai-context.md` | project steering file for session continuity |
+| Infra | `scripts/validate_real_data.py` | real data validation: runs recs against actual sessions, exits 0 |
+| Infra | `cruise_ai/config_cmd.py` | `cruise-ai config` CLI — show/set/enable-fingerprinting |
 | Product | `docs/TRUST.md` | anti-gaming: what a report proves, what it doesn't, what we won't do |
 | Product | `docs/DESIGN.md` | in-app UI design language: real tokens/components from the shipped product (profile/report) |
 

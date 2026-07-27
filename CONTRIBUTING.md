@@ -1,67 +1,148 @@
-# Contributing
+# Contributing to cruise-ai
 
-## Prerequisites
+Thank you for your interest in improving cruise-ai! This guide covers everything you need to get started.
 
-- Python 3.9+
-- Node 18+ (optional, for MCP server)
-- pip
+## Getting Started
 
-## Setup
+1. **Fork** the repo on GitHub
+2. **Clone** your fork locally
+3. **Set up** the development environment (see below)
+4. **Create a branch** with the naming convention `<type>/<slug>`
+
+Branch types: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`
+
+Examples: `feat/mcp-tool-support`, `fix/scoring-null-check`, `docs/calibration-guide`
+
+## Development Setup
 
 ```bash
-git clone https://github.com/cruise_ai/cruise_ai.git
-cd cruise_ai
+git clone https://github.com/<your-fork>/cruise-ai.git
+cd cruise-ai
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 pre-commit install
 ```
 
-## Branch naming
-
-Use `<type>/<slug>` where type is one of:
-
-- `feat` — new feature
-- `fix` — bug fix
-- `docs` — documentation only
-- `refactor` — code restructuring
-- `test` — adding or updating tests
-- `chore` — tooling, CI, dependencies
-
-Examples: `feat/mcp-tool-support`, `fix/scoring-null-check`
-
-## Parallel sessions — one git worktree per chat
-
-Running more than one Claude Code (or any) session against this repo at
-once? Give each its **own git worktree** so they never edit the same
-checkout and conflict:
+Verify everything works:
 
 ```bash
-claude --worktree my-task      # CLI: starts the session in a fresh worktree + branch
+ruff check .
+ruff format --check .
+mypy cruise_ai --ignore-missing-imports
+python3 -m pytest -o "addopts=" -q
 ```
 
-The CLI has no foreground-default for this, so to make *every* bare
-`claude` isolate itself, add a shell function to `~/.zshrc`:
+## Adding a Detector
+
+The recommendation engine runs detectors from `cruise_ai/recommendations/`. Each category module exports a `detect()` function.
+
+**Interface:**
+
+```python
+def detect(
+    sessions: list[Any],
+    profile: dict[str, Any],
+    scan_results: dict[str, Any],
+) -> list[Recommendation]:
+    """Detect opportunities and return recommendations.
+
+    Args:
+        sessions: List of Session objects from adapters.
+        profile: The profile.json dict (scored signals).
+        scan_results: The scan_results.json dict (raw scan output).
+
+    Returns:
+        List of Recommendation objects with confidence >= 60.
+    """
+```
+
+**Steps to add a detector:**
+
+1. Create or extend a module in `cruise_ai/recommendations/`
+2. Implement `detect(sessions, profile, scan_results) -> list[Recommendation]`
+3. Register it in `cruise_ai/recommendations/engine.py` (add import + add to detector list)
+4. Add a `trust_level` to each recommendation: `validated`, `observed`, `heuristic`, or `experimental`
+5. Write tests in `tests/` — see `tests/test_recommendations.py` for patterns
+
+**Guidelines:**
+
+- Never read prompt text — only use counts, timestamps, and tool names
+- Set `confidence` between 0–100 (only ≥60 are shown to users)
+- Provide `evidence` explaining what data supports the recommendation
+- Detectors must not crash — wrap risky logic in try/except
+
+## Adding a Generator
+
+Generators produce artifacts (skill files, hook scripts, config) based on detected patterns. They follow the `generate_*()` naming convention.
+
+**Pattern:**
+
+```python
+def generate_hook_script(
+    pattern: dict[str, Any],
+    hook_type: str = "pre-commit",
+) -> str:
+    """Generate a git hook script from a detected pattern.
+
+    Args:
+        pattern: Dict with command, frequency, project info.
+        hook_type: The git hook type (pre-commit, post-commit, etc.)
+
+    Returns:
+        The hook script content as a string.
+    """
+```
+
+**Steps to add a generator:**
+
+1. Add the `generate_*()` function in the relevant category module
+2. Wire it to the CLI in `cruise_ai/build_profile.py` if it should be user-facing
+3. Set `auto_action` on the related Recommendation to describe what the generator does
+4. Write tests covering the generated output
+
+## Adding a Tool Adapter
+
+For adding support for a new AI coding tool, see the full walkthrough:
+**[docs/ADDING-A-TOOL.md](docs/ADDING-A-TOOL.md)**
+
+This covers the adapter contract, consent wiring, display integration, fidelity rules, and test requirements.
+
+## Testing
 
 ```bash
-claude() {
-  if [ "$#" -eq 0 ] && git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-    command claude --worktree
-  else
-    command claude "$@"
-  fi
-}
+# Run all tests
+python3 -m pytest -o "addopts=" -q
+
+# Run a specific test file
+python3 -m pytest tests/test_recommendations.py -o "addopts=" -q
+
+# Run with coverage
+python3 -m pytest --cov=cruise_ai -o "addopts=" -q
 ```
 
-The repo ships worktree settings (`.claude/settings.json` → `worktree`):
-`baseRef: fresh` (branch from `origin/HEAD`), `symlinkDirectories` shares
-`cruise_ai-mcp/node_modules` so worktrees don't re-install it, and
-background sessions/subagents are worktree-isolated. Caveat: with
-`symlinkDirectories` set, auto-cleanup can't remove a worktree — prune
-manually with `git worktree remove --force <path>` (or `git worktree
-list` / `prune`).
+**Test conventions:**
 
-## Commit messages
+- Use `@dataclass` for fake objects (see `FakeSession` pattern in test files)
+- Use `monkeypatch` for filesystem mocking — never touch real `~/.cruise-ai/`
+- Test both happy path and edge cases (empty data, missing fields)
+- New detectors need at least 3 test cases: triggers, doesn't trigger, edge case
+
+## PR Process
+
+1. **Branch** off `main` with a `<type>/<slug>` name
+2. **Make the change** — keep it focused, one concern per PR
+3. **Run the gates locally** (ruff check, ruff format, mypy, pytest)
+4. **Commit** with a [Conventional Commits](https://www.conventionalcommits.org/) message
+5. **Push** to your fork and **open the PR** against `cruise-ai:main`
+6. **Fill in the PR template** — what/why/tests/schema impact
+7. **Review** — CI runs the gates; a core owner reviews
+
+**Merge policy:** squash merge. Your local commit history can stay messy.
+
+**First-time contributors:** Look for `good first issue` and `adapters` labels — a new tool adapter is the most-wanted contribution.
+
+## Commit Messages
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/):
 
@@ -69,58 +150,26 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/):
 feat: add MCP tool support
 fix: handle missing scan results gracefully
 docs: update architecture diagram
+chore: upgrade ruff to 0.5
 ```
 
-## How to raise a pull request
+## Data Contract
 
-1. **Fork** the repo and clone your fork (set up as above).
-2. **Branch** off `main` with a `<type>/<slug>` name (see above):
-   `git switch -c feat/zed-adapter`.
-3. **Make the change.** Keep it focused — one concern per PR. If you
-   touch a tool adapter, add a fixture test; if you touch a doc that's
-   indexed in [CURRENT.md](CURRENT.md), update the index in the same
-   commit (CI enforces it).
-4. **Run the gates locally** (see below) until all four are green.
-5. **Commit** with a [Conventional Commits](https://www.conventionalcommits.org/)
-   message, then **push** to your fork.
-6. **Open the PR** against `cruise_ai/cruise_ai:main`. Fill in the
-   PR template (what / why / schema impact / tests). Link any issue
-   with `Closes #123`.
-7. **Review**: CI runs the four gates; a core owner reviews, and before
-   merge the maintainer runs the dual pre-merge review
-   ([docs/PRE-MERGE-REVIEW.md](docs/PRE-MERGE-REVIEW.md)) on the
-   integrated branch. Address feedback by pushing more commits to the
-   same branch. Merges are **squash** — your local commit history can
-   stay messy.
+If your PR changes the shape of `profile.json` or `scan_results.json`, tag a core owner for review. See [ARCHITECTURE.md](ARCHITECTURE.md) for details.
 
-First time? The `good first issue` and `adapters` labels are the
-easiest entry points, and a new tool adapter is the most-wanted
-contribution.
+## Proposing a Methodology Change
 
-## Pull requests
+The scoring methodology is a versioned, fingerprint-pinned contract. Changes require evidence:
 
-- No direct pushes to `main` for contributors. Maintainers integrating
-  external work or shipping process/docs may push dual-reviewed commits
-  directly; everything else goes through a PR.
-- Every PR requires green CI **plus the dual pre-merge review** —
-  [docs/PRE-MERGE-REVIEW.md](docs/PRE-MERGE-REVIEW.md): one engineering
-  review + one product review, independent of the author, with every
-  blocker/major finding fixed and pinned by a regression test before
-  merge. The core owner's GitHub review may serve as one of the two
-  lenses. For external PRs, the merging maintainer runs both reviews on
-  the integrated branch before merge; contributors are welcome (not
-  required) to run them pre-PR.
-- The review applies **before merging — and before any push to `main` or
-  a shared branch**. Iteration pushes to your own fork branch don't need
-  it. Narrow docs-only exception — see the doc.
-- Use squash merge (exception: preserving an external contributor's
-  commit authorship may warrant a merge commit — maintainer's call).
+1. Open a thread in **Discussions → Methodology** with your proposed change and rationale
+2. Bring evidence — a study, dataset, or reproducible observation
+3. If it converges, PR against `SCORING-METHODOLOGY.md` + `scoring.py`
 
-## Local checks
+See [cruise_ai/docs/SCORING-METHODOLOGY.md](cruise_ai/docs/SCORING-METHODOLOGY.md) for details.
 
-Run these before opening a PR — the same four gates CI runs (the formula
-fingerprint is enforced inside pytest; the pre-merge review also runs
-`python3 scripts/formula_fingerprint.py` directly as its own check):
+## Local Checks (CI Gates)
+
+These four gates run in CI — pass them locally before pushing:
 
 ```bash
 ruff check .
@@ -128,50 +177,3 @@ ruff format --check .
 mypy cruise_ai --ignore-missing-imports
 pytest
 ```
-
-## Data contract
-
-If your PR changes the shape of `profile.json` or `scan_results.json`, tag a
-core owner (`@anshulixyz`) for review. See [ARCHITECTURE.md](ARCHITECTURE.md)
-for details.
-
-## Proposing a methodology change
-
-The scoring methodology is a versioned contract
-([SCORING-METHODOLOGY.md](cruise_ai/docs/SCORING-METHODOLOGY.md)) — we take
-changes to it seriously, and we want them. Measuring *how* people build with AI
-is a young field; it should evolve with evidence.
-
-1. Open a thread in **Discussions → Methodology** describing the signal, band, or
-   weight you'd change and *why*. Start from the
-   [open questions](cruise_ai/docs/SCORING-METHODOLOGY.md#open-questions) if you
-   aren't sure where to begin.
-2. **Bring evidence** — a study, a dataset, a reproducible observation, or a good
-   worked example. "It feels off" is a fine Discussion, not yet a PR.
-3. If it converges, open a PR against `SCORING-METHODOLOGY.md` and `scoring.py`.
-   Accepted changes are a **methodology-version bump** (the engine flags
-   assessments computed on an older version), so the history of *why scores
-   changed* is always public. The formula-fingerprint test keeps the doc and the
-   code honest with each other.
-
-Keep proposals **archetype-aware** and **non-ranking** — no model ever assigns a
-score, and we never penalize a builder type for being a different builder type.
-The scoring is calibrated for developers and AI engineers
-([scope](cruise_ai/docs/SCORING-METHODOLOGY.md#who-this-is-calibrated-for));
-proposals to widen that calibration are especially welcome, with the data to back
-them.
-
-## Adding a tool adapter
-
-The most-wanted contribution. **Start with
-[docs/ADDING-A-TOOL.md](docs/ADDING-A-TOOL.md)** — the end-to-end wiring
-checklist (adapter → consent → displays → measurement → registries →
-tests). An adapter that skips the consent wiring passes its own unit
-tests but is silently never scanned in production; the checklist's test
-gates make that failure loud.
-
-The adapter *contract* — fidelity rules (deep / counts / presence —
-declared honestly, never invented) and a no-code custom-adapter config —
-is documented in [docs/ADAPTERS.md](docs/ADAPTERS.md). Fixture-based
-tests live in `tests/test_adapters/` — copy `test_kiro.py` (first-class)
-or one from `test_local_tools.py` (wider-field) as a template.

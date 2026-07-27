@@ -10,7 +10,7 @@ from typing import Any
 class Recommendation:
     """A single actionable coaching recommendation."""
 
-    category: str  # analytics, token_optimization, skills, project_memory, learning
+    category: str  # analytics, token_optimization, skills, project_memory, learning, personalization
     headline: str  # one-line summary
     detail: str  # explanation with evidence
     action_type: str  # e.g. "create_steering_doc", "adopt_tool", "split_sessions"

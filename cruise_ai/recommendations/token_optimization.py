@@ -227,6 +227,354 @@ def _detect_model_opportunity(sessions: list[Any], profile: dict) -> list[Recomm
     return recs
 
 
+def _detect_prompt_compression(sessions: list[Any]) -> list[Recommendation]:
+    """Recommend summarization when avg prompt length exceeds 500 words."""
+    recs: list[Recommendation] = []
+    if not sessions:
+        return recs
+
+    all_word_counts: list[int] = []
+    for s in sessions:
+        wcs = getattr(s, "prompt_word_counts", [])
+        all_word_counts.extend(wcs)
+
+    if not all_word_counts:
+        return recs
+
+    avg_words = sum(all_word_counts) / len(all_word_counts)
+    if avg_words <= 500:
+        return recs
+
+    total_excess = int((avg_words - 200) * len(all_word_counts) * 1.3)
+    recs.append(Recommendation(
+        category="token_optimization",
+        headline=f"Avg prompt length is {avg_words:.0f} words — summarization could save {total_excess:,} tokens",
+        detail=(
+            f"Across {len(all_word_counts)} prompts, the average length is {avg_words:.0f} words. "
+            f"Prompts above 500 words often contain context that could be pre-summarized "
+            f"or moved to steering docs. Estimated savings: ~{total_excess:,} tokens."
+        ),
+        action_type="enable_prompt_compression",
+        trust_level="observed",
+        confidence=78,
+        evidence=f"avg prompt length {avg_words:.0f} words across {len(all_word_counts)} prompts",
+        priority="high" if avg_words > 800 else "medium",
+        teach_text=(
+            "Prompt compression means pre-processing your context before sending it to the AI. "
+            "Techniques include: summarizing long documents, using bullet points instead of prose, "
+            "extracting only relevant sections, and storing recurring context in steering docs "
+            "that are loaded automatically."
+        ),
+        auto_action="Analyze top 10 longest prompts and suggest compression strategies",
+        savings_estimate={"tokens": total_excess, "per_session": total_excess // max(len(sessions), 1)},
+    ))
+
+    return recs
+
+
+def _detect_cached_context(sessions: list[Any]) -> list[Recommendation]:
+    """Recommend pinning/memory when same context_files appear in >3 sessions."""
+    recs: list[Recommendation] = []
+    if len(sessions) < 4:
+        return recs
+
+    file_session_counts: Counter[str] = Counter()
+    for s in sessions:
+        context_files = getattr(s, "context_files", None)
+        if context_files is None:
+            # Try dict-style access for plain dict sessions
+            if isinstance(s, dict):
+                context_files = s.get("context_files", [])
+            else:
+                context_files = []
+        seen_in_session: set[str] = set()
+        for f in context_files:
+            if f and f not in seen_in_session:
+                file_session_counts[f] += 1
+                seen_in_session.add(f)
+
+    # Find files appearing in >3 sessions
+    repeated_files = [(f, count) for f, count in file_session_counts.items() if count > 3]
+    if not repeated_files:
+        return recs
+
+    repeated_files.sort(key=lambda x: -x[1])
+    top_files = repeated_files[:5]
+    file_list = ", ".join(f"{f} ({count}x)" for f, count in top_files)
+    total_repeated = len(repeated_files)
+
+    recs.append(Recommendation(
+        category="token_optimization",
+        headline=f"{total_repeated} context file(s) loaded in 4+ sessions — pin them to memory",
+        detail=(
+            f"These files appear across many sessions: {file_list}. "
+            f"Repeatedly loading the same files wastes tokens. "
+            f"Pin them to project memory or a steering doc so they're always available "
+            f"without re-reading."
+        ),
+        action_type="pin_context_files",
+        trust_level="observed",
+        confidence=75,
+        evidence=f"{total_repeated} files appear in >3 sessions",
+        priority="medium",
+        teach_text=(
+            "When you find yourself loading the same files every session, it means that "
+            "context should be persistent. Project memory (CLAUDE.md, .kiro/steering/) "
+            "loads automatically, saving tokens and keystrokes. Pin frequently-accessed "
+            "files there so the AI always has that context."
+        ),
+        auto_action="Add top repeated context files to project memory configuration",
+        savings_estimate={"files_to_pin": total_repeated},
+    ))
+
+    return recs
+
+
+def _compute_token_waste_score(
+    sessions: list[Any], profile: dict[str, Any]
+) -> list[Recommendation]:
+    """Compute a 0-100 token waste score based on multiple factors."""
+    recs: list[Recommendation] = []
+    if len(sessions) < 5:
+        return recs
+
+    score_components: list[tuple[str, float]] = []
+
+    # Factor 1: Duplicate contexts (0-35 points)
+    file_session_counts: Counter[str] = Counter()
+    for s in sessions:
+        context_files = getattr(s, "context_files", None)
+        if context_files is None:
+            if isinstance(s, dict):
+                context_files = s.get("context_files", [])
+            else:
+                context_files = []
+        for f in set(context_files):
+            if f:
+                file_session_counts[f] += 1
+    repeated_count = sum(1 for count in file_session_counts.values() if count > 3)
+    total_files = max(len(file_session_counts), 1)
+    dup_score = min(35, (repeated_count / total_files) * 70) if total_files > 0 else 0
+    score_components.append(("duplicate_contexts", dup_score))
+
+    # Factor 2: Oversized prompts (0-35 points)
+    all_word_counts: list[int] = []
+    for s in sessions:
+        wcs = getattr(s, "prompt_word_counts", [])
+        all_word_counts.extend(wcs)
+    if all_word_counts:
+        oversized_count = sum(1 for w in all_word_counts if w > 500)
+        oversized_pct = oversized_count / len(all_word_counts)
+        prompt_score = min(35, oversized_pct * 70)
+    else:
+        prompt_score = 0.0
+    score_components.append(("oversized_prompts", prompt_score))
+
+    # Factor 3: Wrong model choices (0-30 points)
+    model_counts: Counter[str] = Counter()
+    for s in sessions:
+        for m in getattr(s, "models", []):
+            model_counts[m] += 1
+    total_model_uses = sum(model_counts.values())
+    if total_model_uses > 10:
+        expensive_count = sum(
+            count for model_name, count in model_counts.items()
+            if any(x in model_name.lower() for x in ["opus", "gpt-4o", "gpt-4", "o1", "o3"])
+        )
+        expensive_pct = expensive_count / total_model_uses
+        model_score = min(30, expensive_pct * 37.5) if expensive_pct > 0.8 else 0.0
+    else:
+        model_score = 0.0
+    score_components.append(("wrong_model_choices", model_score))
+
+    # Total score
+    total_score = int(sum(score for _, score in score_components))
+    total_score = max(0, min(100, total_score))
+
+    if total_score > 40:
+        breakdown = ", ".join(f"{name}: {val:.0f}/{'35' if 'model' not in name else '30'}"
+                             for name, val in score_components)
+        recs.append(Recommendation(
+            category="token_optimization",
+            headline=f"Token Waste Score: {total_score}/100 — {'significant' if total_score >= 60 else 'moderate'} optimization opportunity",
+            detail=(
+                f"Your token waste score is {total_score}/100 based on: {breakdown}. "
+                f"A lower score means more efficient AI usage. "
+                f"Focus on the highest-scoring component first for maximum savings."
+            ),
+            action_type="reduce_token_waste",
+            trust_level="heuristic",
+            confidence=70 if total_score >= 50 else 62,
+            evidence=f"waste score {total_score}/100 from {len(sessions)} sessions",
+            priority="high" if total_score >= 60 else "medium",
+            teach_text=(
+                "The Token Waste Score measures how efficiently you use AI tokens:\n"
+                "- Duplicate contexts: same files loaded repeatedly (fix: pin to memory)\n"
+                "- Oversized prompts: prompts >500 words (fix: compress or use steering docs)\n"
+                "- Wrong model choices: premium models for simple tasks (fix: model routing)"
+            ),
+            auto_action="Generate a personalized token optimization plan based on waste breakdown",
+            savings_estimate={"waste_score": total_score, "reduction_target": max(0, total_score - 20)},
+        ))
+
+    return recs
+
+
+def _detect_context_window_growth(sessions: list[Any]) -> list[Recommendation]:
+    """Detect sessions where token usage grows >50% from start to end.
+
+    Tracks token usage across messages within sessions (via the prompts list).
+    If tokens grow significantly, recommends splitting into smaller sessions.
+    """
+    recs: list[Recommendation] = []
+    if not sessions:
+        return recs
+
+    growing_sessions = 0
+    total_checked = 0
+
+    for s in sessions:
+        # Get prompts list — supports both object and dict access
+        prompts: list[Any] = []
+        if isinstance(s, dict):
+            prompts = s.get("prompts", [])
+        else:
+            prompts = getattr(s, "prompts", [])
+
+        if not prompts or len(prompts) < 3:
+            continue
+
+        # Extract token counts from prompts
+        token_counts: list[int] = []
+        for p in prompts:
+            if isinstance(p, dict):
+                tokens = p.get("tokens_used", 0) or p.get("tokens", 0)
+            else:
+                tokens = getattr(p, "tokens_used", 0) or getattr(p, "tokens", 0)
+            if tokens and tokens > 0:
+                token_counts.append(tokens)
+
+        if len(token_counts) < 3:
+            continue
+
+        total_checked += 1
+
+        # Compare early tokens to late tokens
+        early_avg = sum(token_counts[:max(1, len(token_counts) // 3)]) / max(1, len(token_counts) // 3)
+        late_avg = sum(token_counts[-(max(1, len(token_counts) // 3)):]) / max(1, len(token_counts) // 3)
+
+        if early_avg > 0 and late_avg > early_avg * 1.5:
+            growing_sessions += 1
+
+    if total_checked < 3:
+        return recs
+
+    growth_pct = growing_sessions / total_checked * 100
+
+    if growth_pct > 30:
+        recs.append(Recommendation(
+            category="token_optimization",
+            headline=f"{growth_pct:.0f}% of sessions show >50% token growth — consider splitting long sessions",
+            detail=(
+                f"{growing_sessions} of {total_checked} sessions show token usage growing "
+                f"more than 50% from start to end. This indicates context window bloat — "
+                f"each message gets more expensive as the conversation grows. "
+                f"Splitting into focused, shorter sessions resets this growth."
+            ),
+            action_type="split_long_sessions",
+            trust_level="observed",
+            confidence=68,
+            evidence=f"{growing_sessions}/{total_checked} sessions with >50% token growth",
+            priority="medium",
+            teach_text=(
+                "As conversations grow longer, each message costs more tokens because "
+                "the AI re-reads the entire history. After 15-20 turns, start a fresh session "
+                "for new topics. Use steering docs to carry context between sessions cheaply."
+            ),
+            auto_action="Identify sessions that should have been split and suggest breakpoints",
+            savings_estimate={
+                "sessions_affected": growing_sessions,
+                "potential_savings_pct": 25,
+            },
+        ))
+
+    return recs
+
+
+# ── Filler patterns for prompt simplification ──
+_FILLER_PATTERNS = [
+    "please", "kindly", "i would like you to", "could you please",
+    "would you mind", "if you don't mind", "i'd appreciate it if",
+    "thank you in advance", "thanks in advance", "it would be great if",
+    "i was wondering if you could", "would it be possible",
+    "i need you to", "can you help me with", "i'm looking for help with",
+]
+
+
+def _detect_prompt_simplification(sessions: list[Any]) -> list[Recommendation]:
+    """Detect verbose prompt patterns with excessive politeness or filler.
+
+    Flags when >20% of prompts contain filler patterns that waste tokens
+    without improving results.
+    """
+    recs: list[Recommendation] = []
+    if not sessions:
+        return recs
+
+    total_prompts = 0
+    filler_prompts = 0
+
+    for s in sessions:
+        prompts = None
+        if isinstance(s, dict):
+            prompts = s.get("prompts", [])
+        else:
+            prompts = getattr(s, "prompts", [])
+        if not prompts:
+            continue
+
+        for prompt in prompts:
+            if not isinstance(prompt, str):
+                continue
+            total_prompts += 1
+            prompt_lower = prompt.lower()
+            if any(pattern in prompt_lower for pattern in _FILLER_PATTERNS):
+                filler_prompts += 1
+
+    if total_prompts < 5:
+        return recs
+
+    filler_rate = filler_prompts / total_prompts
+    if filler_rate > 0.20:
+        estimated_wasted_tokens = int(filler_prompts * 15)  # ~15 tokens per filler phrase
+        recs.append(Recommendation(
+            category="token_optimization",
+            headline=f"{filler_rate * 100:.0f}% of prompts contain filler phrases — simplify for better results",
+            detail=(
+                f"{filler_prompts} of {total_prompts} prompts contain polite filler "
+                f"('please', 'kindly', 'I would like you to', etc.). "
+                f"AI models respond equally well to direct instructions. "
+                f"Estimated ~{estimated_wasted_tokens:,} wasted tokens on filler."
+            ),
+            action_type="simplify_prompts",
+            trust_level="heuristic",
+            confidence=65,
+            evidence=f"{filler_prompts}/{total_prompts} prompts with filler patterns ({filler_rate * 100:.0f}%)",
+            priority="medium",
+            teach_text=(
+                "Concise prompts save tokens AND get better results. AI models don't need "
+                "politeness markers — they respond to clear, direct instructions. Instead of "
+                "'Could you please help me refactor the auth module?', just say "
+                "'Refactor the auth module'. Same result, fewer tokens, often better output "
+                "because the signal-to-noise ratio is higher."
+            ),
+            auto_action="Rewrite verbose prompts into concise equivalents",
+            savings_estimate={"tokens": estimated_wasted_tokens, "prompts_affected": filler_prompts},
+        ))
+
+    return recs
+
+
 def detect(
     sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
 ) -> list[Recommendation]:
@@ -235,4 +583,9 @@ def detect(
     recs.extend(_detect_long_prompts(sessions))
     recs.extend(_detect_duplicate_context(sessions))
     recs.extend(_detect_model_opportunity(sessions, profile))
+    recs.extend(_detect_prompt_compression(sessions))
+    recs.extend(_detect_cached_context(sessions))
+    recs.extend(_compute_token_waste_score(sessions, profile))
+    recs.extend(_detect_context_window_growth(sessions))
+    recs.extend(_detect_prompt_simplification(sessions))
     return recs

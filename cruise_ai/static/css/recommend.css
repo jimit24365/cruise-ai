@@ -1,0 +1,88 @@
+/* ═══════════════════════════════════════════════════════
+   recommend.css — Recommendation cards page
+   Matches existing cruise_ai design language:
+   warm light palette, Space Grotesk, card-based layout
+   ═══════════════════════════════════════════════════════ */
+
+:root{
+  --bg:#FAF8F3; --surface:#FFFFFF; --surface-2:#FBF9F4; --tint:#F4EFE6;
+  --ink:#23211C; --ink-soft:#4A463E; --muted:#8C877A; --line:#EAE4D8; --line-2:#F1ECE2;
+  --accent:#E2542C; --good:#1F9254; --mid:#CF8A1A; --low:#CB5A45;
+  --blue:#3F6CC7; --blue-bg:#EAF0FB; --green-bg:#E6F4EC; --orange-bg:#FBEDE4;
+  --purple:#7C5BD6; --purple-bg:#F1ECFA; --purple-line:#DFD3F2;
+  --disp:"Space Grotesk",sans-serif; --body:"Inter",sans-serif; --mono:"JetBrains Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:0 24px 60px}
+
+/* Header */
+header{padding:46px 0 18px}
+h1{font-family:var(--disp);font-weight:600;font-size:clamp(28px,4vw,40px);letter-spacing:-.02em;line-height:1.05}
+.subtitle{color:var(--muted);font-size:14px;margin-top:6px}
+
+/* Navigation */
+.nav-links{display:flex;gap:6px;margin-top:18px;border-bottom:1px solid var(--line);padding-bottom:0}
+.nav-links a{font-family:var(--body);font-weight:500;font-size:14px;color:var(--muted);text-decoration:none;padding:11px 16px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a.active{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* Filter tabs */
+.filter-tabs{display:flex;gap:8px;margin:24px 0 20px;flex-wrap:wrap}
+.filter-btn{font-family:var(--mono);font-size:11px;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);border-radius:999px;padding:6px 14px;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.filter-btn:hover{border-color:var(--muted);color:var(--ink)}
+.filter-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* Card grid */
+.rec-cards{display:flex;flex-direction:column;gap:14px}
+.rec-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px 22px;transition:border-color .15s}
+.rec-card:hover{border-color:var(--muted)}
+
+/* Card header */
+.rc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.rc-headline{font-family:var(--disp);font-weight:600;font-size:16px;flex:1}
+.rc-badges{display:flex;gap:6px;align-items:center;flex-shrink:0}
+
+/* Priority badge */
+.rc-priority{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;border-radius:100px;padding:3px 9px;font-weight:600}
+.rc-priority.high{color:var(--accent);background:var(--orange-bg);border:1px solid #F0C4B4}
+.rc-priority.medium{color:var(--mid);background:#FBF4E4;border:1px solid #EAD9B0}
+.rc-priority.low{color:var(--muted);background:var(--surface-2);border:1px solid var(--line)}
+
+/* Trust level */
+.rc-trust{font-family:var(--mono);font-size:10px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.rc-trust-icon{width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-size:11px}
+.trust-validated{color:var(--good)}
+.trust-observed{color:var(--blue)}
+.trust-heuristic{color:var(--mid)}
+.trust-experimental{color:var(--purple)}
+
+/* Card body */
+.rc-detail{font-size:13.5px;color:var(--ink-soft);margin-top:10px;line-height:1.5}
+.rc-category{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:8px}
+.rc-evidence{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px}
+
+/* Savings estimate */
+.rc-savings{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--good);background:var(--green-bg);border:1px solid #BFE3CC;border-radius:100px;padding:4px 11px;margin-top:10px}
+
+/* Teach text (expandable) */
+.rc-teach{margin-top:12px}
+.rc-teach-toggle{font-family:var(--mono);font-size:11px;color:var(--accent);cursor:pointer;background:none;border:none;padding:0}
+.rc-teach-toggle:hover{text-decoration:underline}
+.rc-teach-body{font-size:13px;color:var(--ink-soft);background:var(--tint);border-radius:8px;padding:12px 14px;margin-top:8px;display:none;line-height:1.5}
+.rc-teach-body.open{display:block}
+
+/* Feedback buttons */
+.rc-feedback{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.rc-fb-btn{font-family:var(--mono);font-size:11px;border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);border-radius:8px;padding:6px 12px;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
+.rc-fb-btn:hover{border-color:var(--muted);color:var(--ink)}
+.rc-fb-btn.sent{background:var(--green-bg);border-color:#BFE3CC;color:var(--good);cursor:default}
+
+/* Loading / empty state */
+.loading{font-family:var(--mono);font-size:12px;color:var(--muted);padding:40px 0;text-align:center}
+.empty{font-size:14px;color:var(--muted);text-align:center;padding:60px 20px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+
+@media(max-width:680px){
+  .rc-head{flex-direction:column;gap:8px}
+  .rc-badges{align-self:flex-start}
+}

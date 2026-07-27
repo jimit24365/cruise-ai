@@ -266,6 +266,64 @@ class ProfileHandler(http.server.BaseHTTPRequestHandler):
                     pass
             self.send_json(state)
 
+        elif path == "/recommend":
+            self._serve_file("static/recommend.html")
+
+        elif path == "/dashboard":
+            self._serve_file("static/dashboard.html")
+
+        elif path == "/api/recommend":
+            from cruise_ai.recommendations.engine import recommend
+            from cruise_ai.adapters._registry import get_session_adapters, run_adapters
+
+            profile = load_profile()
+            try:
+                from cruise_ai.paths import scan_results_path as _srp
+                import json as _json
+
+                sr_path = _srp()
+                scan_results = _json.loads(sr_path.read_text()) if sr_path.is_file() else {}
+            except Exception:
+                scan_results = {}
+
+            try:
+                sessions = self._load_sessions_for_api(profile)
+            except Exception:
+                sessions = []
+
+            recs = recommend(sessions, profile, scan_results)
+            # Optional category filter
+            query = self.path.split("?", 1)[1] if "?" in self.path else ""
+            params = dict(p.split("=", 1) for p in query.split("&") if "=" in p)
+            cat = params.get("category", "")
+            if cat:
+                recs = [r for r in recs if r.category == cat]
+
+            from dataclasses import asdict
+
+            self.send_json([asdict(r) for r in recs])
+
+        elif path == "/api/dashboard":
+            from cruise_ai.recommendations.analytics import dashboard as _dashboard
+
+            profile = load_profile()
+            try:
+                sessions = self._load_sessions_for_api(profile)
+            except Exception:
+                sessions = []
+
+            self.send_json(_dashboard(sessions, profile))
+
+        elif path == "/api/feedback/summary":
+            from cruise_ai.recommendations.feedback import get_feedback_summary
+
+            self.send_json(get_feedback_summary())
+
+        elif path == "/api/longitudinal":
+            from cruise_ai.recommendations.longitudinal import compare_snapshots
+
+            self.send_json(compare_snapshots())
+
         elif path == "/api/scan-results":
             from cruise_ai.paths import scan_results_path
 
@@ -314,6 +372,15 @@ class ProfileHandler(http.server.BaseHTTPRequestHandler):
         else:
             self.send_response(404)
             self.end_headers()
+
+    def _load_sessions_for_api(self, profile):
+        """Load sessions from adapters for API endpoints."""
+        from cruise_ai.adapters._registry import get_session_adapters, run_adapters
+
+        adapters = get_session_adapters()
+        enabled_sources = [a.name for a in adapters]
+        sessions, _, _ = run_adapters(profile, enabled_sources, {})
+        return sessions
 
     def _serve_live_events(self):
         """Localhost SSE stream: pushes watcher status whenever it changes.
@@ -405,6 +472,36 @@ class ProfileHandler(http.server.BaseHTTPRequestHandler):
                 self.send_json({"status": "cleared"})
             else:
                 self.send_json({"error": "invalid avatar data"}, status=400)
+
+        elif path == "/api/feedback":
+            if not self._check_localhost_origin():
+                return
+            try:
+                length = int(self.headers.get("Content-Length", 0))
+                body = self.rfile.read(length) if length else b""
+                data = json.loads(body) if body else {}
+            except (json.JSONDecodeError, ValueError):
+                self.send_json({"error": "invalid JSON"}, status=400)
+                return
+            action_type = data.get("action_type", "")
+            category = data.get("category", "")
+            response = data.get("response", "")
+            if not action_type or not category or not response:
+                self.send_json(
+                    {"error": "action_type, category, and response are required"},
+                    status=400,
+                )
+                return
+            from cruise_ai.recommendations.feedback import record_feedback
+
+            entry = record_feedback(
+                action_type=action_type,
+                category=category,
+                response=response,
+                headline=data.get("headline", ""),
+                notes=data.get("notes", ""),
+            )
+            self.send_json({"status": "recorded", "entry": entry})
 
         elif path == "/api/profile/rebuild":
             if not self._check_localhost_origin():
@@ -511,6 +608,8 @@ def run_server(port=None, live=False, open_browser=False):
     Profile:  http://localhost:{port}/profile
     Report:   http://localhost:{port}/report
     Preview:  http://localhost:{port}/preview
+    Recommend: http://localhost:{port}/recommend
+    Dashboard: http://localhost:{port}/dashboard
 
     API:
     GET  /api/profile        - full profile JSON (localhost)
@@ -523,6 +622,11 @@ def run_server(port=None, live=False, open_browser=False):
     GET  /api/live/events     - SSE status stream (live mode)
     POST /api/profile/config  - update visibility config
     POST /api/profile/rebuild - rescan + rescore
+    GET  /api/recommend       - personalized recommendations
+    GET  /api/dashboard       - usage analytics dashboard
+    POST /api/feedback        - record recommendation feedback
+    GET  /api/feedback/summary - feedback stats
+    GET  /api/longitudinal    - longitudinal trend data
 
     Press Ctrl+C to stop
     """)

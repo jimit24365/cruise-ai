@@ -524,6 +524,16 @@
       scores and suppress dismissed suggestions. All feedback stored locally only.</p>
     </div>
   </div>
+
+  <div class="cmd" id="c-config">
+    <div class="syn"><span class="cliP">python3 -m cruise_ai</span> <b>config</b> <span class="opt">--show</span> <span class="opt">--enable-fingerprinting</span> <span class="opt">--disable-fingerprinting</span> <span class="opt">--set</span> KEY=VALUE</div>
+    <div class="bd">
+      <p class="desc">View or modify cruise-ai configuration. Settings are stored in
+      <code>~/.cruise-ai/data/config.json</code>. Use <code>--show</code> to display current
+      values, <code>--enable-fingerprinting</code> to opt-in to SHA-256 duplicate detection,
+      or <code>--set</code> for generic key=value pairs.</p>
+    </div>
+  </div>
   </section>
 
   <section id="views">

@@ -2737,6 +2737,33 @@ def main():
         "--store", type=str, help="Registry store directory (default: ~/.cruise_ai/registry)"
     )
 
+    # ── config ─────────────────────────────────────────────────────────
+    config_p = subparsers.add_parser(
+        "config",
+        help="View or modify cruise-ai configuration",
+    )
+    config_p.add_argument(
+        "--show",
+        action="store_true",
+        help="Display current configuration",
+    )
+    config_p.add_argument(
+        "--enable-fingerprinting",
+        action="store_true",
+        help="Opt-in to SHA-256 fingerprint mode",
+    )
+    config_p.add_argument(
+        "--disable-fingerprinting",
+        action="store_true",
+        help="Opt-out of fingerprint mode",
+    )
+    config_p.add_argument(
+        "--set",
+        nargs="+",
+        metavar="KEY=VALUE",
+        help="Set configuration values (e.g. --set theme=dark editor=vim)",
+    )
+
     # ── Legacy top-level flags (backward compat) ────────────────────────
     parser.add_argument("--serve", action="store_true", help="Start profile server after building")
     parser.add_argument(
@@ -2784,6 +2811,7 @@ def main():
         "dashboard",
         "teach",
         "feedback",
+        "config",
     ]
     argv = sys.argv[1:]
     first = next((a for a in argv if not a.startswith("-")), None)
@@ -2836,6 +2864,10 @@ def main():
         print()
         print(cliui.guide())
         print()
+    elif args.command == "config":
+        from cruise_ai.config_cmd import cmd_config
+
+        cmd_config(args)
     else:
         # Legacy flag routing (no subcommand given)
         _handle_legacy(args)

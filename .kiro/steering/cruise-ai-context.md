@@ -15,7 +15,7 @@ cruise-ai is a self-driven AI developer coaching tool. It observes how you use A
 
 ```
 cruise_ai/
-├── recommendations/        # OUR ADDITION — the coaching engine
+├── recommendations/        # Coaching engine
 │   ├── types.py            # Recommendation dataclass + CONFIDENCE_THRESHOLD
 │   ├── engine.py           # Orchestrator: runs detectors, feedback adjust, gate, sort
 │   ├── analytics.py        # Usage/Cost/Timeline dashboards
@@ -25,27 +25,39 @@ cruise_ai/
 │   ├── learning.py         # Teach Me / Why This? / tutorials
 │   ├── feedback.py         # User feedback storage + confidence adjustment
 │   ├── fingerprint.py      # Opt-in SHA-256 duplicate detection
-│   └── longitudinal.py     # Pre/post metric tracking
+│   ├── longitudinal.py     # Pre/post metric tracking
+│   ├── personalization.py  # Persona-based tuning
+│   ├── mcp_discovery.py    # MCP tool/server recommendations
+│   ├── hooks.py            # Git/PR hook automation
+│   ├── eval_harness.py     # Evaluation opportunity detection
+│   ├── health_score.py     # AI Health Score composite metric
+│   ├── architecture_memory.py  # Architecture doc generation
+│   ├── eval_metrics.py     # Precision/recall measurement (analysis tool)
+│   └── calibration.py      # Threshold calibration from feedback
 ├── adapters/               # Data collectors (Kiro, Claude Code, Cursor, Codex, git, etc.)
-├── scoring.py              # Dimension scoring (untouched — fingerprint-pinned)
+├── scoring.py              # Dimension scoring (fingerprint-pinned)
 ├── aggregator.py           # Signal computation
 ├── build_profile.py        # CLI entry point + all commands
-├── static/                 # Vanilla HTML/CSS/JS UI (served at localhost:7749)
-│   ├── profile.html
-│   ├── report.html
-│   ├── howitworks.html
+├── config_cmd.py           # `cruise-ai config` subcommand
+├── hub.py                  # HTTP server (/api/* + static pages at localhost:7749)
+├── static/                 # Vanilla HTML/CSS/JS UI
+│   ├── profile.html, report.html, howitworks.html
+│   ├── recommend.html, dashboard.html
 │   └── js/, css/
-├── hub.py                  # HTTP server (serves /api/* + static pages)
+├── examples/               # Example outputs
+├── docs/                   # Bundled documentation
 └── paths.py                # All path constants
 ```
 
-## CLI Commands (Our Additions)
+## CLI Commands
 
 ```bash
+cruise-ai                        # Full scan + build profile
 cruise-ai recommend [--category <cat>] [--json] [--min-confidence N]
 cruise-ai dashboard [--json]
 cruise-ai teach [topic]
 cruise-ai feedback [acted|dismissed|useful|not_useful] --action-type <type>
+cruise-ai config [--enable-fingerprinting] [--set key=value]
 ```
 
 ## Key Design Decisions
@@ -56,50 +68,52 @@ cruise-ai feedback [acted|dismissed|useful|not_useful] --action-type <type>
 - **Feedback loop** — dismissed recs suppressed, confidence adjusted from user feedback
 - **Confidence gate** — only show recommendations with confidence ≥ 60%
 - **Never touch scoring.py** — formula fingerprint is pinned, scoring is the upstream's domain
+- **Calibration** — threshold auto-tuning from historical feedback + longitudinal data
 
 ## Tests
 
 ```bash
-python3 -m pytest -o "addopts=" -q   # Run all (currently 746 pass)
-python3 -m pytest tests/test_recommendations.py  # Just our recommendation tests (30)
+python3 -m pytest -o "addopts=" -q   # Run all (currently 920+ pass)
+python3 -m pytest tests/test_recommendations.py -o "addopts=" -q  # Recommendation tests
+python3 -m pytest tests/test_eval_calibration.py -o "addopts=" -q  # Eval/calibration tests
 ```
 
 ## What's Done
 
 - ✅ Full rebrand from nextmillionai → cruise_ai
-- ✅ P0 recommendation engine (5 categories, 30 tests)
-- ✅ CLI commands: recommend, dashboard, teach, feedback
+- ✅ Recommendation engine (7 categories, 15+ detectors, 11 registered in engine.py)
+- ✅ CLI commands: recommend, dashboard, teach, feedback, config
 - ✅ Trust infrastructure: TRUST-MODEL.md, CALIBRATION.md, feedback, fingerprint, longitudinal
 - ✅ Solution documentation (6 docs with mermaid diagrams)
 - ✅ Feature roadmap (ROADMAP.md)
+- ✅ Web UI: recommend.html, dashboard.html, API endpoints, feedback buttons
+- ✅ Token optimization: prompt compression, cached context, simplification, waste score
+- ✅ MCP discovery: recommendation + generator + API→MCP suggestion
+- ✅ Hook automation: recommendation + git hook generator + PR hooks
+- ✅ Eval harness: recommendation + generator
+- ✅ Context window analysis, AI health score, skill merge/split
+- ✅ Architecture memory: doc generation from sessions
+- ✅ Personalization: persona-based recommendation tuning
+- ✅ Precision/recall measurement (eval_metrics.py)
+- ✅ Threshold calibration (calibration.py) with longitudinal integration
+- ✅ PyPI publishing readiness (classifiers, keywords, MANIFEST.in)
+- ✅ Community contribution guidelines (CONTRIBUTING.md rewritten)
+- ✅ GitHub Actions CI (matrix 3.9–3.12, lint, typecheck, test)
+- ✅ Real data validation script
 
-## What's Next (Priority Order)
+## What's Next (Future / Community)
 
-1. **Web UI Integration** — API endpoints + HTML pages for recommend/dashboard/feedback
-2. **P1 features** — Prompt Compression, Cached Context, Skill Revision, MCP Recommendation
-3. **Real data validation** — Run against actual ~/.kiro sessions and validate recommendations
-4. **Hook Automation** — Detect repetitive commands → generate git/PR hooks
-5. **Eval Harness** — Detect evaluation opportunities
-
-## UI Integration Plan (Next Session)
-
-The existing UI is vanilla HTML/JS served from `cruise_ai/static/`. Backend serves JSON at `/api/*`.
-
-Steps:
-1. Add API routes in `hub.py`:
-   - `GET /api/recommend` → JSON array of recommendations
-   - `GET /api/dashboard` → dashboard data
-   - `POST /api/feedback` → record feedback
-2. Add `static/recommend.html` — cards UI matching existing design
-3. Add `static/dashboard.html` — usage/cost/model charts
-4. Add navigation tab for the new pages
-5. Wire feedback buttons on recommendation cards
+1. **Plugin marketplace** — community-contributed detectors installable via pip
+2. **Team mode** — aggregate coaching across team members (opt-in, privacy-respecting)
+3. **VS Code extension** — inline recommendations in editor sidebar
+4. **Slack/Teams bot** — periodic coaching digest notifications
+5. **Public benchmark** — anonymized precision/recall leaderboard for detectors
+6. **Monthly trend reports** — long-form analysis emailed or served via UI
 
 ## Conventions
 
 - **Commits:** Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`)
-- **Branch:** work on `main` (this is our own repo, not a fork contributing upstream)
+- **Branch:** feature branches off main
 - **Tests:** must pass before push. Run: `python3 -m pytest -o "addopts=" -q`
 - **No framework in UI** — vanilla HTML/CSS/JS (match existing style)
-- **Doc index:** all new .md files must be registered in CURRENT.md (CI enforces)
 - **Formula fingerprint:** if scoring.py changes, run `python3 scripts/formula_fingerprint.py --update`

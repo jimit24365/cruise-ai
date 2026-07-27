@@ -1,0 +1,82 @@
+/* ═══════════════════════════════════════════════════════
+   dashboard.css — Analytics dashboard page
+   Matches existing cruise_ai design language:
+   warm light palette, Space Grotesk, card-based layout
+   ═══════════════════════════════════════════════════════ */
+
+:root{
+  --bg:#FAF8F3; --surface:#FFFFFF; --surface-2:#FBF9F4; --tint:#F4EFE6;
+  --ink:#23211C; --ink-soft:#4A463E; --muted:#8C877A; --line:#EAE4D8; --line-2:#F1ECE2;
+  --accent:#E2542C; --good:#1F9254; --mid:#CF8A1A; --low:#CB5A45;
+  --blue:#3F6CC7; --blue-bg:#EAF0FB; --green-bg:#E6F4EC; --orange-bg:#FBEDE4;
+  --purple:#7C5BD6; --purple-bg:#F1ECFA; --purple-line:#DFD3F2;
+  --disp:"Space Grotesk",sans-serif; --body:"Inter",sans-serif; --mono:"JetBrains Mono",monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:940px;margin:0 auto;padding:0 24px 60px}
+
+/* Header */
+header{padding:46px 0 18px}
+h1{font-family:var(--disp);font-weight:600;font-size:clamp(28px,4vw,40px);letter-spacing:-.02em;line-height:1.05}
+.subtitle{color:var(--muted);font-size:14px;margin-top:6px}
+
+/* Navigation */
+.nav-links{display:flex;gap:6px;margin-top:18px;border-bottom:1px solid var(--line);padding-bottom:0}
+.nav-links a{font-family:var(--body);font-weight:500;font-size:14px;color:var(--muted);text-decoration:none;padding:11px 16px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.nav-links a:hover{color:var(--ink)}
+.nav-links a.active{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* Sections */
+.stats-section{margin-top:32px}
+.stats-section h2{font-family:var(--disp);font-weight:600;font-size:19px;letter-spacing:-.01em;margin-bottom:14px}
+
+/* Stat cards */
+.stat-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.stat-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.sc-value{font-family:var(--disp);font-weight:700;font-size:26px;color:var(--ink)}
+.sc-label{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+
+/* Cost breakdown */
+.cost-total{font-family:var(--disp);font-weight:700;font-size:28px;color:var(--accent);margin-bottom:12px}
+.cost-detail{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+
+/* Bar chart (CSS-based) */
+.bar-chart{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.bar-row{display:flex;align-items:center;gap:12px}
+.bar-label{font-family:var(--mono);font-size:11px;color:var(--ink-soft);min-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;height:20px;background:var(--tint);border-radius:6px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:6px;background:var(--accent);transition:width .3s ease}
+.bar-value{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:50px;text-align:right}
+
+/* Projects table */
+.proj-table{width:100%;border-collapse:collapse;margin-top:10px}
+.proj-table th{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 12px;border-bottom:1px solid var(--line)}
+.proj-table td{font-size:13px;color:var(--ink-soft);padding:10px 12px;border-bottom:1px solid var(--line-2)}
+.proj-table tr:last-child td{border-bottom:none}
+
+/* Timeline (daily activity bars) */
+.timeline-chart{display:flex;align-items:flex-end;gap:2px;height:100px;padding:10px 0;overflow-x:auto}
+.tl-bar{flex:1;min-width:3px;max-width:12px;background:var(--accent);border-radius:2px 2px 0 0;opacity:.8;transition:opacity .15s}
+.tl-bar:hover{opacity:1}
+.tl-dates{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:4px}
+
+/* Longitudinal trends */
+.trend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px}
+.trend-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.trend-metric{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.trend-values{display:flex;align-items:baseline;gap:8px;margin-top:6px}
+.trend-current{font-family:var(--disp);font-weight:700;font-size:20px}
+.trend-change{font-family:var(--mono);font-size:11px;border-radius:100px;padding:2px 8px}
+.trend-change.improved{color:var(--good);background:var(--green-bg)}
+.trend-change.regressed{color:var(--low);background:var(--orange-bg)}
+.trend-change.neutral{color:var(--muted);background:var(--surface-2)}
+
+/* Loading / empty */
+.loading{font-family:var(--mono);font-size:12px;color:var(--muted);padding:40px 0;text-align:center}
+.empty{font-size:14px;color:var(--muted);text-align:center;padding:40px 20px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+
+@media(max-width:680px){
+  .stat-cards{grid-template-columns:1fr}
+  .bar-label{min-width:80px}
+}

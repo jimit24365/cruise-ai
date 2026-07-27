@@ -11,10 +11,26 @@ license = "MIT"
 requires-python = ">=3.9"
 dependencies = []
 authors = [{name = "Jimit Shah", email = "jimit24365@gmail.com"}]
+keywords = ["ai", "developer-tools", "coaching", "productivity", "coding-assistant"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
 
 [project.urls]
+Homepage = "https://github.com/jimit24365/cruise-ai"
 Repository = "https://github.com/jimit24365/cruise-ai"
 Issues = "https://github.com/jimit24365/cruise-ai/issues"
+Documentation = "https://github.com/jimit24365/cruise-ai/tree/main/docs"
+Changelog = "https://github.com/jimit24365/cruise-ai/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = ["ruff>=0.4", "mypy>=1.10", "pytest>=8", "pytest-cov>=5", "pre-commit>=3"]
@@ -26,7 +42,7 @@ cruise-ai = "cruise_ai.build_profile:main"
 include = ["cruise_ai*"]
 
 [tool.setuptools.package-data]
-cruise_ai = ["static/**/*", "docs/**/*"]
+cruise_ai = ["static/**/*", "docs/**/*", "examples/**/*"]
 
 [tool.ruff]
 target-version = "py39"

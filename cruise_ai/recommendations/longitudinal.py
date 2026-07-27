@@ -180,3 +180,88 @@ def compare_snapshots() -> dict[str, Any]:
         "trends": trends,
         "outcomes": data.get("outcomes", []),
     }
+
+
+def get_trend_data() -> dict[str, Any]:
+    """Return weekly aggregates from longitudinal snapshots for trend detection.
+
+    Groups snapshots by ISO week and computes totals for each week.
+
+    Returns:
+        Dict with 'weekly_aggregates': list of dicts with week, total_tokens,
+        session_count, and tools_used.
+    """
+    data = _load_data()
+    snapshots = data.get("snapshots", [])
+
+    if not snapshots:
+        return {"weekly_aggregates": []}
+
+    # Group snapshots by ISO week
+    weeks: dict[str, dict[str, Any]] = {}
+    for snap in snapshots:
+        date_str = snap.get("date", "")
+        if not date_str:
+            continue
+        try:
+            from datetime import date as _date
+            d = _date.fromisoformat(date_str)
+            week_key = f"{d.isocalendar()[0]}-W{d.isocalendar()[1]:02d}"
+        except (ValueError, TypeError):
+            continue
+
+        if week_key not in weeks:
+            weeks[week_key] = {
+                "week": week_key,
+                "total_tokens": 0,
+                "session_count": 0,
+                "tools_used": {},
+            }
+
+        metrics = snap.get("metrics", {})
+        # Approximate tokens from active hours (rough proxy)
+        active_hours = metrics.get("totalActiveHours") or 0
+        weeks[week_key]["total_tokens"] += int(active_hours * 5000)
+        weeks[week_key]["session_count"] += snap.get("recommendation_count", 1)
+
+    # Sort by week key
+    sorted_weeks = sorted(weeks.values(), key=lambda w: w["week"])
+    return {"weekly_aggregates": sorted_weeks}
+
+
+def compare_periods(
+    period1_data: dict[str, Any], period2_data: dict[str, Any]
+) -> dict[str, Any]:
+    """Compare two period snapshots for before/after analysis.
+
+    Args:
+        period1_data: First period metrics dict (e.g., from an earlier snapshot).
+        period2_data: Second period metrics dict (e.g., from a later snapshot).
+
+    Returns:
+        Dict with metric-level comparisons: {metric: {before, after, change, improved}}.
+    """
+    comparisons: dict[str, dict[str, Any]] = {}
+
+    all_keys = set(list(period1_data.keys()) + list(period2_data.keys()))
+    for key in all_keys:
+        before = period1_data.get(key)
+        after = period2_data.get(key)
+        if before is None or after is None:
+            continue
+        try:
+            before_f = float(before)
+            after_f = float(after)
+            change = after_f - before_f
+            pct = (change / before_f * 100) if before_f != 0 else 0.0
+            comparisons[key] = {
+                "before": before_f,
+                "after": after_f,
+                "change": round(change, 2),
+                "pct_change": round(pct, 1),
+                "improved": _is_improvement(key, before_f, after_f),
+            }
+        except (TypeError, ValueError):
+            continue
+
+    return comparisons

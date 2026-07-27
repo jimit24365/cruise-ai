@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — cruise_ai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Dashboard</h1>
+    <p class="subtitle">Usage stats, cost breakdown, and activity trends</p>
+    <nav class="nav-links">
+      <a href="/profile">Profile</a>
+      <a href="/report">Report</a>
+      <a href="/recommend">Recommend</a>
+      <a href="/dashboard" class="active">Dashboard</a>
+    </nav>
+  </header>
+
+  <section id="usageStats" class="stats-section">
+    <h2>Usage</h2>
+    <div class="stat-cards" id="statCards">
+      <div class="loading">Loading dashboard…</div>
+    </div>
+  </section>
+
+  <section id="costSection" class="stats-section">
+    <h2>Cost Breakdown</h2>
+    <div id="costBody"></div>
+  </section>
+
+  <section id="modelsSection" class="stats-section">
+    <h2>Model Usage</h2>
+    <div id="modelsBody"></div>
+  </section>
+
+  <section id="projectsSection" class="stats-section">
+    <h2>Projects</h2>
+    <div id="projectsBody"></div>
+  </section>
+
+  <section id="timelineSection" class="stats-section">
+    <h2>Daily Activity</h2>
+    <div id="timelineBody"></div>
+  </section>
+
+  <section id="longitudinalSection" class="stats-section">
+    <h2>Longitudinal Trends</h2>
+    <div id="longitudinalBody"></div>
+  </section>
+</div>
+
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>

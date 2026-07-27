@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recommendations — cruise_ai</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/recommend.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Recommendations</h1>
+    <p class="subtitle">Actionable coaching from your AI coding patterns</p>
+    <nav class="nav-links">
+      <a href="/profile">Profile</a>
+      <a href="/report">Report</a>
+      <a href="/recommend" class="active">Recommend</a>
+      <a href="/dashboard">Dashboard</a>
+    </nav>
+  </header>
+
+  <div class="filter-tabs" id="filterTabs">
+    <button class="filter-btn active" data-category="all">All</button>
+    <button class="filter-btn" data-category="analytics">Analytics</button>
+    <button class="filter-btn" data-category="token_optimization">Token Optimization</button>
+    <button class="filter-btn" data-category="skills">Skills</button>
+    <button class="filter-btn" data-category="project_memory">Project Memory</button>
+    <button class="filter-btn" data-category="learning">Learning</button>
+  </div>
+
+  <div id="recCards" class="rec-cards">
+    <div class="loading">Loading recommendations…</div>
+  </div>
+</div>
+
+<script src="/static/js/recommend.js"></script>
+</body>
+</html>

@@ -191,6 +191,427 @@ When this skill is active:
 """
 
 
+def _detect_skill_revision(sessions: list[Any], scan_results: dict[str, Any], profile: dict[str, Any] | None = None) -> list[Recommendation]:
+    """Recommend skill revision when skills are stale but usage patterns have changed.
+
+    If a skill file hasn't been modified in >30 days but related sessions show
+    different patterns, recommend revision. Confidence is boosted when skills
+    are part of mastered concepts in the learning path.
+    """
+    recs: list[Recommendation] = []
+    skills_list = scan_results.get("skills", [])
+    if not skills_list:
+        return recs
+
+    # Check for skills with modification timestamps
+    stale_skills: list[str] = []
+    for skill in skills_list:
+        if isinstance(skill, dict):
+            modified = skill.get("modified_days_ago", 0)
+            name = skill.get("name", skill.get("path", "unknown"))
+            if modified > 30:
+                stale_skills.append(name)
+        elif isinstance(skill, str):
+            # String-only entries — can't determine age, skip
+            continue
+
+    if not stale_skills:
+        return recs
+
+    # Check if recent sessions show patterns different from what skills encode
+    recent_tools: set[str] = set()
+    for s in sessions[-20:] if len(sessions) > 20 else sessions:
+        tools = getattr(s, "tool_calls_by_type", {})
+        if isinstance(tools, dict):
+            recent_tools.update(tools.keys())
+
+    if stale_skills and recent_tools:
+        # Boost confidence if skills concept is mastered in learning path
+        base_confidence = 65
+        try:
+            from cruise_ai.recommendations.learning_path import _is_concept_mastered
+            if profile and _is_concept_mastered("skills", sessions, profile, scan_results):
+                base_confidence = 75  # higher weight for users who've mastered skills
+        except Exception:
+            pass
+
+        recs.append(Recommendation(
+            category="skills",
+            headline=f"{len(stale_skills)} skill(s) unchanged for 30+ days — may need revision",
+            detail=(
+                f"Skills that haven't been updated may drift from your actual workflow. "
+                f"Stale skills: {', '.join(stale_skills[:5])}. "
+                f"Your recent sessions use tools ({', '.join(sorted(recent_tools)[:5])}) "
+                f"that may have evolved beyond what these skills encode."
+            ),
+            action_type="revise_skill",
+            trust_level="heuristic",
+            confidence=base_confidence,
+            evidence=f"{len(stale_skills)} skills >30 days old, {len(recent_tools)} tools in recent use",
+            priority="low",
+            teach_text=(
+                "Skills should evolve with your workflow. When you change how you work "
+                "(new tools, new patterns, new conventions) but your skills stay the same, "
+                "they can give outdated instructions. Review stale skills periodically "
+                "and update them to reflect current practices."
+            ),
+            auto_action="Compare stale skill instructions with recent session patterns and suggest updates",
+        ))
+
+    return recs
+
+
+def _detect_skill_health(sessions: list[Any], scan_results: dict[str, Any]) -> list[Recommendation]:
+    """Recommend cleanup when skills exist but aren't referenced in recent sessions.
+
+    If scan_results.skills exist but none are referenced in recent sessions,
+    they may be dead weight.
+    """
+    recs: list[Recommendation] = []
+    skills_list = scan_results.get("skills", [])
+    if not skills_list or len(sessions) < 5:
+        return recs
+
+    # Get skill names/paths
+    skill_names: set[str] = set()
+    for skill in skills_list:
+        if isinstance(skill, dict):
+            name = skill.get("name", skill.get("path", ""))
+            if name:
+                skill_names.add(name.lower())
+        elif isinstance(skill, str):
+            skill_names.add(skill.lower())
+
+    if not skill_names:
+        return recs
+
+    # Check if any skills appear in recent session context
+    referenced_skills: set[str] = set()
+    recent_sessions = sessions[-30:] if len(sessions) > 30 else sessions
+    for s in recent_sessions:
+        context_files = getattr(s, "context_files", None)
+        if context_files is None:
+            if isinstance(s, dict):
+                context_files = s.get("context_files", [])
+            else:
+                context_files = []
+        for f in context_files:
+            f_lower = str(f).lower() if f else ""
+            for skill_name in skill_names:
+                if skill_name in f_lower or f_lower.endswith("skill.md"):
+                    referenced_skills.add(skill_name)
+
+    unreferenced = skill_names - referenced_skills
+    if unreferenced and len(unreferenced) == len(skill_names):
+        recs.append(Recommendation(
+            category="skills",
+            headline=f"{len(unreferenced)} skill(s) exist but none referenced in recent sessions — consider cleanup",
+            detail=(
+                f"Found {len(skill_names)} configured skills but none appear in the "
+                f"context of your last {len(recent_sessions)} sessions. "
+                f"Unreferenced skills may be outdated or misconfigured. "
+                f"Consider removing or updating: {', '.join(sorted(unreferenced)[:5])}"
+            ),
+            action_type="cleanup_skills",
+            trust_level="heuristic",
+            confidence=62,
+            evidence=f"{len(unreferenced)}/{len(skill_names)} skills not referenced in {len(recent_sessions)} recent sessions",
+            priority="low",
+            teach_text=(
+                "Skills that are never loaded provide no value and can create confusion. "
+                "If your AI tool isn't picking up a skill, check:\n"
+                "- Is it in the right location (.kiro/skills/, .cursor/rules/)?\n"
+                "- Does it have the correct file name (SKILL.md)?\n"
+                "- Is it relevant to your current projects?\n"
+                "Remove skills you no longer use to keep your config clean."
+            ),
+            auto_action="Identify which skills are unused and suggest removal or relocation",
+        ))
+
+    return recs
+
+
+def _detect_skill_merge(
+    sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
+) -> list[Recommendation]:
+    """Detect skills with >70% overlap in triggers/patterns, recommend merge.
+
+    Compares skill triggers/tools/patterns pairwise. If two skills share
+    more than 70% of their associated tools or context files, recommend merging.
+    """
+    recs: list[Recommendation] = []
+    skills_list = scan_results.get("skills", [])
+    if len(skills_list) < 2:
+        return recs
+
+    # Build skill -> associated tools/patterns mapping
+    skill_patterns: dict[str, set[str]] = {}
+    for skill in skills_list:
+        if isinstance(skill, dict):
+            name = skill.get("name", skill.get("path", ""))
+            tools = set(skill.get("tools", []))
+            triggers = set(skill.get("triggers", []))
+            patterns = set(skill.get("patterns", []))
+            combined = tools | triggers | patterns
+            if name and combined:
+                skill_patterns[name] = combined
+        elif isinstance(skill, str):
+            # String-only: try to infer from session context_files
+            skill_patterns[skill] = set()
+
+    # If we can't get patterns from scan_results, try to infer from sessions
+    if all(len(v) == 0 for v in skill_patterns.values()):
+        # Build skill -> context_files association from sessions
+        for s in sessions:
+            context_files = getattr(s, "context_files", None)
+            if context_files is None and isinstance(s, dict):
+                context_files = s.get("context_files", [])
+            if not context_files:
+                continue
+            for f in context_files:
+                f_str = str(f).lower() if f else ""
+                for skill_name in skill_patterns:
+                    if skill_name.lower() in f_str:
+                        # Associate other context files with this skill
+                        skill_patterns[skill_name].update(
+                            str(cf) for cf in context_files if cf and str(cf) != str(f)
+                        )
+
+    # Pairwise overlap check
+    skill_names = list(skill_patterns.keys())
+    merge_candidates: list[tuple[str, str, float]] = []
+
+    for i in range(len(skill_names)):
+        for j in range(i + 1, len(skill_names)):
+            s1 = skill_patterns[skill_names[i]]
+            s2 = skill_patterns[skill_names[j]]
+            if not s1 or not s2:
+                continue
+            intersection = s1 & s2
+            union = s1 | s2
+            if union:
+                overlap = len(intersection) / len(union)
+                if overlap > 0.7:
+                    merge_candidates.append((skill_names[i], skill_names[j], overlap))
+
+    if merge_candidates:
+        # Report top merge candidate
+        merge_candidates.sort(key=lambda x: -x[2])
+        s1, s2, overlap = merge_candidates[0]
+        recs.append(Recommendation(
+            category="skills",
+            headline=f"Skills '{s1}' and '{s2}' have {overlap*100:.0f}% overlap — consider merging",
+            detail=(
+                f"Skills '{s1}' and '{s2}' share {overlap*100:.0f}% of their "
+                f"triggers/patterns/tools. Maintaining overlapping skills creates "
+                f"confusion about which to apply. Merging into a single comprehensive "
+                f"skill simplifies your configuration."
+            ),
+            action_type="merge_skills",
+            trust_level="heuristic",
+            confidence=68 if overlap > 0.8 else 63,
+            evidence=f"{overlap*100:.0f}% overlap between '{s1}' and '{s2}'",
+            priority="medium",
+            teach_text=(
+                "When two skills cover similar ground, they can conflict or create "
+                "ambiguity about which applies. Merging them into one gives clearer, "
+                "more consistent instructions to the AI."
+            ),
+            auto_action=f"Generate merged skill combining '{s1}' and '{s2}'",
+        ))
+
+    return recs
+
+
+def _detect_skill_split(
+    sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
+) -> list[Recommendation]:
+    """Detect skills referenced in very different contexts, recommend split.
+
+    If a single skill file is referenced across >3 unrelated projects,
+    it's likely too broad and should be split into focused skills.
+    """
+    recs: list[Recommendation] = []
+    skills_list = scan_results.get("skills", [])
+    if not skills_list:
+        return recs
+
+    # Get skill names
+    skill_names: list[str] = []
+    for skill in skills_list:
+        if isinstance(skill, dict):
+            name = skill.get("name", skill.get("path", ""))
+            if name:
+                skill_names.append(name)
+        elif isinstance(skill, str):
+            skill_names.append(skill)
+
+    if not skill_names:
+        return recs
+
+    # Track which projects each skill is used in
+    skill_projects: dict[str, set[str]] = {name: set() for name in skill_names}
+
+    for s in sessions:
+        # Get project path
+        project_path = getattr(s, "project_path", None)
+        if project_path is None and isinstance(s, dict):
+            project_path = s.get("project_path", "")
+        if not project_path:
+            continue
+
+        # Get context files
+        context_files = getattr(s, "context_files", None)
+        if context_files is None and isinstance(s, dict):
+            context_files = s.get("context_files", [])
+        if not context_files:
+            continue
+
+        for f in context_files:
+            f_str = str(f).lower() if f else ""
+            for skill_name in skill_names:
+                if skill_name.lower() in f_str or "skill" in f_str:
+                    skill_projects[skill_name].add(str(project_path))
+
+    # Check for skills used across >3 different projects
+    for skill_name, projects in skill_projects.items():
+        if len(projects) > 3:
+            recs.append(Recommendation(
+                category="skills",
+                headline=f"Skill '{skill_name}' used across {len(projects)} projects — consider splitting",
+                detail=(
+                    f"The skill '{skill_name}' is referenced in {len(projects)} different "
+                    f"project contexts. A skill spanning that many unrelated projects "
+                    f"may be too broad. Splitting into focused, project-type-specific "
+                    f"skills gives better, more relevant guidance."
+                ),
+                action_type="split_skill",
+                trust_level="heuristic",
+                confidence=65 if len(projects) > 4 else 63,
+                evidence=f"'{skill_name}' referenced in {len(projects)} projects",
+                priority="medium" if len(projects) > 4 else "low",
+                teach_text=(
+                    "A skill that applies everywhere may not be specific enough to help "
+                    "anywhere. Consider splitting broad skills into focused variants:\n"
+                    "- 'coding-standards' → 'python-standards', 'typescript-standards'\n"
+                    "- 'testing' → 'unit-testing', 'integration-testing'\n"
+                    "Each variant can give more precise, contextual guidance."
+                ),
+                auto_action=f"Analyze '{skill_name}' usage contexts and suggest split points",
+            ))
+
+    return recs
+
+
+# ── Known community skills matching tool/workflow patterns ──
+KNOWN_COMMUNITY_SKILLS: dict[str, dict[str, Any]] = {
+    "testing": {
+        "patterns": ["pytest", "jest", "mocha", "vitest", "test", "spec", "coverage"],
+        "skill_name": "tdd-workflow",
+        "description": "Test-Driven Development workflow with red-green-refactor patterns",
+    },
+    "deployment": {
+        "patterns": ["docker", "kubernetes", "helm", "terraform", "deploy", "ci/cd", "pipeline"],
+        "skill_name": "deployment-automation",
+        "description": "Automated deployment pipelines with rollback safety",
+    },
+    "documentation": {
+        "patterns": ["readme", "docs", "jsdoc", "docstring", "swagger", "typedoc", "markdown"],
+        "skill_name": "auto-documentation",
+        "description": "Auto-generate and maintain project documentation",
+    },
+    "refactoring": {
+        "patterns": ["refactor", "extract", "rename", "move", "inline", "cleanup", "lint"],
+        "skill_name": "safe-refactoring",
+        "description": "Guided refactoring with automated verification steps",
+    },
+    "security": {
+        "patterns": ["auth", "jwt", "oauth", "security", "encrypt", "credential", "secret"],
+        "skill_name": "security-review",
+        "description": "Automated security analysis and vulnerability detection",
+    },
+    "database": {
+        "patterns": ["sql", "migration", "schema", "orm", "prisma", "sequelize", "typeorm"],
+        "skill_name": "db-migration-safety",
+        "description": "Safe database migrations with rollback plans",
+    },
+}
+
+
+def _detect_skill_marketplace(
+    sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
+) -> list[Recommendation]:
+    """Recommend community skills based on user's tool/workflow patterns.
+
+    Matches session activity against known community skill categories and
+    recommends installation when patterns are strong.
+    """
+    recs: list[Recommendation] = []
+    if not sessions or len(sessions) < 3:
+        return recs
+
+    # Collect all tool names and commands
+    all_tools: list[str] = []
+    all_commands: list[str] = []
+    for s in sessions:
+        if isinstance(s, dict):
+            tool = s.get("tool_name", "")
+            commands = s.get("commands", [])
+        else:
+            tool = getattr(s, "tool_name", "") or getattr(s, "tool", "")
+            commands = getattr(s, "commands", []) or []
+        if tool:
+            all_tools.append(tool.lower())
+        for cmd in commands:
+            if isinstance(cmd, str):
+                all_commands.append(cmd.lower())
+
+    # Also check existing skills to avoid recommending what's already installed
+    existing_skills = set()
+    skills_data = scan_results.get("skills", [])
+    for skill in skills_data:
+        if isinstance(skill, str):
+            existing_skills.add(skill.lower())
+        elif isinstance(skill, dict):
+            existing_skills.add(skill.get("name", "").lower())
+
+    # Match patterns to community skills
+    combined_text = " ".join(all_tools + all_commands)
+    for category, info in KNOWN_COMMUNITY_SKILLS.items():
+        skill_name = info["skill_name"]
+        if skill_name.lower() in existing_skills:
+            continue
+
+        pattern_matches = sum(
+            1 for p in info["patterns"] if p in combined_text
+        )
+        if pattern_matches >= 2:
+            recs.append(Recommendation(
+                category="skills",
+                headline=f"Your {category} patterns match the '{skill_name}' community skill",
+                detail=(
+                    f"Detected {pattern_matches} {category}-related patterns in your sessions. "
+                    f"The '{skill_name}' community skill provides: {info['description']}. "
+                    f"Installing it would give your AI tool specialized guidance for {category} tasks."
+                ),
+                action_type="install_community_skill",
+                trust_level="heuristic",
+                confidence=63,
+                evidence=f"{pattern_matches} pattern matches for '{category}' category",
+                priority="low",
+                teach_text=(
+                    "Community skills are pre-built instruction sets shared by the community. "
+                    "They encode best practices for specific workflows (testing, deployment, etc.) "
+                    "so your AI tool knows HOW to approach these tasks correctly without you "
+                    "having to explain the workflow each time."
+                ),
+                auto_action=f"Install the '{skill_name}' community skill",
+                savings_estimate={"skill_name": skill_name, "category": category},
+            ))
+
+    return recs
+
+
 def detect(
     sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
 ) -> list[Recommendation]:
@@ -198,4 +619,9 @@ def detect(
     recs: list[Recommendation] = []
     recs.extend(_detect_tool_patterns(sessions))
     recs.extend(_detect_underutilized_tools(sessions))
+    recs.extend(_detect_skill_revision(sessions, scan_results, profile))
+    recs.extend(_detect_skill_health(sessions, scan_results))
+    recs.extend(_detect_skill_merge(sessions, profile, scan_results))
+    recs.extend(_detect_skill_split(sessions, profile, scan_results))
+    recs.extend(_detect_skill_marketplace(sessions, profile, scan_results))
     return recs
