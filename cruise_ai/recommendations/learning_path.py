@@ -246,6 +246,91 @@ _CONCEPT_RECOMMENDATIONS: dict[str, dict[str, str]] = {
 }
 
 
+def _compute_level_from_normalized(norm: dict[str, Any], scan_results: dict[str, Any]) -> dict[str, Any]:
+    """Compute learning path from normalized signals when sessions aren't available."""
+    completed: list[str] = []
+    remaining: list[str] = []
+
+    total_sessions = norm.get("totalSessions", 0)
+    mcp_server_count = norm.get("mcpServerCount", 0)
+    model_count = norm.get("modelCount", 0)
+    unique_tool_count = norm.get("uniqueToolCount", 0)
+    skills_list = scan_results.get("skills", [])
+    mcps_list = scan_results.get("mcps", [])
+    hooks_list = scan_results.get("hooks", [])
+    config_files = scan_results.get("config_files", [])
+
+    # basic_prompting: mastered if 10+ sessions
+    if total_sessions >= 10:
+        completed.append("basic_prompting")
+    else:
+        remaining.append("basic_prompting")
+
+    # tool_usage: mastered if 3+ unique tools
+    if unique_tool_count >= 3:
+        completed.append("tool_usage")
+    else:
+        remaining.append("tool_usage")
+
+    # skills: mastered if 3+ skills
+    if len(skills_list) >= 3:
+        completed.append("skills")
+    else:
+        remaining.append("skills")
+
+    # mcps: mastered if 2+ MCP servers
+    if len(mcps_list) >= 2 or mcp_server_count >= 2:
+        completed.append("mcps")
+    else:
+        remaining.append("mcps")
+
+    # hooks: mastered if 2+ hooks
+    if len(hooks_list) >= 2:
+        completed.append("hooks")
+    else:
+        remaining.append("hooks")
+
+    # memory: mastered if project memory files exist
+    memory_indicators = ["CLAUDE.md", "AGENTS.md", "steering", ".cursorrules"]
+    has_memory = any(
+        any(ind in str(f) for ind in memory_indicators)
+        for f in config_files
+    ) if config_files else False
+    if has_memory:
+        completed.append("memory")
+    else:
+        remaining.append("memory")
+
+    # eval_harness: hard to determine from normalized alone
+    remaining.append("eval_harness")
+
+    # multi_model: mastered if 3+ models
+    if model_count >= 3:
+        completed.append("multi_model")
+    else:
+        remaining.append("multi_model")
+
+    # automation: mastered if hooks + skills + MCPs all present
+    if (len(hooks_list) >= 1 and len(skills_list) >= 2 and
+            (len(mcps_list) >= 1 or mcp_server_count >= 1) and total_sessions >= 20):
+        completed.append("automation")
+    else:
+        remaining.append("automation")
+
+    mastered_count = len(completed)
+    total_count = len(CONCEPTS)
+    current_level = _classify_level(mastered_count)
+    progress_pct = int((mastered_count / total_count) * 100) if total_count > 0 else 0
+    next_topics = remaining[:3]
+
+    return {
+        "current_level": current_level,
+        "completed_topics": completed,
+        "next_topics": next_topics,
+        "progress_pct": progress_pct,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Detector
 # ---------------------------------------------------------------------------
@@ -262,13 +347,22 @@ def detect(
     recs: list[Recommendation] = []
 
     try:
-        path = compute_learning_path(sessions, profile, scan_results)
+        norm = scan_results.get("normalized", {}) if scan_results else {}
+
+        # Compute path from sessions or normalized data
+        if sessions:
+            path = compute_learning_path(sessions, profile, scan_results)
+        elif norm and norm.get("totalSessions", 0) >= 3:
+            path = _compute_level_from_normalized(norm, scan_results)
+        else:
+            return recs
+
         next_topics = path.get("next_topics", [])
         current_level = path.get("current_level", "beginner")
         progress_pct = path.get("progress_pct", 0)
 
         # Need minimum sessions before recommending learning path
-        total_sessions = profile.get("total_sessions", len(sessions))
+        total_sessions = profile.get("total_sessions", len(sessions)) if sessions else norm.get("totalSessions", 0)
         if total_sessions < 3:
             return recs
 
@@ -280,6 +374,8 @@ def detect(
         rec_info = _CONCEPT_RECOMMENDATIONS.get(next_concept, {})
 
         if rec_info:
+            # Slightly lower confidence for normalized-based
+            confidence = 67 if not sessions else 72
             recs.append(Recommendation(
                 category="learning",
                 headline=rec_info["headline"],
@@ -289,7 +385,7 @@ def detect(
                 ),
                 action_type="advance_learning_path",
                 trust_level="observed",
-                confidence=72,
+                confidence=confidence,
                 evidence=(
                     f"Learning path: {current_level} ({progress_pct}% complete). "
                     f"Next concept: {next_concept}"

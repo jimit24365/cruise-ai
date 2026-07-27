@@ -428,6 +428,43 @@ def _trend_growth_percent(values: list[int | float]) -> float:
     return ((values[-1] - values[0]) / values[0]) * 100
 
 
+def _detect_personalization_from_normalized(norm: dict[str, Any]) -> list[Recommendation]:
+    """Derive personalization recommendations from normalized scan signals."""
+    recs: list[Recommendation] = []
+    if not norm:
+        return recs
+
+    marathon_count = norm.get("marathonSessionCount", 0)
+    total_sessions = norm.get("totalSessions", 0)
+    longest_session_minutes = norm.get("longestSessionMinutes", 0)
+
+    # Marathon session pattern detection
+    if total_sessions > 10 and marathon_count > 0:
+        marathon_ratio = marathon_count / total_sessions
+        if marathon_ratio > 0.1:
+            recs.append(Recommendation(
+                category="personalization",
+                headline=f"{marathon_ratio*100:.0f}% of sessions are marathons — your workflow favors long sessions",
+                detail=(
+                    f"{marathon_count} of {total_sessions} sessions are marathon-length "
+                    f"(longest: {longest_session_minutes} min). This is a personalization signal — "
+                    f"your tooling should support long contexts well (project memory, steering docs)."
+                ),
+                action_type="optimize_prompts",
+                trust_level="heuristic",
+                confidence=60,
+                evidence=f"{marathon_count}/{total_sessions} marathon sessions, longest={longest_session_minutes}min (normalized)",
+                priority="low",
+                teach_text=(
+                    "Long sessions accumulate context and can become expensive. "
+                    "If you prefer long sessions, ensure you have good project memory "
+                    "configured so early context isn't lost."
+                ),
+            ))
+
+    return recs
+
+
 # ─── Main Detector Interface ─────────────────────────────────────────────────
 
 
@@ -440,29 +477,35 @@ def detect(
     - Relative threshold violations (per-user baselines)
     - Pattern friction analysis
     - Usage trend detection (if longitudinal data available)
+    - Normalized scan signals (when sessions unavailable)
     """
     recs: list[Recommendation] = []
-    if not sessions:
-        return recs
 
-    try:
-        # 1. Relative thresholds
-        baseline = calculate_baseline(sessions)
-        recs.extend(_check_threshold_violations(sessions, baseline))
-
-        # 2. Pattern mining + friction
-        patterns = mine_workflow_patterns(sessions)
-        recs.extend(_pattern_friction_recommendations(patterns))
-
-        # 3. Trend detection (requires longitudinal data)
+    # Session-based detection
+    if sessions:
         try:
-            from cruise_ai.recommendations.longitudinal import get_trend_data
-            trend_data = get_trend_data()
-            recs.extend(detect_trends(trend_data))
-        except Exception:
-            pass  # longitudinal data may not be available
+            # 1. Relative thresholds
+            baseline = calculate_baseline(sessions)
+            recs.extend(_check_threshold_violations(sessions, baseline))
 
-    except Exception:
-        pass  # never crash
+            # 2. Pattern mining + friction
+            patterns = mine_workflow_patterns(sessions)
+            recs.extend(_pattern_friction_recommendations(patterns))
+
+            # 3. Trend detection (requires longitudinal data)
+            try:
+                from cruise_ai.recommendations.longitudinal import get_trend_data
+                trend_data = get_trend_data()
+                recs.extend(detect_trends(trend_data))
+            except Exception:
+                pass  # longitudinal data may not be available
+
+        except Exception:
+            pass  # never crash
+
+    # Normalized-signal detection
+    norm = scan_results.get("normalized", {}) if scan_results else {}
+    if norm:
+        recs.extend(_detect_personalization_from_normalized(norm))
 
     return recs

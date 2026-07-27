@@ -612,16 +612,108 @@ def _detect_skill_marketplace(
     return recs
 
 
+def _detect_from_normalized(norm: dict[str, Any], scan_results: dict[str, Any]) -> list[Recommendation]:
+    """Derive skill recommendations from normalized scan signals."""
+    recs: list[Recommendation] = []
+    if not norm:
+        return recs
+
+    total_sessions = norm.get("totalSessions", 0)
+    unique_tool_count = norm.get("uniqueToolCount", 0)
+    skills_list = scan_results.get("skills", [])
+
+    # No skills AND totalSessions > 20 -> create first skill
+    if not skills_list and total_sessions > 20:
+        recs.append(Recommendation(
+            category="skills",
+            headline="No skills configured after 20+ sessions — create your first skill",
+            detail=(
+                f"You have {total_sessions} sessions but no skills configured. "
+                f"Skills encode your workflow patterns so the AI follows them automatically "
+                f"without you re-explaining each session."
+            ),
+            action_type="create_skill",
+            trust_level="heuristic",
+            confidence=70,
+            evidence=f"0 skills, {total_sessions} sessions (from scan normalized data)",
+            priority="medium",
+            teach_text=(
+                "A Skill is a reusable instruction set that tells your AI tool HOW to use "
+                "specific tools or follow specific patterns. Instead of re-explaining your "
+                "workflow each session, a Skill encodes it permanently."
+            ),
+            auto_action="Generate a starter skill based on your most-used tool patterns",
+        ))
+
+    # uniqueToolCount >= 2 AND no skills -> recommend skill for tool patterns
+    if unique_tool_count >= 2 and not skills_list and total_sessions > 10:
+        recs.append(Recommendation(
+            category="skills",
+            headline=f"Using {unique_tool_count} AI tools without skills — encode tool patterns",
+            detail=(
+                f"You use {unique_tool_count} different AI tools across {total_sessions} sessions. "
+                f"Without skills, you're likely re-explaining your preferences to each tool. "
+                f"A skill file standardizes how tools interact with your code."
+            ),
+            action_type="create_skill",
+            trust_level="heuristic",
+            confidence=65,
+            evidence=f"{unique_tool_count} tools, 0 skills (normalized scan data)",
+            priority="medium",
+            teach_text="Skills provide consistent instructions across tools — create one per workflow pattern.",
+            auto_action="Generate skills based on detected tool usage patterns",
+        ))
+
+    # Skill marketplace: if totalSessions > 30, recommend community skills based on stack
+    if total_sessions > 30 and not skills_list:
+        stack = scan_results.get("stack", [])
+        stack_text = " ".join(str(s).lower() for s in stack) if stack else ""
+        for category, info in KNOWN_COMMUNITY_SKILLS.items():
+            pattern_matches = sum(1 for p in info["patterns"] if p in stack_text)
+            if pattern_matches >= 2:
+                recs.append(Recommendation(
+                    category="skills",
+                    headline=f"Your stack matches the '{info['skill_name']}' community skill",
+                    detail=(
+                        f"Detected {pattern_matches} {category}-related patterns in your tech stack. "
+                        f"The '{info['skill_name']}' community skill provides: {info['description']}."
+                    ),
+                    action_type="install_community_skill",
+                    trust_level="heuristic",
+                    confidence=58,
+                    evidence=f"{pattern_matches} stack pattern matches for '{category}' (normalized)",
+                    priority="low",
+                    teach_text=(
+                        "Community skills are pre-built instruction sets shared by the community. "
+                        "They encode best practices for specific workflows."
+                    ),
+                    auto_action=f"Install the '{info['skill_name']}' community skill",
+                    savings_estimate={"skill_name": info["skill_name"], "category": category},
+                ))
+                break  # Only suggest one community skill
+
+    return recs
+
+
 def detect(
     sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
 ) -> list[Recommendation]:
     """Run all skill detectors."""
     recs: list[Recommendation] = []
-    recs.extend(_detect_tool_patterns(sessions))
-    recs.extend(_detect_underutilized_tools(sessions))
-    recs.extend(_detect_skill_revision(sessions, scan_results, profile))
-    recs.extend(_detect_skill_health(sessions, scan_results))
-    recs.extend(_detect_skill_merge(sessions, profile, scan_results))
-    recs.extend(_detect_skill_split(sessions, profile, scan_results))
-    recs.extend(_detect_skill_marketplace(sessions, profile, scan_results))
+
+    # Session-based detection
+    if sessions:
+        recs.extend(_detect_tool_patterns(sessions))
+        recs.extend(_detect_underutilized_tools(sessions))
+        recs.extend(_detect_skill_revision(sessions, scan_results, profile))
+        recs.extend(_detect_skill_health(sessions, scan_results))
+        recs.extend(_detect_skill_merge(sessions, profile, scan_results))
+        recs.extend(_detect_skill_split(sessions, profile, scan_results))
+        recs.extend(_detect_skill_marketplace(sessions, profile, scan_results))
+
+    # Normalized-signal detection
+    norm = scan_results.get("normalized", {}) if scan_results else {}
+    if norm:
+        recs.extend(_detect_from_normalized(norm, scan_results))
+
     return recs

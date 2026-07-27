@@ -148,91 +148,114 @@ def detect(
 ) -> list[Recommendation]:
     """Detect analytics-related recommendations."""
     recs: list[Recommendation] = []
-    if not sessions:
-        return recs
 
-    stats = _compute_usage_stats(sessions, profile)
-    cost = _compute_cost(stats)
+    # Session-based detection
+    if sessions:
+        stats = _compute_usage_stats(sessions, profile)
+        cost = _compute_cost(stats)
 
-    # ── Usage Dashboard insight: high usage without cost awareness ──
-    if stats["total_tokens"] > 500_000:
-        recs.append(Recommendation(
-            category="analytics",
-            headline=f"You've used ~{stats['total_tokens']:,} tokens across {stats['total_sessions']} sessions",
-            detail=(
-                f"Estimated cost: ${cost['total_estimated_cost_usd']:.2f}. "
-                f"Top model: {max(stats['models'], key=stats['models'].get) if stats['models'] else 'unknown'}. "
-                f"Run `cruise-ai dashboard` for the full breakdown."
-            ),
-            action_type="view_dashboard",
-            trust_level="heuristic",
-            confidence=90,
-            evidence=f"{stats['total_sessions']} sessions, {stats['total_user_msgs']} prompts analyzed",
-            priority="medium",
-            teach_text="Token usage directly correlates with cost. Understanding your usage patterns helps optimize spending.",
-            savings_estimate={"tokens": 0, "cost_usd": cost["total_estimated_cost_usd"]},
-        ))
-
-    # ── Cost insight: expensive model overuse ──
-    if cost.get("by_model"):
-        expensive_models = {
-            m: c for m, c in cost["by_model"].items()
-            if _match_model_cost(m) >= 0.020
-        }
-        cheap_models = {
-            m: c for m, c in cost["by_model"].items()
-            if _match_model_cost(m) <= 0.005
-        }
-        if expensive_models and cheap_models:
-            expensive_pct = sum(
-                stats["models"].get(m, 0) for m in expensive_models
-            ) / max(sum(stats["models"].values()), 1) * 100
-            if expensive_pct > 60:
-                potential_savings = sum(expensive_models.values()) * 0.7
-                recs.append(Recommendation(
-                    category="analytics",
-                    headline=f"{expensive_pct:.0f}% of sessions use expensive models — routing could save ${potential_savings:.2f}",
-                    detail=(
-                        f"Models like {', '.join(list(expensive_models.keys())[:2])} cost "
-                        f"${list(expensive_models.values())[0]:.2f}+. "
-                        f"For routine tasks (formatting, simple edits), a cheaper model would suffice."
-                    ),
-                    action_type="model_routing",
-                    trust_level="observed",
-                    confidence=75,
-                    evidence=f"{expensive_pct:.0f}% of {sum(stats['models'].values())} sessions use premium models",
-                    priority="medium",
-                    teach_text="Not every task needs the most powerful model. Simple tasks (formatting, typo fixes, boilerplate) work equally well with faster, cheaper models.",
-                    auto_action="Suggest model routing rules based on task complexity",
-                    savings_estimate={"cost_usd": round(potential_savings, 2)},
-                ))
-
-    # ── Timeline insight: weekend/late-night patterns ──
-    daily = stats.get("daily", {})
-    if len(daily) >= 14:
-        # Check for weekend activity
-        weekend_days = 0
-        total_days = 0
-        for date_str, day_data in daily.items():
-            try:
-                dt = datetime.strptime(date_str, "%Y-%m-%d")
-                total_days += 1
-                if dt.weekday() >= 5:  # Saturday=5, Sunday=6
-                    weekend_days += 1
-            except ValueError:
-                pass
-
-        if total_days > 0 and weekend_days / total_days > 0.3:
+        # ── Usage Dashboard insight: high usage without cost awareness ──
+        if stats["total_tokens"] > 500_000:
             recs.append(Recommendation(
                 category="analytics",
-                headline=f"{weekend_days}/{total_days} active days are weekends — high engagement",
-                detail="You're actively using AI tools on weekends, suggesting either high engagement or work-life balance opportunity.",
-                action_type="view_timeline",
+                headline=f"You've used ~{stats['total_tokens']:,} tokens across {stats['total_sessions']} sessions",
+                detail=(
+                    f"Estimated cost: ${cost['total_estimated_cost_usd']:.2f}. "
+                    f"Top model: {max(stats['models'], key=stats['models'].get) if stats['models'] else 'unknown'}. "
+                    f"Run `cruise-ai dashboard` for the full breakdown."
+                ),
+                action_type="view_dashboard",
                 trust_level="heuristic",
-                confidence=70,
-                evidence=f"{weekend_days} weekend days out of {total_days} total active days",
+                confidence=90,
+                evidence=f"{stats['total_sessions']} sessions, {stats['total_user_msgs']} prompts analyzed",
+                priority="medium",
+                teach_text="Token usage directly correlates with cost. Understanding your usage patterns helps optimize spending.",
+                savings_estimate={"tokens": 0, "cost_usd": cost["total_estimated_cost_usd"]},
+            ))
+
+        # ── Cost insight: expensive model overuse ──
+        if cost.get("by_model"):
+            expensive_models = {
+                m: c for m, c in cost["by_model"].items()
+                if _match_model_cost(m) >= 0.020
+            }
+            cheap_models = {
+                m: c for m, c in cost["by_model"].items()
+                if _match_model_cost(m) <= 0.005
+            }
+            if expensive_models and cheap_models:
+                expensive_pct = sum(
+                    stats["models"].get(m, 0) for m in expensive_models
+                ) / max(sum(stats["models"].values()), 1) * 100
+                if expensive_pct > 60:
+                    potential_savings = sum(expensive_models.values()) * 0.7
+                    recs.append(Recommendation(
+                        category="analytics",
+                        headline=f"{expensive_pct:.0f}% of sessions use expensive models — routing could save ${potential_savings:.2f}",
+                        detail=(
+                            f"Models like {', '.join(list(expensive_models.keys())[:2])} cost "
+                            f"${list(expensive_models.values())[0]:.2f}+. "
+                            f"For routine tasks (formatting, simple edits), a cheaper model would suffice."
+                        ),
+                        action_type="model_routing",
+                        trust_level="observed",
+                        confidence=75,
+                        evidence=f"{expensive_pct:.0f}% of {sum(stats['models'].values())} sessions use premium models",
+                        priority="medium",
+                        teach_text="Not every task needs the most powerful model. Simple tasks (formatting, typo fixes, boilerplate) work equally well with faster, cheaper models.",
+                        auto_action="Suggest model routing rules based on task complexity",
+                        savings_estimate={"cost_usd": round(potential_savings, 2)},
+                    ))
+
+        # ── Timeline insight: weekend/late-night patterns ──
+        daily = stats.get("daily", {})
+        if len(daily) >= 14:
+            # Check for weekend activity
+            weekend_days = 0
+            total_days = 0
+            for date_str, day_data in daily.items():
+                try:
+                    dt = datetime.strptime(date_str, "%Y-%m-%d")
+                    total_days += 1
+                    if dt.weekday() >= 5:  # Saturday=5, Sunday=6
+                        weekend_days += 1
+                except ValueError:
+                    pass
+
+            if total_days > 0 and weekend_days / total_days > 0.3:
+                recs.append(Recommendation(
+                    category="analytics",
+                    headline=f"{weekend_days}/{total_days} active days are weekends — high engagement",
+                    detail="You're actively using AI tools on weekends, suggesting either high engagement or work-life balance opportunity.",
+                    action_type="view_timeline",
+                    trust_level="heuristic",
+                    confidence=70,
+                    evidence=f"{weekend_days} weekend days out of {total_days} total active days",
+                    priority="low",
+                    teach_text="Consistent usage patterns (including rest days) correlate with sustained productivity.",
+                ))
+
+    # Normalized-signal detection (dashboard available)
+    norm = scan_results.get("normalized", {}) if scan_results else {}
+    if norm and not sessions:
+        total_sessions = norm.get("totalSessions", 0)
+        total_est_hours = norm.get("totalEstimatedHours", 0)
+        agent_runtime_hours = norm.get("agentRuntimeHours", 0)
+        if total_sessions > 10:
+            recs.append(Recommendation(
+                category="analytics",
+                headline=f"{total_sessions} sessions totaling ~{total_est_hours:.0f}h — dashboard available",
+                detail=(
+                    f"You have {total_sessions} AI sessions spanning ~{total_est_hours:.0f} hours "
+                    f"of estimated usage ({agent_runtime_hours:.0f}h agent runtime). "
+                    f"Run `cruise-ai dashboard` for the full breakdown."
+                ),
+                action_type="view_dashboard",
+                trust_level="heuristic",
+                confidence=85,
+                evidence=f"{total_sessions} sessions, {total_est_hours:.0f}h estimated (normalized)",
                 priority="low",
-                teach_text="Consistent usage patterns (including rest days) correlate with sustained productivity.",
+                teach_text="Understanding your usage patterns helps identify optimization opportunities.",
             ))
 
     return recs

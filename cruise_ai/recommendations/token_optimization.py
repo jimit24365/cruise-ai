@@ -575,17 +575,130 @@ def _detect_prompt_simplification(sessions: list[Any]) -> list[Recommendation]:
     return recs
 
 
+def _detect_from_normalized(norm: dict[str, Any], scan_results: dict[str, Any]) -> list[Recommendation]:
+    """Derive token optimization recommendations from normalized scan signals."""
+    recs: list[Recommendation] = []
+    if not norm:
+        return recs
+
+    avg_prompt_words = norm.get("avgPromptWords", 0)
+    total_sessions = norm.get("totalSessions", 0)
+    model_count = norm.get("modelCount", 0)
+    marathon_count = norm.get("marathonSessionCount", 0)
+
+    # avgPromptWords > 500 -> prompt_compression
+    if avg_prompt_words > 500:
+        estimated_excess = int((avg_prompt_words - 200) * total_sessions * 4.5 * 1.3)
+        recs.append(Recommendation(
+            category="token_optimization",
+            headline=f"Avg prompt length is {avg_prompt_words:.0f} words — summarization could save ~{estimated_excess:,} tokens",
+            detail=(
+                f"Across {total_sessions} sessions, the average prompt length is {avg_prompt_words:.0f} words. "
+                f"Prompts above 500 words often contain context that could be pre-summarized "
+                f"or moved to steering docs."
+            ),
+            action_type="enable_prompt_compression",
+            trust_level="heuristic",
+            confidence=73 if avg_prompt_words > 800 else 63,
+            evidence=f"avg prompt length {avg_prompt_words:.0f} words (from scan normalized data)",
+            priority="high" if avg_prompt_words > 800 else "medium",
+            teach_text=(
+                "Prompt compression means pre-processing your context before sending it to the AI. "
+                "Techniques include: summarizing long documents, using bullet points instead of prose, "
+                "extracting only relevant sections, and storing recurring context in steering docs."
+            ),
+            auto_action="Analyze prompt patterns and suggest compression strategies",
+            savings_estimate={"tokens": estimated_excess},
+        ))
+
+    # avgPromptWords > 300 AND totalSessions > 20 -> prompt_simplification
+    if avg_prompt_words > 300 and total_sessions > 20:
+        recs.append(Recommendation(
+            category="token_optimization",
+            headline=f"Avg {avg_prompt_words:.0f}-word prompts across {total_sessions} sessions — simplify for efficiency",
+            detail=(
+                f"With {total_sessions} sessions averaging {avg_prompt_words:.0f} words per prompt, "
+                f"there's likely repeated context or verbose phrasing. Structured prompts and "
+                f"steering docs could cut this significantly."
+            ),
+            action_type="simplify_prompts",
+            trust_level="heuristic",
+            confidence=60,
+            evidence=f"avg {avg_prompt_words:.0f} words/prompt over {total_sessions} sessions (normalized)",
+            priority="medium",
+            teach_text=(
+                "Concise prompts save tokens AND get better results. Use steering docs "
+                "for repeated context, and keep prompts focused on the specific task."
+            ),
+            auto_action="Suggest prompt optimization patterns based on usage data",
+        ))
+
+    # modelCount == 1 AND totalSessions > 10 -> model_routing
+    if model_count == 1 and total_sessions > 10:
+        recs.append(Recommendation(
+            category="token_optimization",
+            headline=f"Single-model usage across {total_sessions} sessions — multi-model routing could optimize cost/speed",
+            detail=(
+                f"All {total_sessions} sessions use a single model. Different tasks have different "
+                f"complexity — routing simpler tasks to faster/cheaper models improves both "
+                f"response time and cost without sacrificing quality."
+            ),
+            action_type="model_routing",
+            trust_level="heuristic",
+            confidence=60,
+            evidence=f"1 model used across {total_sessions} sessions (normalized scan data)",
+            priority="low",
+            teach_text="Multi-model routing lets you keep quality for hard tasks while saving on easy ones.",
+            auto_action="Suggest a model routing strategy based on prompt complexity",
+        ))
+
+    # marathonSessionCount > 5 -> split_long_sessions
+    if marathon_count > 5:
+        recs.append(Recommendation(
+            category="token_optimization",
+            headline=f"{marathon_count} marathon sessions detected — consider splitting long sessions",
+            detail=(
+                f"You have {marathon_count} marathon sessions (very long conversations). "
+                f"Long sessions accumulate context window bloat — each message gets more expensive. "
+                f"Splitting into focused, shorter sessions resets this growth."
+            ),
+            action_type="split_long_sessions",
+            trust_level="heuristic",
+            confidence=63,
+            evidence=f"{marathon_count} marathon sessions (from scan normalized data)",
+            priority="medium",
+            teach_text=(
+                "As conversations grow longer, each message costs more tokens because "
+                "the AI re-reads the entire history. After 15-20 turns, start a fresh session "
+                "for new topics. Use steering docs to carry context between sessions cheaply."
+            ),
+            auto_action="Identify session patterns and suggest optimal session length",
+            savings_estimate={"sessions_affected": marathon_count, "potential_savings_pct": 25},
+        ))
+
+    return recs
+
+
 def detect(
     sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
 ) -> list[Recommendation]:
     """Run all token optimization detectors."""
     recs: list[Recommendation] = []
-    recs.extend(_detect_long_prompts(sessions))
-    recs.extend(_detect_duplicate_context(sessions))
-    recs.extend(_detect_model_opportunity(sessions, profile))
-    recs.extend(_detect_prompt_compression(sessions))
-    recs.extend(_detect_cached_context(sessions))
-    recs.extend(_compute_token_waste_score(sessions, profile))
-    recs.extend(_detect_context_window_growth(sessions))
-    recs.extend(_detect_prompt_simplification(sessions))
+
+    # Session-based detection (when sessions available)
+    if sessions:
+        recs.extend(_detect_long_prompts(sessions))
+        recs.extend(_detect_duplicate_context(sessions))
+        recs.extend(_detect_model_opportunity(sessions, profile))
+        recs.extend(_detect_prompt_compression(sessions))
+        recs.extend(_detect_cached_context(sessions))
+        recs.extend(_compute_token_waste_score(sessions, profile))
+        recs.extend(_detect_context_window_growth(sessions))
+        recs.extend(_detect_prompt_simplification(sessions))
+
+    # Normalized-signal detection (always available from scan)
+    norm = scan_results.get("normalized", {}) if scan_results else {}
+    if norm:
+        recs.extend(_detect_from_normalized(norm, scan_results))
+
     return recs

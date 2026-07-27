@@ -139,6 +139,91 @@ def generate_mcp_skeleton(api_name: str, endpoints: list[str]) -> dict[str, str]
         }
 
 
+def _detect_mcp_from_normalized(norm: dict[str, Any], scan_results: dict[str, Any]) -> list[Recommendation]:
+    """Derive MCP recommendations from normalized scan signals."""
+    recs: list[Recommendation] = []
+    if not norm:
+        return recs
+
+    mcp_server_count = norm.get("mcpServerCount", 0)
+    mcp_tool_calls = norm.get("mcpToolCalls", 0)
+    terminal_command_count = norm.get("terminalCommandCount", 0)
+    stack = scan_results.get("stack", [])
+
+    # mcpServerCount == 0 AND mcpToolCalls > 0 -> already using MCP tools, recommend creating own
+    if mcp_server_count == 0 and mcp_tool_calls > 0:
+        recs.append(Recommendation(
+            category="mcp_discovery",
+            headline=f"{mcp_tool_calls} MCP tool calls detected but no servers configured — create your own",
+            detail=(
+                f"You've made {mcp_tool_calls} MCP tool calls (likely via built-in tools) "
+                f"but have no custom MCP servers configured. Creating your own MCP server "
+                f"for your specific APIs and workflows would extend AI capabilities further."
+            ),
+            action_type="create_mcp_server",
+            trust_level="heuristic",
+            confidence=65,
+            evidence=f"{mcp_tool_calls} MCP tool calls, 0 custom servers (normalized)",
+            priority="medium",
+            teach_text=(
+                "MCP servers let AI tools call your APIs directly. "
+                "You're already benefiting from built-in MCP tools — creating a custom server "
+                "for your project's APIs would give the AI deeper integration."
+            ),
+            auto_action="Generate MCP server scaffold for your most-used API patterns",
+        ))
+
+    # mcpServerCount == 0 AND terminalCommandCount > 1000 -> recommend MCP for CLI automation
+    if mcp_server_count == 0 and terminal_command_count > 1000:
+        recs.append(Recommendation(
+            category="mcp_discovery",
+            headline=f"{terminal_command_count} terminal commands — an MCP server could automate CLI workflows",
+            detail=(
+                f"You've run {terminal_command_count} terminal commands across sessions. "
+                f"An MCP server wrapping your common CLI operations would let the AI "
+                f"execute structured commands with validation instead of raw shell."
+            ),
+            action_type="create_mcp_server",
+            trust_level="heuristic",
+            confidence=60,
+            evidence=f"{terminal_command_count} terminal commands, 0 MCP servers (normalized)",
+            priority="low",
+            teach_text=(
+                "Instead of the AI running raw shell commands, an MCP server provides "
+                "structured, typed tools with validation. Safer and more predictable."
+            ),
+            auto_action="Identify repetitive CLI patterns and suggest MCP server tools",
+        ))
+
+    # Stack contains API frameworks -> recommend API MCP
+    if mcp_server_count == 0 and stack:
+        api_frameworks = ["fastapi", "express", "flask", "django", "spring", "rails", "nest", "hapi", "koa"]
+        stack_lower = " ".join(str(s).lower() for s in stack)
+        detected_frameworks = [fw for fw in api_frameworks if fw in stack_lower]
+        if detected_frameworks:
+            recs.append(Recommendation(
+                category="mcp_discovery",
+                headline=f"API framework detected ({', '.join(detected_frameworks[:2])}) — create an MCP server for your endpoints",
+                detail=(
+                    f"Your tech stack includes {', '.join(detected_frameworks)} but no MCP servers "
+                    f"are configured. An MCP server wrapping your API endpoints lets the AI "
+                    f"call them directly with typed parameters."
+                ),
+                action_type="create_mcp_server",
+                trust_level="heuristic",
+                confidence=63,
+                evidence=f"API frameworks: {', '.join(detected_frameworks)} in stack, 0 MCP servers (normalized)",
+                priority="medium",
+                teach_text=(
+                    "MCP servers expose APIs as typed tools to AI assistants. "
+                    "Instead of manually running curl and pasting results, the AI calls tools directly."
+                ),
+                auto_action="Generate MCP server from detected API framework patterns",
+            ))
+
+    return recs
+
+
 def detect(
     sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
 ) -> list[Recommendation]:
@@ -268,6 +353,11 @@ def detect(
         recs.extend(_detect_db_mcp(sessions, scan_results))
     except Exception:
         pass
+
+    # Normalized-signal detection
+    norm = scan_results.get("normalized", {}) if scan_results else {}
+    if norm:
+        recs.extend(_detect_mcp_from_normalized(norm, scan_results))
 
     return recs
 

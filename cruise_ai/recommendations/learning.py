@@ -474,6 +474,82 @@ def _detect_learning_opportunities(sessions: list[Any], profile: dict) -> list[R
     return recs
 
 
+def _detect_learning_from_normalized(norm: dict[str, Any], scan_results: dict[str, Any]) -> list[Recommendation]:
+    """Derive learning recommendations from normalized scan signals."""
+    recs: list[Recommendation] = []
+    if not norm:
+        return recs
+
+    total_sessions = norm.get("totalSessions", 0)
+    plan_count = norm.get("planCount", 0)
+    subagent_dispatches = norm.get("subagentDispatches", 0)
+
+    # totalSessions < 20 -> beginner tutorials
+    if 3 <= total_sessions < 20:
+        recs.append(Recommendation(
+            category="learning",
+            headline="Getting started — structured tutorials available for AI-assisted development",
+            detail=(
+                f"With {total_sessions} sessions, you're in the early stages of AI-assisted "
+                f"development. Tutorials on skills, MCP servers, and prompt optimization "
+                f"can accelerate your workflow."
+            ),
+            action_type="start_tutorial_create_skill",
+            trust_level="heuristic",
+            confidence=65,
+            evidence=f"{total_sessions} total sessions (from scan normalized data)",
+            priority="medium",
+            teach_text="Start with structured prompting and project memory to get the most from AI tools.",
+            auto_action="Show beginner tutorial roadmap",
+        ))
+
+    # planCount == 0 AND totalSessions > 30 -> recommend plan mode
+    if plan_count == 0 and total_sessions > 30:
+        recs.append(Recommendation(
+            category="learning",
+            headline="No plan mode usage in 30+ sessions — try it for complex tasks",
+            detail=(
+                f"Across {total_sessions} sessions with 0 plan mode uses. Plan mode asks "
+                f"the AI to outline steps before executing — catching misunderstandings before "
+                f"they become multi-turn correction loops."
+            ),
+            action_type="teach_plan_mode",
+            trust_level="heuristic",
+            confidence=65,
+            evidence=f"0 plan uses across {total_sessions} sessions (normalized)",
+            priority="medium",
+            teach_text=(
+                "Plan mode lets the AI outline its approach before executing. "
+                "Great for multi-file refactors, architecture changes, and complex features."
+            ),
+            auto_action="Enable plan mode for your next multi-file change",
+        ))
+
+    # subagentDispatches == 0 AND totalSessions > 50 -> recommend multi-agent
+    if subagent_dispatches == 0 and total_sessions > 50:
+        recs.append(Recommendation(
+            category="learning",
+            headline="50+ sessions without subagent usage — parallelize with multi-agent delegation",
+            detail=(
+                f"You have {total_sessions} sessions but haven't used subagent delegation. "
+                f"Multi-step tasks (tests, docs, linting) can run in parallel via subagents "
+                f"while you focus on the core work."
+            ),
+            action_type="teach_subagents",
+            trust_level="heuristic",
+            confidence=63,
+            evidence=f"0 subagent dispatches, {total_sessions} sessions (normalized)",
+            priority="medium",
+            teach_text=(
+                "Subagents run independent tasks in parallel — like having junior devs "
+                "handle the boilerplate while you do the design."
+            ),
+            auto_action="Identify tasks suitable for subagent delegation",
+        ))
+
+    return recs
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -500,6 +576,17 @@ def detect(
 ) -> list[Recommendation]:
     """Run all learning detectors."""
     recs: list[Recommendation] = []
-    recs.extend(_detect_learning_opportunities(sessions, profile))
+
+    # Session-based detection
+    if sessions:
+        recs.extend(_detect_learning_opportunities(sessions, profile))
+
+    # Tutorial detection (uses scan_results primarily)
     recs.extend(_detect_tutorial_opportunity(sessions, profile, scan_results))
+
+    # Normalized-signal detection
+    norm = scan_results.get("normalized", {}) if scan_results else {}
+    if norm:
+        recs.extend(_detect_learning_from_normalized(norm, scan_results))
+
     return recs

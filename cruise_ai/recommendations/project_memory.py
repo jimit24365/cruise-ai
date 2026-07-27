@@ -127,11 +127,87 @@ def _detect_cross_session_patterns(sessions: list[Any]) -> list[Recommendation]:
     return recs
 
 
+def _detect_memory_from_normalized(norm: dict[str, Any], scan_results: dict[str, Any]) -> list[Recommendation]:
+    """Derive project memory recommendations from normalized scan signals."""
+    recs: list[Recommendation] = []
+    if not norm:
+        return recs
+
+    project_count = norm.get("projectCount", 0)
+    deep_session_count = norm.get("deepSessionCount", 0)
+    config_files = scan_results.get("config_files", [])
+
+    # Check if memory config already exists
+    has_memory = any(
+        any(kw in str(f).lower() for kw in ["claude.md", "agents.md", "steering", ".cursorrules"])
+        for f in config_files
+    ) if config_files else False
+
+    # projectCount > 10 AND no memory config -> recommend project memory
+    if project_count > 10 and not has_memory:
+        recs.append(Recommendation(
+            category="project_memory",
+            headline=f"{project_count} projects without memory config — set up project memory",
+            detail=(
+                f"You work across {project_count} projects but have no project memory "
+                f"(CLAUDE.md, AGENTS.md, steering docs) configured. Without it, you re-explain "
+                f"context every time you switch projects or start a new session."
+            ),
+            action_type="create_project_memory",
+            trust_level="heuristic",
+            confidence=68,
+            evidence=f"{project_count} projects, no memory config detected (normalized)",
+            priority="medium",
+            teach_text=(
+                "Project memory is persistent context your AI tool loads automatically:\n"
+                "- `.kiro/steering/*.md` — Kiro steering docs\n"
+                "- `CLAUDE.md` — Claude Code memory\n"
+                "- `.cursorrules` — Cursor rules\n"
+                "- `AGENTS.md` — Multi-agent project docs"
+            ),
+            auto_action="Generate project memory templates for your top projects",
+        ))
+
+    # deepSessionCount > 5 -> recommend session memory/context pinning
+    if deep_session_count > 5:
+        recs.append(Recommendation(
+            category="project_memory",
+            headline=f"{deep_session_count} deep sessions detected — pin recurring context to memory",
+            detail=(
+                f"You have {deep_session_count} deep sessions (many turns). Deep sessions "
+                f"often mean you're providing lots of context manually. Pinning frequently-used "
+                f"context to project memory would reduce setup time."
+            ),
+            action_type="create_project_memory",
+            trust_level="heuristic",
+            confidence=63,
+            evidence=f"{deep_session_count} deep sessions (from scan normalized data)",
+            priority="medium" if deep_session_count > 10 else "low",
+            teach_text=(
+                "Deep sessions (many turns) often accumulate context that should be persistent. "
+                "Extract commonly-referenced files, patterns, and architecture into steering docs "
+                "so they're always available without re-loading."
+            ),
+            auto_action="Analyze deep session patterns and suggest what to pin to memory",
+        ))
+
+    return recs
+
+
 def detect(
     sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
 ) -> list[Recommendation]:
     """Run all project memory detectors."""
     recs: list[Recommendation] = []
-    recs.extend(_detect_project_concentration(sessions))
-    recs.extend(_detect_cross_session_patterns(sessions))
+
+    # Session-based detection
+    if sessions:
+        recs.extend(_detect_project_concentration(sessions))
+        recs.extend(_detect_cross_session_patterns(sessions))
+
+    # Normalized-signal detection
+    norm = scan_results.get("normalized", {}) if scan_results else {}
+    if norm:
+        recs.extend(_detect_memory_from_normalized(norm, scan_results))
+
     return recs

@@ -147,35 +147,58 @@ def detect(
 ) -> list[Recommendation]:
     """Recommend viewing monthly report when sufficient data is available.
 
-    Triggers when >30 days of session data exists.
+    Triggers when >30 days of session data exists or aiUsageSpanDays > 30.
     """
     recs: list[Recommendation] = []
     try:
-        if len(sessions) < 5:
-            return recs
+        # Session-based detection
+        if sessions and len(sessions) >= 5:
+            # Check if we have >30 days of data
+            timestamps: list[datetime] = []
+            for s in sessions:
+                ts = _get_session_timestamp(s)
+                if ts:
+                    timestamps.append(ts)
 
-        # Check if we have >30 days of data
-        timestamps: list[datetime] = []
-        for s in sessions:
-            ts = _get_session_timestamp(s)
-            if ts:
-                timestamps.append(ts)
+            if not timestamps:
+                # If no parseable timestamps but many sessions, still recommend
+                if len(sessions) >= 30:
+                    recs.append(Recommendation(
+                        category="analytics",
+                        headline="Monthly report available — review your AI usage trends",
+                        detail=(
+                            f"You have {len(sessions)} sessions of data. "
+                            f"A monthly report summarizes token usage, cost estimates, "
+                            f"and top optimization opportunities."
+                        ),
+                        action_type="view_monthly_report",
+                        trust_level="validated",
+                        confidence=80,
+                        evidence=f"{len(sessions)} sessions available for analysis",
+                        priority="low",
+                        teach_text=(
+                            "Monthly reports help you track AI usage trends over time. "
+                            "They highlight cost changes, usage patterns, and which "
+                            "optimizations had the most impact."
+                        ),
+                        auto_action="Generate and display monthly usage report",
+                    ))
+                return recs
 
-        if not timestamps:
-            # If no parseable timestamps but many sessions, still recommend
-            if len(sessions) >= 30:
+            date_range = max(timestamps) - min(timestamps)
+            if date_range.days >= 30:
                 recs.append(Recommendation(
                     category="analytics",
                     headline="Monthly report available — review your AI usage trends",
                     detail=(
-                        f"You have {len(sessions)} sessions of data. "
-                        f"A monthly report summarizes token usage, cost estimates, "
+                        f"You have {date_range.days} days of session data ({len(sessions)} sessions). "
+                        f"A monthly report summarizes token usage, cost estimates, trends, "
                         f"and top optimization opportunities."
                     ),
                     action_type="view_monthly_report",
                     trust_level="validated",
                     confidence=80,
-                    evidence=f"{len(sessions)} sessions available for analysis",
+                    evidence=f"{len(sessions)} sessions spanning {date_range.days} days",
                     priority="low",
                     teach_text=(
                         "Monthly reports help you track AI usage trends over time. "
@@ -184,30 +207,34 @@ def detect(
                     ),
                     auto_action="Generate and display monthly usage report",
                 ))
-            return recs
 
-        date_range = max(timestamps) - min(timestamps)
-        if date_range.days >= 30:
-            recs.append(Recommendation(
-                category="analytics",
-                headline="Monthly report available — review your AI usage trends",
-                detail=(
-                    f"You have {date_range.days} days of session data ({len(sessions)} sessions). "
-                    f"A monthly report summarizes token usage, cost estimates, trends, "
-                    f"and top optimization opportunities."
-                ),
-                action_type="view_monthly_report",
-                trust_level="validated",
-                confidence=80,
-                evidence=f"{len(sessions)} sessions spanning {date_range.days} days",
-                priority="low",
-                teach_text=(
-                    "Monthly reports help you track AI usage trends over time. "
-                    "They highlight cost changes, usage patterns, and which "
-                    "optimizations had the most impact."
-                ),
-                auto_action="Generate and display monthly usage report",
-            ))
+        # Normalized-signal detection
+        norm = scan_results.get("normalized", {}) if scan_results else {}
+        if norm and not sessions:
+            ai_usage_span_days = norm.get("aiUsageSpanDays", 0)
+            total_sessions = norm.get("totalSessions", 0)
+            # aiUsageSpanDays > 30 -> monthly report available
+            if ai_usage_span_days > 30:
+                recs.append(Recommendation(
+                    category="analytics",
+                    headline="Monthly report available — review your AI usage trends",
+                    detail=(
+                        f"You have {ai_usage_span_days} days of AI usage data ({total_sessions} sessions). "
+                        f"A monthly report summarizes token usage, cost estimates, trends, "
+                        f"and top optimization opportunities."
+                    ),
+                    action_type="view_monthly_report",
+                    trust_level="heuristic",
+                    confidence=75,
+                    evidence=f"{total_sessions} sessions over {ai_usage_span_days} days (normalized)",
+                    priority="low",
+                    teach_text=(
+                        "Monthly reports help you track AI usage trends over time. "
+                        "They highlight cost changes, usage patterns, and which "
+                        "optimizations had the most impact."
+                    ),
+                    auto_action="Generate and display monthly usage report",
+                ))
     except Exception:
         pass
 

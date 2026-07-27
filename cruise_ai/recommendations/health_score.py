@@ -237,16 +237,83 @@ def compute_health_score(
         }
 
 
+def _compute_health_from_normalized(norm: dict[str, Any], scan_results: dict[str, Any]) -> dict[str, Any]:
+    """Compute health score from normalized signals when sessions aren't available."""
+    avg_prompt_words = norm.get("avgPromptWords", 200)
+    model_count = norm.get("modelCount", 1)
+    unique_tool_count = norm.get("uniqueToolCount", 1)
+    mcp_server_count = norm.get("mcpServerCount", 0)
+    total_sessions = norm.get("totalSessions", 0)
+    skills_list = scan_results.get("skills", [])
+    hooks_list = scan_results.get("hooks", [])
+    mcps_list = scan_results.get("mcps", [])
+
+    # Efficiency from avg prompt words
+    if avg_prompt_words <= 200:
+        efficiency = 90
+    elif avg_prompt_words <= 400:
+        efficiency = max(50, 90 - int((avg_prompt_words - 200) * 0.2))
+    else:
+        efficiency = max(25, 90 - int((avg_prompt_words - 200) * 0.12))
+
+    # Diversity from model and tool count
+    model_score = min(100, 30 + model_count * 20)
+    tool_score = min(100, 20 + unique_tool_count * 15)
+    diversity = int((model_score + tool_score) / 2)
+
+    # Automation from hooks, MCPs, skills
+    configured = 0
+    if hooks_list:
+        configured += 1
+    if mcps_list or mcp_server_count > 0:
+        configured += 1
+    if skills_list:
+        configured += 1
+    if scan_results.get("config_files"):
+        configured += 1
+    automation = max(0, min(100, int(20 + (configured / 4) * 80)))
+
+    # Learning from total sessions
+    if total_sessions >= 50:
+        learning = 85
+    elif total_sessions >= 20:
+        learning = 65
+    elif total_sessions >= 10:
+        learning = 50
+    else:
+        learning = 35
+
+    score = int(efficiency * 0.35 + diversity * 0.20 + automation * 0.25 + learning * 0.20)
+    score = max(0, min(100, score))
+
+    return {
+        "score": score,
+        "breakdown": {
+            "efficiency": efficiency,
+            "diversity": diversity,
+            "automation": automation,
+            "learning": learning,
+        },
+    }
+
+
 def detect(
     sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
 ) -> list[Recommendation]:
     """Fire a recommendation when AI Health Score < 60."""
     recs: list[Recommendation] = []
     try:
-        if not sessions or len(sessions) < 5:
+        norm = scan_results.get("normalized", {}) if scan_results else {}
+
+        # Session-based health score
+        if sessions and len(sessions) >= 5:
+            result = compute_health_score(sessions, profile, scan_results)
+        elif norm and norm.get("totalSessions", 0) >= 5:
+            # Normalized-signal health score
+            result = _compute_health_from_normalized(norm, scan_results)
+        else:
             return recs
 
-        result = compute_health_score(sessions, profile, scan_results)
         score = result.get("score", 50)
         breakdown = result.get("breakdown", {})
 
@@ -254,6 +321,8 @@ def detect(
             # Identify weakest area
             weakest = min(breakdown, key=lambda k: breakdown[k]) if breakdown else "efficiency"
             weakest_score = breakdown.get(weakest, 0)
+            # Slightly lower confidence for normalized-based
+            confidence = 67 if not sessions else 72
 
             recs.append(Recommendation(
                 category="analytics",
@@ -268,7 +337,7 @@ def detect(
                 ),
                 action_type="improve_health_score",
                 trust_level="heuristic",
-                confidence=72,
+                confidence=confidence,
                 evidence=f"health score {score}/100, weakest: {weakest}={weakest_score}",
                 priority="high" if score < 40 else "medium",
                 teach_text=(

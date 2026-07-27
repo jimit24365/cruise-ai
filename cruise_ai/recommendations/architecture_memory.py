@@ -321,15 +321,84 @@ def generate_agents_md(scan_results: dict[str, Any]) -> dict[str, Any]:
         }
 
 
+def _detect_architecture_from_normalized(norm: dict[str, Any], scan_results: dict[str, Any]) -> list[Recommendation]:
+    """Derive architecture memory recommendations from normalized scan signals."""
+    recs: list[Recommendation] = []
+    if not norm:
+        return recs
+
+    project_count = norm.get("projectCount", 0)
+    ai_usage_span_days = norm.get("aiUsageSpanDays", 0)
+    config_files = scan_results.get("config_files", [])
+
+    # Check if architecture docs exist
+    has_agents = any("agents" in str(f).lower() for f in config_files) if config_files else False
+    has_architecture = any("architecture" in str(f).lower() for f in config_files) if config_files else False
+
+    # projectCount > 5 AND no AGENTS.md detected -> recommend
+    if project_count > 5 and not has_agents:
+        recs.append(Recommendation(
+            category="skills",
+            headline=f"{project_count} projects without AGENTS.md — document your architecture for AI tools",
+            detail=(
+                f"You work across {project_count} projects but have no AGENTS.md detected. "
+                f"AGENTS.md tells AI tools about your conventions, architecture, and preferences "
+                f"so they don't have to guess or ask."
+            ),
+            action_type="generate_agents_md",
+            trust_level="heuristic",
+            confidence=63,
+            evidence=f"{project_count} projects, no AGENTS.md (normalized scan data)",
+            priority="medium",
+            teach_text=(
+                "AGENTS.md is a project-level instruction file that AI coding tools read "
+                "automatically. It documents: project structure, conventions, common commands, "
+                "and things the AI should know."
+            ),
+            auto_action="Generate AGENTS.md template based on project scan",
+        ))
+
+    # aiUsageSpanDays > 30 AND no architecture docs -> recommend
+    if ai_usage_span_days > 30 and not has_architecture:
+        recs.append(Recommendation(
+            category="skills",
+            headline=f"{ai_usage_span_days} days of AI usage without architecture docs — generate ARCHITECTURE.md",
+            detail=(
+                f"You've been using AI tools for {ai_usage_span_days} days but have no "
+                f"architecture documentation. An ARCHITECTURE.md helps AI tools understand "
+                f"your codebase structure without re-explaining it each session."
+            ),
+            action_type="generate_architecture_doc",
+            trust_level="heuristic",
+            confidence=60,
+            evidence=f"{ai_usage_span_days} days span, no architecture docs (normalized)",
+            priority="low",
+            teach_text=(
+                "ARCHITECTURE.md documents your codebase's high-level structure: "
+                "modules, layers, key abstractions, and boundaries."
+            ),
+            auto_action="Generate ARCHITECTURE.md based on project scan results",
+        ))
+
+    return recs
+
+
 def detect(
     sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
 ) -> list[Recommendation]:
     """Run all architecture memory detectors."""
     recs: list[Recommendation] = []
     try:
-        recs.extend(_detect_architecture_doc_need(sessions, scan_results))
-        recs.extend(_detect_agents_md_need(sessions, scan_results))
-        recs.extend(_detect_gemini_md_need(sessions, scan_results))
+        # Session-based detection
+        if sessions:
+            recs.extend(_detect_architecture_doc_need(sessions, scan_results))
+            recs.extend(_detect_agents_md_need(sessions, scan_results))
+            recs.extend(_detect_gemini_md_need(sessions, scan_results))
+
+        # Normalized-signal detection
+        norm = scan_results.get("normalized", {}) if scan_results else {}
+        if norm:
+            recs.extend(_detect_architecture_from_normalized(norm, scan_results))
     except Exception:
         pass
     return recs

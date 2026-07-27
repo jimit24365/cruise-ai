@@ -167,6 +167,72 @@ def _generate_jest_harness(test_patterns: list[str]) -> dict[str, str]:
     }
 
 
+def _detect_eval_from_normalized(norm: dict[str, Any], scan_results: dict[str, Any]) -> list[Recommendation]:
+    """Derive eval harness recommendations from normalized scan signals."""
+    recs: list[Recommendation] = []
+    if not norm:
+        return recs
+
+    feature_to_fix_ratio = norm.get("featureToFixRatio", 1.0)
+    total_sessions = norm.get("totalSessions", 0)
+
+    # featureToFixRatio < 0.5 (more fixes than features) -> recommend eval harness
+    if feature_to_fix_ratio < 0.5 and total_sessions > 10:
+        language = _detect_language(scan_results)
+        recs.append(Recommendation(
+            category="eval_harness",
+            headline=f"Feature-to-fix ratio is {feature_to_fix_ratio:.2f} — an eval harness could catch regressions earlier",
+            detail=(
+                f"Your feature-to-fix ratio of {feature_to_fix_ratio:.2f} means you spend more time "
+                f"fixing than building. An evaluation harness provides structured validation "
+                f"after changes, preventing regressions from accumulating."
+            ),
+            action_type="create_eval_harness",
+            trust_level="heuristic",
+            confidence=65,
+            evidence=f"featureToFixRatio={feature_to_fix_ratio:.2f} across {total_sessions} sessions (normalized)",
+            priority="medium",
+            teach_text=(
+                "An evaluation harness runs automated checks after code changes. "
+                "It catches regressions before they compound into more fixes. "
+                "Start with your existing test commands and add structured assertions."
+            ),
+            auto_action=f"Generate {language} eval harness template",
+        ))
+
+    # totalSessions > 50 AND no harness detected -> recommend
+    if total_sessions > 50:
+        # Check if any eval/harness config exists
+        config_files = scan_results.get("config_files", [])
+        has_eval = any(
+            "eval" in str(f).lower() or "harness" in str(f).lower()
+            for f in config_files
+        ) if config_files else False
+        if not has_eval:
+            language = _detect_language(scan_results)
+            recs.append(Recommendation(
+                category="eval_harness",
+                headline=f"{total_sessions} sessions without structured evaluation — add an eval harness",
+                detail=(
+                    f"With {total_sessions} sessions of AI-assisted development and no "
+                    f"evaluation harness, you may be missing regressions. A structured "
+                    f"eval ensures consistent quality checks."
+                ),
+                action_type="create_eval_harness",
+                trust_level="heuristic",
+                confidence=60,
+                evidence=f"{total_sessions} sessions, no eval harness detected (normalized)",
+                priority="low",
+                teach_text=(
+                    "Evaluation harnesses provide automated quality gates for AI-generated code. "
+                    "They run after each change to verify nothing broke."
+                ),
+                auto_action=f"Generate {language} eval harness with common patterns",
+            ))
+
+    return recs
+
+
 def detect(
     sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
 ) -> list[Recommendation]:
@@ -178,91 +244,95 @@ def detect(
     """
     recs: list[Recommendation] = []
 
-    try:
-        if len(sessions) < 3:
-            return recs
+    # Session-based detection
+    if sessions:
+        try:
+            if len(sessions) >= 3:
+                sessions_without_tests = 0
+                sessions_with_code_changes = 0
+                test_patterns_seen: list[str] = []
 
-        sessions_without_tests = 0
-        sessions_with_code_changes = 0
-        test_patterns_seen: list[str] = []
+                for s in sessions:
+                    if isinstance(s, dict):
+                        commands = s.get("commands", [])
+                    else:
+                        commands = getattr(s, "commands", []) or []
 
-        for s in sessions:
-            if isinstance(s, dict):
-                commands = s.get("commands", [])
-            else:
-                commands = getattr(s, "commands", []) or []
+                    commands_str = [str(c) for c in commands if c]
+                    has_tests = _has_test_command(commands_str)
+                    has_validates = _has_validate_command(commands_str)
 
-            commands_str = [str(c) for c in commands if c]
-            has_tests = _has_test_command(commands_str)
-            has_validates = _has_validate_command(commands_str)
+                    # Check if session has code-change indicators
+                    context_files = []
+                    if isinstance(s, dict):
+                        context_files = s.get("context_files", [])
+                    else:
+                        context_files = getattr(s, "context_files", []) or []
 
-            # Check if session has code-change indicators
-            context_files = []
-            if isinstance(s, dict):
-                context_files = s.get("context_files", [])
-            else:
-                context_files = getattr(s, "context_files", []) or []
+                    has_code_changes = len(context_files) > 0 or any(
+                        "git" in str(c).lower() for c in commands_str
+                    )
 
-            has_code_changes = len(context_files) > 0 or any(
-                "git" in str(c).lower() for c in commands_str
-            )
+                    if has_code_changes:
+                        sessions_with_code_changes += 1
+                        if not has_tests:
+                            sessions_without_tests += 1
 
-            if has_code_changes:
-                sessions_with_code_changes += 1
-                if not has_tests:
-                    sessions_without_tests += 1
+                    # Track test/validate patterns for harness generation
+                    if has_tests or has_validates:
+                        for cmd in commands_str:
+                            cmd_lower = cmd.lower().strip()
+                            if any(p in cmd_lower for p in TEST_COMMAND_PATTERNS + VALIDATE_PATTERNS):
+                                if cmd_lower not in test_patterns_seen:
+                                    test_patterns_seen.append(cmd_lower)
 
-            # Track test/validate patterns for harness generation
-            if has_tests or has_validates:
-                for cmd in commands_str:
-                    cmd_lower = cmd.lower().strip()
-                    if any(p in cmd_lower for p in TEST_COMMAND_PATTERNS + VALIDATE_PATTERNS):
-                        if cmd_lower not in test_patterns_seen:
-                            test_patterns_seen.append(cmd_lower)
+                # Calculate ratio of sessions without tests
+                total_for_ratio = max(sessions_with_code_changes, len(sessions))
+                no_test_ratio = sessions_without_tests / total_for_ratio if total_for_ratio > 0 else 0
 
-        # Calculate ratio of sessions without tests
-        total_for_ratio = max(sessions_with_code_changes, len(sessions))
-        no_test_ratio = sessions_without_tests / total_for_ratio if total_for_ratio > 0 else 0
+                if no_test_ratio > 0.30:
+                    language = _detect_language(scan_results)
+                    confidence = min(72, 65 + int(no_test_ratio * 10))
 
-        if no_test_ratio > 0.30:
-            language = _detect_language(scan_results)
-            confidence = min(72, 65 + int(no_test_ratio * 10))
+                    recs.append(Recommendation(
+                        category="eval_harness",
+                        headline=(
+                            f"{sessions_without_tests}/{total_for_ratio} sessions lack test runs "
+                            f"— an eval harness would catch regressions"
+                        ),
+                        detail=(
+                            f"{no_test_ratio*100:.0f}% of your sessions with code changes don't include "
+                            f"test commands. An evaluation harness provides a structured way to validate "
+                            f"changes before they land, preventing regressions from slipping through."
+                        ),
+                        action_type="create_eval_harness",
+                        trust_level="heuristic",
+                        confidence=confidence,
+                        evidence=(
+                            f"{sessions_without_tests}/{total_for_ratio} sessions without tests; "
+                            f"language: {language}"
+                        ),
+                        priority="medium",
+                        teach_text=(
+                            "An evaluation harness is a structured test template that runs automatically "
+                            "after code changes. Unlike ad-hoc test runs, it:\n"
+                            "- Ensures consistent coverage across changes\n"
+                            "- Catches regressions before they're committed\n"
+                            "- Can be hooked into pre-commit or CI\n"
+                            f"- Will be generated as a {language} test file you can extend"
+                        ),
+                        auto_action=f"Generate {language} eval harness with {len(test_patterns_seen)} detected pattern(s)",
+                        savings_estimate={
+                            "sessions_without_tests": sessions_without_tests,
+                            "potential_regressions_caught": sessions_without_tests,
+                        },
+                    ))
+        except Exception:
+            pass
 
-            recs.append(Recommendation(
-                category="eval_harness",
-                headline=(
-                    f"{sessions_without_tests}/{total_for_ratio} sessions lack test runs "
-                    f"— an eval harness would catch regressions"
-                ),
-                detail=(
-                    f"{no_test_ratio*100:.0f}% of your sessions with code changes don't include "
-                    f"test commands. An evaluation harness provides a structured way to validate "
-                    f"changes before they land, preventing regressions from slipping through."
-                ),
-                action_type="create_eval_harness",
-                trust_level="heuristic",
-                confidence=confidence,
-                evidence=(
-                    f"{sessions_without_tests}/{total_for_ratio} sessions without tests; "
-                    f"language: {language}"
-                ),
-                priority="medium",
-                teach_text=(
-                    "An evaluation harness is a structured test template that runs automatically "
-                    "after code changes. Unlike ad-hoc test runs, it:\n"
-                    "- Ensures consistent coverage across changes\n"
-                    "- Catches regressions before they're committed\n"
-                    "- Can be hooked into pre-commit or CI\n"
-                    f"- Will be generated as a {language} test file you can extend"
-                ),
-                auto_action=f"Generate {language} eval harness with {len(test_patterns_seen)} detected pattern(s)",
-                savings_estimate={
-                    "sessions_without_tests": sessions_without_tests,
-                    "potential_regressions_caught": sessions_without_tests,
-                },
-            ))
-
-    except Exception:
-        return []
+    # Normalized-signal detection
+    norm = scan_results.get("normalized", {}) if scan_results else {}
+    if norm:
+        recs.extend(_detect_eval_from_normalized(norm, scan_results))
 
     return recs

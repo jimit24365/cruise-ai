@@ -150,6 +150,48 @@ def generate_team_guidelines(patterns: dict[str, list[str]]) -> dict[str, str]:
         }
 
 
+def _detect_guidelines_from_normalized(norm: dict[str, Any], scan_results: dict[str, Any]) -> list[Recommendation]:
+    """Derive team guidelines recommendations from normalized scan signals."""
+    recs: list[Recommendation] = []
+    if not norm:
+        return recs
+
+    project_count = norm.get("projectCount", 0)
+    longest_streak_days = norm.get("longestStreakDays", 0)
+
+    # Check if team guidelines already exist
+    config_files = scan_results.get("config_files", [])
+    for f in config_files:
+        f_lower = str(f).lower() if f else ""
+        if "team-guide" in f_lower or "team_guide" in f_lower or "contributing" in f_lower:
+            return recs
+
+    # projectCount > 5 AND longestStreakDays > 14 -> recommend team guidelines
+    if project_count > 5 and longest_streak_days > 14:
+        recs.append(Recommendation(
+            category="skills",
+            headline=f"{project_count} projects over {longest_streak_days}-day streak — document team guidelines",
+            detail=(
+                f"With {project_count} projects and a {longest_streak_days}-day active streak, "
+                f"you have established patterns worth documenting. Team guidelines codify "
+                f"your conventions so AI tools (and team members) follow them consistently."
+            ),
+            action_type="generate_team_guidelines",
+            trust_level="heuristic",
+            confidence=60,
+            evidence=f"{project_count} projects, {longest_streak_days}-day streak (normalized)",
+            priority="low",
+            teach_text=(
+                "Team guidelines document your project's conventions: which linter to use, "
+                "how to write tests, what commit style to follow. They help both human "
+                "developers and AI tools understand your standards."
+            ),
+            auto_action="Generate TEAM-GUIDELINES.md from detected patterns",
+        ))
+
+    return recs
+
+
 def detect(
     sessions: list[Any], profile: dict[str, Any], scan_results: dict[str, Any]
 ) -> list[Recommendation]:
@@ -160,57 +202,62 @@ def detect(
     """
     recs: list[Recommendation] = []
     try:
-        if len(sessions) < 5:
-            return recs
+        # Session-based detection
+        if sessions and len(sessions) >= 5:
+            patterns = _extract_patterns(sessions, scan_results)
 
-        patterns = _extract_patterns(sessions, scan_results)
+            # Count how many categories have consistent patterns
+            categories_with_patterns = sum(
+                1 for v in patterns.values() if len(v) >= 1
+            )
 
-        # Count how many categories have consistent patterns
-        categories_with_patterns = sum(
-            1 for v in patterns.values() if len(v) >= 1
-        )
+            if categories_with_patterns >= 2:
+                # Build evidence
+                evidence_parts: list[str] = []
+                if patterns["linters"]:
+                    evidence_parts.append(f"linters: {', '.join(patterns['linters'][:3])}")
+                if patterns["test_frameworks"]:
+                    evidence_parts.append(f"tests: {', '.join(patterns['test_frameworks'][:3])}")
+                if patterns["commit_styles"]:
+                    evidence_parts.append(f"commits: {', '.join(patterns['commit_styles'][:3])}")
 
-        if categories_with_patterns < 2:
-            return recs
+                # Check if team guidelines already exist
+                config_files = scan_results.get("config_files", [])
+                has_guidelines = False
+                for f in config_files:
+                    f_lower = str(f).lower() if f else ""
+                    if "team-guide" in f_lower or "team_guide" in f_lower or "contributing" in f_lower:
+                        has_guidelines = True
+                        break
 
-        # Build evidence
-        evidence_parts: list[str] = []
-        if patterns["linters"]:
-            evidence_parts.append(f"linters: {', '.join(patterns['linters'][:3])}")
-        if patterns["test_frameworks"]:
-            evidence_parts.append(f"tests: {', '.join(patterns['test_frameworks'][:3])}")
-        if patterns["commit_styles"]:
-            evidence_parts.append(f"commits: {', '.join(patterns['commit_styles'][:3])}")
+                if not has_guidelines:
+                    recs.append(Recommendation(
+                        category="skills",
+                        headline="Consistent coding patterns detected — generate team guidelines",
+                        detail=(
+                            f"Your sessions show consistent use of: {'; '.join(evidence_parts)}. "
+                            f"Generating a TEAM-GUIDELINES.md would codify these patterns "
+                            f"and help onboard new team members or AI tools."
+                        ),
+                        action_type="generate_team_guidelines",
+                        trust_level="heuristic",
+                        confidence=65,
+                        evidence="; ".join(evidence_parts),
+                        priority="low",
+                        teach_text=(
+                            "Team guidelines document your project's conventions: which linter to use, "
+                            "how to write tests, what commit style to follow. They help both human "
+                            "developers and AI tools understand your project's standards without "
+                            "having to ask or guess."
+                        ),
+                        auto_action="Generate TEAM-GUIDELINES.md from detected patterns",
+                        savings_estimate={"patterns_detected": categories_with_patterns},
+                    ))
 
-        # Check if team guidelines already exist
-        config_files = scan_results.get("config_files", [])
-        for f in config_files:
-            f_lower = str(f).lower() if f else ""
-            if "team-guide" in f_lower or "team_guide" in f_lower or "contributing" in f_lower:
-                return recs
-
-        recs.append(Recommendation(
-            category="skills",
-            headline="Consistent coding patterns detected — generate team guidelines",
-            detail=(
-                f"Your sessions show consistent use of: {'; '.join(evidence_parts)}. "
-                f"Generating a TEAM-GUIDELINES.md would codify these patterns "
-                f"and help onboard new team members or AI tools."
-            ),
-            action_type="generate_team_guidelines",
-            trust_level="heuristic",
-            confidence=65,
-            evidence="; ".join(evidence_parts),
-            priority="low",
-            teach_text=(
-                "Team guidelines document your project's conventions: which linter to use, "
-                "how to write tests, what commit style to follow. They help both human "
-                "developers and AI tools understand your project's standards without "
-                "having to ask or guess."
-            ),
-            auto_action="Generate TEAM-GUIDELINES.md from detected patterns",
-            savings_estimate={"patterns_detected": categories_with_patterns},
-        ))
+        # Normalized-signal detection
+        norm = scan_results.get("normalized", {}) if scan_results else {}
+        if norm:
+            recs.extend(_detect_guidelines_from_normalized(norm, scan_results))
     except Exception:
         pass
 
