@@ -323,16 +323,20 @@ def dashboard(
             # Projects from scan
             project_counts: dict[str, int] = {}
             projects_data = scan_results.get("projects", {})
-            if isinstance(projects_data, dict):
+            if isinstance(projects_data, list):
+                for p in projects_data[:20]:
+                    if isinstance(p, dict):
+                        name = p.get("name", "unknown")
+                        count = p.get("sessionCount", 1)
+                        project_counts[name] = int(count)
+                    else:
+                        project_counts[str(p)] = 1
+            elif isinstance(projects_data, dict):
                 for p, info in list(projects_data.items())[:20]:
                     if isinstance(info, dict):
-                        project_counts[p] = info.get("sessions", 1)
+                        project_counts[p] = info.get("sessionCount", info.get("sessions", 1))
                     else:
-                        project_counts[p] = 1
-            elif isinstance(projects_data, list):
-                for p in projects_data[:20]:
-                    name = p.get("name", p) if isinstance(p, dict) else str(p)
-                    project_counts[name] = 1
+                        project_counts[p] = int(info) if isinstance(info, (int, float)) else 1
 
             # Daily from activityByDay
             daily: dict[str, dict] = {}
